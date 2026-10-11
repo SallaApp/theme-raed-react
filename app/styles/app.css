@@ -1,0 +1,45 @@
+@import "tailwindcss/base";
+@import "tailwindcss/components";
+@import "tailwindcss/utilities";
+@import "./app.scss";
+
+/* RTL-specific font */
+[dir="rtl"] {
+  --font-main: var(--font-ar);
+}
+
+/* Apply fonts from Salla SDK if available */
+body {
+  font-family: var(--font-main);
+}
+
+/* Reserve the scrollbar gutter on the viewport at all times. When a modal or
+   drawer locks scrolling (see below) the scrollbar goes away, but the reserved
+   gutter keeps the content box the same width — so the page never jumps.
+   Must live on <html>, which owns the viewport scrollbar; putting it on <body>
+   has no effect once body overflow is hidden. */
+html {
+  scrollbar-gutter: stable;
+}
+
+/* Scroll lock while a drawer (engine adds `menu-opened`) or a Salla modal
+   (`salla-modal` adds `modal-is-open`) is open. */
+body.menu-opened,
+body.modal-is-open {
+  overflow: hidden;
+}
+
+/* Contain horizontal overflow from full-bleed blocks (e.g. the featured-products
+   tab bar uses `width: 100vw`, which overhangs the content box by the reserved
+   scrollbar gutter). `clip` doesn't create a scroll container, so it won't
+   affect the fixed header or vertical dropdowns.
+
+   `bg-white`: an ordinary browser tab's default canvas is white regardless, so
+   this never had to be explicit -- but the Themes Editor renders the storefront
+   inside an iframe whose own background shows through anywhere the page itself
+   doesn't paint one, which read as a grey/transparent flash behind every
+   section before its own background loaded. */
+.app-inner {
+  @apply bg-white;
+  overflow-x: clip;
+}

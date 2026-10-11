@@ -1,0 +1,46 @@
+/* =========================================================================
+   Mobile page-title bar — names the current page at the top of the content,
+   since the site header is collapsed on mobile away from home. Hidden from
+   `md` up, and on the home / product pages (they run their own headers).
+   Markup: app/components/layout/MobilePageTitleBar.tsx (mounted in ThemeLayout).
+   ========================================================================= */
+
+.mobile-page-title {
+  @apply flex h-12 mb-5 items-center gap-1 border-b border-gray-100 bg-white px-2 md:hidden;
+}
+
+.mobile-page-title__back {
+  @apply -ms-1 inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-gray-700;
+
+  svg {
+    @apply h-5 w-5;
+  }
+}
+
+.mobile-page-title__text {
+  @apply m-0 min-w-0 truncate text-base font-bold text-gray-900;
+}
+
+/* Home + product pages have their own headers / overlay bar. */
+body.product-single .mobile-page-title {
+  @apply hidden;
+}
+
+/* One title on mobile: where a page already renders its own heading in the
+   content, suppress it — the bar above carries the same text.
+     · `#page-main-title` — `ProductListPage` (category / offers / search / tag /
+       brand routes)
+     · `.main-content > h1` on the account pages (orders / profile / wallet /
+       wishlist / notifications — `body.customer-*`) */
+@media (max-width: 767px) {
+  #page-main-title,
+  body[class*='customer-'] .main-content > h1 {
+    @apply hidden;
+  }
+
+  /* Pages that also render a breadcrumb bar right below (`.breadcrumbs` lives in
+     the page content): drop the title bar's bottom gap so the two sit flush. */
+  .app-inner:has(.breadcrumbs) .mobile-page-title {
+    @apply mb-0;
+  }
+}

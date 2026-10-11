@@ -1,0 +1,909 @@
+/* =========================================================================
+   Site header — rebuilt: centered, two rows.
+   Row 1: actions (account · cart · search) — logo — menu button
+   Row 2: store name, description, social links
+   Markup: app/components/layout/Header.tsx + HeaderNav.tsx
+   (mounted via <TwilightProvider layout={ThemeLayout}>).
+   ========================================================================= */
+
+/* `display: contents` so the rows below become direct children of `.app-inner`.
+   That makes `.site-header__bar`'s containing block the full-height page column,
+   so it can stay stuck to the top for the whole scroll (not just the header's
+   own height). The `<header>` element is kept for the banner landmark. */
+.site-header {
+  display: contents;
+}
+
+/* `<SallaSearch>` is a modal and takes no room once loaded, but its SSR
+   skeleton sat in the header flow (36px) until hydration (CLS 0.068). */
+.site-header .s-skeleton-search {
+  display: none;
+}
+
+/* Row 1 — action bar. The ad above it and the intro row below it scroll away
+   normally. Once the page is scrolled past the top, `is-scrolled` (set from
+   Header.tsx) pins the bar with `position: fixed` and shrinks it into a solid,
+   shorter bar — height / background / shadow all transition.
+
+   `.site-header__bar-outer` reserves the bar's un-scrolled height in the flow,
+   so when the bar switches to `fixed` (and leaves the flow) the content below
+   it stays put instead of jumping up by a bar-height. */
+.site-header__bar-outer {
+  @apply min-h-[72px] lg:min-h-[88px];
+}
+
+.site-header__bar {
+  @apply z-40 border-b border-transparent;
+  transition:
+    background-color 0.25s ease,
+    border-color 0.25s ease,
+    box-shadow 0.25s ease;
+
+  &.is-scrolled {
+    @apply fixed inset-x-0 top-0 bg-white border-gray-100 shadow-sm;
+  }
+}
+
+/* Columns follow the document direction:
+   LTR → actions | logo | menu   ·   RTL → menu | logo | actions */
+.site-header__bar-inner {
+  @apply grid grid-cols-[1fr_auto_1fr] items-center gap-4 min-h-[72px] lg:min-h-[88px];
+  transition: min-height 0.25s ease;
+}
+
+.site-header__bar.is-scrolled .site-header__bar-inner {
+  @apply min-h-[56px] lg:min-h-[64px];
+}
+
+.site-header__nav-toggle {
+  @apply flex items-center gap-1.5 lg:gap-4 justify-self-start;
+}
+
+.site-header__actions {
+  @apply flex items-center sm:gap-1.5 lg:gap-4 justify-self-end;
+}
+
+/* Phones: the bottom nav (`mobile-bottom-bar.scss`) carries navigation, so the
+   header is pared right back on the home page — logo + menu + search only, no
+   cart / user menu — and hidden on every other page. Keyed on
+   `.site-header--home` (`Header.tsx`, route match — present in the SSR HTML),
+   not `body.index`, which the engine only adds after hydration.
+
+   "Hidden" collapses the bar rather than `display: none`-ing the whole
+   `.site-header`: the `<salla-user-menu>` lives in there, and the bottom nav's
+   Account tab opens its (position: fixed) bottom sheet by clicking its trigger.
+   The opened dropdown re-asserts `visibility` and sits fixed, so it escapes. */
+@media (max-width: 767px) {
+  /* `.site-header--product` (`Header.tsx`) covers the same case from route
+     match state instead of the `body` route class — during a pending
+     navigation *into* the product page the body class can still read the
+     previous route for a moment, leaving this collapse un-applied until it
+     catches up. */
+  .site-header:not(.site-header--home),
+  .site-header--product {
+    .site-header__ad,
+    .site-header__intro {
+      display: none;
+    }
+
+    .site-header__bar-outer {
+      min-height: 0;
+    }
+
+    .site-header__bar {
+      height: 0;
+      overflow: hidden;
+      visibility: hidden;
+    }
+  }
+
+  /* The bottom nav's Categories tab already opens this same drawer
+     (MobileBottomBar.tsx → HeaderNav), so the header's own trigger is a
+     redundant second way to do it. Only the home page actually shows the bar
+     on mobile to begin with (every other route collapses it above); plain
+     `display: none` is fine here, unlike the dropdown below -- nothing about
+     this trigger needs to stay reachable off-screen. */
+  .site-header__nav-toggle button{
+    display: none;
+  }
+
+  /* Home: the bottom nav owns cart + account. Drop the cart icon; keep the
+     user-menu mounted (its bottom sheet still opens from the Account tab) but
+     take it out of the visible bar. No `opacity`/`display:none` — either would
+     also kill the position:fixed dropdown. */
+  .site-header--home .site-header__actions salla-cart-summary {
+    display: none;
+  }
+
+  .site-header--home .site-header__actions salla-user-menu {
+    position: absolute;
+    width: 0;
+    height: 0;
+    overflow: hidden;
+    visibility: hidden;
+  }
+}
+
+.header-action {
+  @apply inline-grid place-items-center w-10 h-10 rounded-full text-gray-700 transition-colors hover:bg-gray-100 hover:text-primary;
+
+  /* Size the action-button icons only — not the icons inside the user-menu
+     dropdown items, which keep their own (smaller) size. */
+  svg:not(.s-user-menu-dropdown-item *) {
+    @apply w-6 h-6;
+  }
+}
+
+/* CSS burger — top bar hugs the inline-end at 3/4 width, bottom bar hugs the
+   inline-start at 3/4, middle bar full width. On hover or keyboard focus the
+   short bars grow inward to full width (staggered cascade). Colour follows
+   `currentColor`, so it picks up `.header-action:hover`. */
+.site-header__burger {
+  @apply relative block h-5 w-5;
+
+  span {
+    @apply absolute h-0.5 rounded-full;
+    /* `bg-opacity-*` needs a channel color; `currentColor` has no alpha slot,
+       so mix the transparency in (still follows `.header-action:hover`). */
+    background-color: color-mix(in srgb, currentColor 80%, transparent);
+    transition: width 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  span:nth-child(1) {
+    top: 0;
+    inset-inline-end: 0;
+    width: 70%;
+    transition-delay: 0.06s;
+  }
+
+  span:nth-child(2) {
+    top: 7px;
+    inset-inline: 0;
+    width: 100%;
+    transition-delay: 0.03s;
+  }
+
+  span:nth-child(3) {
+    top: 14px;
+    inset-inline-start: 0;
+    width: 70%;
+    transition-delay: 0s;
+  }
+}
+
+.header-action:hover .site-header__burger span,
+.header-action:focus-visible .site-header__burger span {
+  width: 100%;
+}
+
+/* The user-menu web component wraps its avatar in a padded trigger button;
+   drop the padding so it lines up with the other 40px action icons. */
+.site-header__actions .s-user-menu-trigger {
+  @apply p-0 bg-transparent border-none;
+}
+
+/* The user menu's hydration wrapper div, as a row: a button an app adds beside the menu stays on the line. */
+.site-header__actions > div:has(> salla-user-menu) {
+  @apply flex items-center;
+}
+
+/* Like the other header icons, without Twilight's outline; apps reuse this class for their own buttons. */
+.site-header__actions .s-user-menu-login-btn {
+  @apply border-none text-gray-700 transition-colors hover:bg-gray-100 hover:text-primary;
+}
+
+/* Desktop: with `relativeDropdown` the panel is positioned against the
+   component; anchor it under the avatar (inline-end edge) so it opens on the
+   same side as the trigger. */
+@media (min-width: 768px) {
+  .site-header__actions salla-user-menu {
+    @apply relative;
+  }
+
+  .site-header__actions .s-user-menu-dropdown {
+    @apply absolute top-full inset-x-auto;
+    inset-inline-end: 0;
+  }
+}
+
+/* Below `md` the `<salla-user-menu>` dropdown becomes a bottom sheet. The web
+   component ships no CSS of its own, so the theme owns the whole thing: a
+   fixed, full-bleed `.s-user-menu-toggler` layer carries a tinted backdrop
+   (its `::before`) and the sheet itself (`.s-user-menu-dropdown`), pinned to
+   the bottom with a grab handle, rounded top and capped height. `.opened`
+   (toggled by the component) makes the layer interactive, fades the backdrop
+   in and slides the sheet up. Matches the shared `<BottomSheet>`: off-screen
+   `translateY`, no scale / opacity fade on the panel, backdrop-only tint.
+
+   The sheet stays mounted and just parks off-screen when closed — with
+   `pointer-events: none` on the layer it's fully inert, so no `visibility`
+   juggling is needed. `visibility: visible` is set explicitly because the
+   `salla-user-menu` host is `visibility: hidden` on the home page (it's pulled
+   out of the visible bar there — see above). */
+@media (max-width: 767px) {
+  .site-header__actions .s-user-menu-toggler {
+    @apply fixed inset-0 z-[210];
+    pointer-events: none;
+    visibility: visible;
+
+    /* backdrop */
+    &::before {
+      content: '';
+      @apply absolute inset-0 bg-black/0;
+      transition: background-color 0.3s ease;
+    }
+
+    &.opened {
+      pointer-events: auto;
+
+      &::before {
+        @apply bg-black/50;
+      }
+    }
+  }
+
+  .site-header__actions .s-user-menu-dropdown {
+    @apply absolute inset-x-0 bottom-0 max-h-[85vh] overflow-y-auto overscroll-contain rounded-t-2xl bg-white shadow-2xl;
+    /* clear the mobile bottom bar, which sits on top (z-220) */
+    padding-bottom: calc(76px + env(safe-area-inset-bottom));
+    transform: translateY(100%);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+    &::before {
+      content: '';
+      @apply mx-auto mt-2.5 block h-1 w-10 rounded-full bg-gray-300;
+    }
+  }
+
+  .s-user-menu-toggler.opened .s-user-menu-dropdown {
+    transform: translateY(0);
+  }
+}
+
+.site-header__brand {
+  @apply flex items-center justify-self-center;
+
+  img {
+    @apply h-12 w-auto max-w-[160px] object-contain;
+    transition: height 0.25s ease;
+  }
+}
+
+.site-header__bar.is-scrolled .site-header__brand img {
+  @apply h-9;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .site-header__bar,
+  .site-header__bar-inner,
+  .site-header__brand img,
+  .site-header__burger span,
+  .site-nav-drawer,
+  .site-nav-drawer__foot,
+  .site-nav-drawer__back {
+    transition: none;
+  }
+
+  .site-nav-drawer__foot {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Row 2 — store intro */
+.site-header__intro-inner {
+  @apply flex flex-col items-center gap-3 py-5 text-center;
+}
+
+.site-header__intro-title {
+  @apply text-lg font-semibold text-gray-900;
+}
+
+.site-header__intro-text {
+  @apply max-w-xl text-base leading-6 text-gray-500;
+}
+
+/* Loaded heights, reserved from SSR: the social skeleton is 40px and the element is
+   empty until hydrated; contacts mirror `.s-contacts-header` (hidden below 1024px). */
+.site-header__social-slot.has-links {
+  min-height: 48px;
+}
+
+.site-header__social-slot:not(.has-links) .s-skeleton-wrapper {
+  display: none;
+}
+
+.site-header__contacts-slot {
+  display: none;
+
+  @media (min-width: 1024px) {
+    display: block;
+
+    &.has-contacts {
+      min-height: 16px;
+    }
+  }
+}
+
+.site-header__social .s-social-list {
+  @apply flex items-center gap-3;
+}
+
+.site-header__social .s-social-link a {
+  @apply inline-grid place-items-center w-12 h-12 rounded-full text-primary transition-colors border-none;
+  /* primary at 5% — the `primary` token is a hex var, so the `/5` opacity
+     modifier can't be used; mix it down instead. */
+  background-color: color-mix(in srgb, var(--color-primary) 5%, transparent);
+
+  svg {
+    @apply w-5 h-5 fill-current;
+  }
+
+  &:hover .s-social-icon {
+    @apply bg-transparent text-primary;
+  }
+}
+
+.site-header__social a:hover .s-social-icon {
+  @apply bg-primary text-white;
+}
+
+/* Nav drawer — slide-in side panel (markup: app/components/layout/HeaderNav.tsx) */
+.site-nav-drawer-root {
+  @apply fixed inset-0 z-[200];
+  pointer-events: none;
+
+  &.is-open {
+    pointer-events: auto;
+  }
+}
+
+.site-nav-drawer__backdrop {
+  @apply absolute inset-0 bg-black/50;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+
+  .site-nav-drawer-root.is-open & {
+    opacity: 1;
+  }
+}
+
+.site-nav-drawer {
+  /* Miller columns: a wide root column of parents, narrower child columns.
+     `--visible-children` child columns sit beside the root at once; deeper ones
+     shift the track into view. `--col-count` is set from the component. */
+  --root-col-w: min(400px, 90vw);
+  --child-col-w: min(230px, 76vw);
+  --visible-children: 1;
+  --shown-children: max(0, min(var(--col-count, 1) - 1, var(--visible-children)));
+  --extra-children: max(0, (var(--col-count, 1) - 1) - var(--visible-children));
+
+  @apply absolute inset-y-0 flex flex-col overflow-hidden bg-white shadow-2xl;
+  inset-inline-start: 0;
+  width: min(96vw, calc(var(--root-col-w) + var(--child-col-w) * var(--shown-children)));
+  transform: translateX(-100%);
+  transition:
+    transform 0.32s cubic-bezier(0.4, 0, 0.2, 1),
+    width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: transform;
+
+  @media (min-width: 768px) {
+    --visible-children: 2;
+  }
+
+  [dir='rtl'] & {
+    transform: translateX(100%);
+  }
+
+  .site-nav-drawer-root.is-open & {
+    transform: translateX(0);
+  }
+}
+
+.site-nav-drawer__head {
+  @apply flex shrink-0 items-center justify-between px-4 py-8;
+}
+
+.site-nav-drawer__head-start {
+  @apply flex min-w-0 items-center;
+}
+
+.site-nav-drawer__brand {
+  @apply inline-flex items-center;
+
+  img {
+    @apply h-10 w-auto max-w-[150px] object-contain;
+  }
+}
+
+.site-nav-drawer__close {
+  @apply inline-flex h-9 w-9 items-center justify-center rounded-full text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-800;
+
+  svg {
+    @apply h-5 w-5;
+  }
+}
+
+/* Miller columns: a horizontal track of fixed-width columns. When more child
+   columns exist than fit, the track shifts by `--extra-children` child widths
+   to keep the newest in view (RTL flips the direction). */
+.site-nav-drawer__viewport {
+  @apply flex-1 overflow-hidden;
+}
+
+.site-nav-drawer__track {
+  @apply flex h-full;
+  width: max-content;
+  transition: transform 0.32s cubic-bezier(0.4, 0, 0.2, 1);
+  transform: translateX(calc(var(--child-col-w) * var(--extra-children) * -1));
+
+  [dir='rtl'] & {
+    transform: translateX(calc(var(--child-col-w) * var(--extra-children)));
+  }
+}
+
+.site-nav-drawer__panel {
+  @apply h-full shrink-0 grow-0 overflow-y-auto py-2;
+  flex-basis: var(--child-col-w);
+
+  /* Level 0 — the parent list — is the wide column. */
+  &:first-child {
+    flex-basis: var(--root-col-w);
+  }
+
+  /* Column separator — a soft gray hairline (not `currentColor`, which a
+     `border-inline-start` shorthand would leave it as). */
+  & + & {
+    @apply border-s border-s-gray-100;
+  }
+}
+
+/* Phones: the side panel becomes a bottom sheet — slides up from the bottom,
+   rounded top, grab handle, capped height — like the filters / user-menu
+   sheets. One full-width column pushes one level per tap (the back control
+   walks it out). */
+@media (max-width: 767px) {
+  .site-nav-drawer {
+    --mobile-col-w: 100vw;
+    inset-block: auto 0;
+    inset-inline: 0;
+    width: auto;
+    max-height: 85vh;
+    border-start-start-radius: 1rem;
+    border-start-end-radius: 1rem;
+    transform: translateY(100%);
+    /* the mobile bottom bar overlays the sheet (z-220); pad so the footer bar
+       and the last links clear it */
+    padding-bottom: calc(76px + env(safe-area-inset-bottom));
+
+    /* grab handle */
+    &::before {
+      content: '';
+      @apply mx-auto mb-1 mt-2.5 block h-1 w-10 shrink-0 rounded-full bg-gray-300;
+    }
+  }
+
+  /* higher specificity than the base `[dir='rtl'] &` (translateX) — keep the
+     closed sheet parked below the viewport in both directions */
+  [dir='rtl'] .site-nav-drawer {
+    transform: translateY(100%);
+  }
+
+  .site-nav-drawer-root.is-open .site-nav-drawer {
+    transform: translateY(0);
+  }
+
+  .site-nav-drawer__head {
+    @apply py-3;
+  }
+
+  .site-nav-drawer__panel,
+  .site-nav-drawer__panel:first-child {
+    flex-basis: var(--mobile-col-w);
+  }
+
+  /* Scroll the whole column stack from the viewport, not each panel: the panels'
+     `height: 100%` can't resolve against the sheet's `max-height` (no definite
+     height), so the per-panel `overflow-y: auto` never engaged and long menus
+     were just clipped. Mirror the shared `<BottomSheet>`: one `flex-1`,
+     `min-h-0`, `overflow-y: auto` scroller, content-sized panels inside. */
+  .site-nav-drawer__viewport {
+    @apply min-h-0 overflow-y-auto overflow-x-hidden overscroll-contain;
+  }
+
+  .site-nav-drawer__track {
+    height: auto;
+    min-height: 100%;
+    transform: translateX(calc(var(--mobile-col-w) * (var(--col-count, 1) - 1) * -1));
+
+    [dir='rtl'] & {
+      transform: translateX(calc(var(--mobile-col-w) * (var(--col-count, 1) - 1)));
+    }
+  }
+
+  .site-nav-drawer__panel {
+    height: auto;
+    min-height: 100%;
+    overflow: visible;
+  }
+}
+
+.site-nav-drawer__list {
+  @apply px-4;
+
+  li {
+    opacity: 0;
+    transform: translateY(10px);
+    transition:
+      opacity 0.35s ease,
+      transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  &.is-in li {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.site-nav-drawer__link {
+  @apply flex w-full items-center justify-between gap-3 py-3.5 text-start text-base font-medium text-gray-800 transition-colors hover:text-primary;
+
+  /* The parent whose column is currently open — the visible trail. */
+  &.is-active {
+    @apply font-semibold text-primary underline decoration-1 underline-offset-4;
+  }
+
+  &.is-active .site-nav-drawer__chevron {
+    @apply text-primary;
+  }
+}
+
+/* Root-level menu image (round thumbnail ahead of the label). */
+.site-nav-drawer__label {
+  @apply flex min-w-0 items-center gap-3;
+}
+
+.site-nav-drawer__link-img {
+  @apply block h-10 w-10 max-w-none shrink-0 rounded-full object-cover;
+}
+
+/* Same box as `.site-nav-drawer__link-img`, with nothing drawn: holds an
+   image-less root row's title at the same start position as its siblings
+   that do have one. See NavLabel in HeaderNav.tsx. */
+.site-nav-drawer__link-img-placeholder {
+  @apply block h-10 w-10 max-w-none shrink-0;
+}
+
+.site-nav-drawer__chevron {
+  @apply h-4 w-4 shrink-0 text-gray-400;
+
+  [dir='rtl'] & {
+    transform: scaleX(-1);
+  }
+}
+
+/* Always in the DOM so the logo shifts smoothly (rather than jumping) when a
+   child column is opened: collapsed to zero width at the root, expands with
+   `.is-visible`. */
+.site-nav-drawer__back {
+  @apply -ms-1 inline-flex h-9 shrink-0 items-center justify-center overflow-hidden rounded-full text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-800;
+  width: 0;
+  margin-inline-end: 0;
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    width 0.28s cubic-bezier(0.4, 0, 0.2, 1),
+    margin 0.28s cubic-bezier(0.4, 0, 0.2, 1),
+    opacity 0.2s ease,
+    background-color 0.2s ease,
+    color 0.2s ease;
+
+  &.is-visible {
+    width: 2.25rem;
+    margin-inline-end: 0.5rem;
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  svg {
+    @apply h-5 w-5 shrink-0;
+
+    [dir='rtl'] & {
+      transform: scaleX(-1);
+    }
+  }
+}
+
+.site-nav-drawer__browse-all {
+  @apply block py-3 text-sm font-semibold text-primary transition-colors hover:opacity-80;
+}
+
+/* Sticky footer bar — language / currency triggers (markup: HeaderNav `NavFooter`).
+   `shrink-0` so it always sits at the drawer's bottom while the columns scroll.
+   Fades + slides up once `is-in` is set — the 0.42s delay lets the root links
+   finish staggering first. */
+.site-nav-drawer__foot {
+  @apply flex shrink-0 flex-wrap items-center justify-center gap-x-3 gap-y-1 px-4 py-3.5;
+  opacity: 0;
+  transform: translateY(10px);
+  transition:
+    opacity 0.3s ease,
+    transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+  &.is-in {
+    opacity: 1;
+    transform: none;
+    /* delay only on the way in, so it lands after the links have staggered */
+    transition-delay: 0.42s;
+  }
+}
+
+.site-nav-drawer__loc {
+  @apply inline-flex items-center gap-1.5 text-sm font-medium text-gray-700 transition-colors hover:text-primary;
+}
+
+.site-nav-drawer__loc-icon {
+  @apply h-[18px] w-[18px] shrink-0 text-gray-400;
+}
+
+.site-nav-drawer__loc-caret {
+  @apply h-4 w-4 shrink-0 text-gray-400;
+}
+
+.site-nav-drawer__foot-sep {
+  @apply h-4 w-px shrink-0 bg-gray-200;
+}
+
+/* Cart summary bubble */
+.s-cart-summary-total {
+  @apply hidden;
+}
+
+.s-cart-summary-count {
+  /* Smaller than the plugin default (h-5 w-5, p-1) so it clears the bag icon;
+     `top/right: auto` cancel the plugin's corner anchor so the values below win. */
+  @apply h-4 w-4 p-0 text-[10px] leading-none -bottom-1.5 left-1/2 -translate-x-1/2 bg-red-700;
+  top: auto !important;
+  right: auto;
+}
+
+/* =========================================================================
+   "Default" header layout (`header_layout: default`) — desktop (`lg+`) only.
+   Adds a top bar (footer menu + language / branch / currency switchers) and a
+   row of logo · horizontal `<salla-menu>` mega-menu · action icons. Below `lg`
+   everything here is hidden and the shared mobile bar (the unprefixed rules
+   above) takes over unchanged. Markup: Header.tsx + HeaderTopnav.tsx.
+   ========================================================================= */
+
+/* Zero-height flow marker at the main bar's resting position. `Header.tsx`
+   watches it with an IntersectionObserver: once it leaves the top of the
+   viewport the bar pins. Keeps its place when the bar goes `position: fixed`
+   (`__bar-outer` reserves the height), so there's no pin/unpin flicker. */
+.site-header__sticky-sentinel {
+  @apply h-0;
+}
+
+/* --- top bar ----------------------------------------------------------- */
+.site-header__topnav {
+  @apply hidden border-b border-gray-100 bg-white text-xs text-gray-500 lg:block;
+}
+
+.site-header__topnav-inner {
+  @apply flex min-h-[40px] items-center justify-between gap-6;
+}
+
+/* `<salla-menu topnav>` renders `.s-menu-topnav-list` — a plain row of links. */
+.site-header__topnav-menu {
+  @apply min-w-0;
+
+  .s-menu-topnav-list {
+    @apply flex flex-wrap items-center gap-x-5 gap-y-1;
+  }
+
+  a {
+    @apply whitespace-nowrap text-gray-500 transition-colors hover:text-primary;
+  }
+}
+
+.site-header__topnav-actions {
+  @apply flex shrink-0 items-center gap-1;
+}
+
+.site-header__topnav-action {
+  @apply inline-flex items-center gap-1.5 rounded-full px-2 py-1 text-gray-600 transition-colors hover:bg-gray-50 hover:text-primary;
+}
+
+.site-header__topnav-action + .site-header__topnav-action {
+  @apply relative;
+
+  &::before {
+    content: '';
+    @apply absolute inset-y-1.5 w-px bg-gray-200;
+    inset-inline-start: -2px;
+  }
+}
+
+.site-header__topnav-action-label {
+  @apply max-w-[10rem] truncate font-medium;
+}
+
+.site-header__topnav-icon {
+  @apply h-4 w-4 shrink-0 text-gray-400;
+}
+
+.site-header__topnav-caret {
+  @apply h-3 w-3 shrink-0 text-gray-400;
+}
+
+/* `topnav_is_dark` setting: the engine adds `topnav-is-dark` to <body>. */
+body.topnav-is-dark .site-header__topnav {
+  @apply border-gray-300/10 bg-dark text-gray-300;
+
+  .site-header__topnav-menu a,
+  .site-header__topnav-action,
+  .site-header__topnav-icon,
+  .site-header__topnav-caret {
+    @apply text-gray-300;
+  }
+
+  .site-header__topnav-menu a,
+  .site-header__topnav-action {
+    @apply hover:opacity-80;
+  }
+
+  .site-header__topnav-action {
+    @apply hover:bg-gray-100/[0.15];
+  }
+
+  .site-header__topnav-action + .site-header__topnav-action::before {
+    @apply bg-gray-300/10;
+  }
+}
+
+/* The lite layout has no top bar, so the setting darkens its only bar. */
+body.topnav-is-dark .site-header--lite .site-header__bar {
+  @apply bg-dark;
+
+  &.is-scrolled {
+    @apply bg-dark border-gray-300/10;
+  }
+
+  .header-action,
+  .s-cart-summary-wrapper {
+    @apply text-gray-300 hover:bg-gray-100/[0.15] hover:text-gray-300 hover:opacity-80;
+  }
+}
+
+/* --- main row (logo · menu · actions) --------------------------------- */
+@media (min-width: 1024px) {
+  /* burger → out, logo pins to the start, the mega-menu fills the middle. */
+  .site-header--default .site-header__nav-toggle {
+    @apply hidden;
+  }
+
+  .site-header--default .site-header__bar-inner {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    gap: 2rem;
+  }
+
+  .site-header--default .site-header__brand {
+    @apply justify-self-start;
+  }
+
+  /* The store-name / description / social row isn't part of this layout. */
+  .site-header--default .site-header__intro {
+    @apply hidden;
+  }
+
+  /* `<salla-menu source="header">` ships **no** desktop styling of its own
+     (`:host{display:block}` only) — just class hooks. So the whole mega-menu is
+     theme-owned here: a centred row of `.s-menu-root-level` items, each with an
+     absolutely-positioned `.s-menu-sub-menu` panel that reveals on hover /
+     focus, and nested panels that fly out to the inline-end side.
+     DOM: `nav.mobile-menu > ul.main-menu > li.s-menu-desktop-item
+          (.s-menu-root-level | .s-menu-non-root-level, +.s-menu-has-children,
+           +.s-menu-mega-menu) > a + div.s-menu-sub-menu > ul > li…`. */
+  .site-header--default .site-header__mainmenu {
+    @apply flex min-w-0 items-stretch;
+
+    salla-menu,
+    .mobile-menu {
+      @apply flex w-full min-w-0 items-center justify-center;
+    }
+
+    .mobile-menu,
+    .main-menu {
+      margin: 0 #{!important};
+      padding: 0 #{!important};
+    }
+
+    .main-menu {
+      @apply flex flex-wrap items-center justify-center gap-x-0.5;
+    }
+
+    /* drawer-only bits the component also renders into this nav */
+    .s-menu-mobile-item,
+    .close-mobile-menu {
+      display: none #{!important};
+    }
+
+    /* top-level item — centred in the row, positioning context for its panel */
+    .s-menu-root-level {
+      display: flex #{!important};
+      @apply relative my-0 items-center;
+    }
+
+    .s-menu-root-level > a {
+      @apply inline-flex items-center gap-1 whitespace-nowrap rounded-md px-3 py-2 text-sm font-medium text-gray-700 transition-colors hover:text-primary;
+    }
+
+    /* rows inside a panel — stacked */
+    .s-menu-non-root-level {
+      @apply relative my-0 block;
+    }
+
+    .s-menu-sub-menu ul {
+      @apply m-0 list-none p-0;
+    }
+
+    .s-menu-sub-menu a {
+      @apply flex items-center justify-between gap-2 whitespace-nowrap rounded-md px-3 py-2 text-sm text-gray-700 transition-colors hover:bg-gray-50 hover:text-primary;
+    }
+
+    /* the panel — hidden until the parent item is hovered / focused */
+    .s-menu-sub-menu {
+      @apply invisible absolute z-40 max-h-[70vh] max-w-[90vw] overflow-y-auto rounded-lg border border-gray-100 bg-white p-1.5 opacity-0 shadow-xl;
+      top: calc(100% + 0.25rem);
+      inset-inline-start: 0;
+      min-width: 14rem;
+      transform: translateY(4px);
+      transition:
+        opacity 0.18s ease,
+        transform 0.18s ease,
+        visibility 0.18s;
+    }
+
+    /* nested panel flies out to the inline-end side, level with its row */
+    .s-menu-sub-menu .s-menu-sub-menu {
+      top: -0.375rem;
+      inset-inline: 100% auto;
+      transform: translateY(0);
+    }
+
+    .s-menu-has-children:hover > .s-menu-sub-menu,
+    .s-menu-has-children:focus-within > .s-menu-sub-menu {
+      @apply visible opacity-100;
+      transform: translateY(0);
+    }
+
+    /* mega panel (category with featured products) — wider, laid out as a row */
+    .s-menu-mega-menu > .s-menu-sub-menu {
+      @apply flex gap-4;
+      min-width: min(48rem, 90vw);
+    }
+
+    .s-menu-products-wrapper {
+      @apply min-w-0 flex-1;
+    }
+
+    /* caret — sallaicons chevron, flips on an open top-level item */
+    .s-menu-has-children > a::after {
+      font-family: 'sallaicons';
+      content: '\e970';
+      @apply ms-1 inline-block text-base leading-none opacity-50 transition-transform;
+    }
+
+    .s-menu-root-level.s-menu-has-children > a::after {
+      content: '\e96e';
+    }
+
+    .s-menu-root-level.s-menu-has-children:hover > a::after {
+      @apply opacity-100;
+      transform: scaleY(-1);
+    }
+  }
+}
+
+.site-header__mainmenu {
+  @apply hidden;
+}

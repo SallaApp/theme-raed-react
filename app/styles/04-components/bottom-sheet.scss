@@ -1,0 +1,70 @@
+/* Bottom sheet — slide-up panel + backdrop.
+   Markup: app/components/common/BottomSheet.tsx. Enter / exit are driven by
+   `.is-open` on `.bottom-sheet-root`; the component keeps it mounted through
+   the exit and flips the class after a forced reflow. */
+.bottom-sheet-root {
+  @apply fixed inset-0 z-[210];
+  pointer-events: none;
+
+  &.is-open {
+    pointer-events: auto;
+  }
+}
+
+.bottom-sheet__backdrop {
+  @apply absolute inset-0 bg-black/50;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+
+  .bottom-sheet-root.is-open & {
+    opacity: 1;
+  }
+}
+
+.bottom-sheet {
+  @apply absolute inset-x-0 bottom-0 flex max-h-[85vh] flex-col rounded-t-2xl bg-white shadow-2xl;
+  padding-bottom: env(safe-area-inset-bottom);
+  transform: translateY(100%);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: transform;
+
+  .bottom-sheet-root.is-open & {
+    transform: translateY(0);
+  }
+
+  /* clear the mobile bottom bar, which sits on top of the sheet (z-220) */
+  // @media (max-width: 767px) {
+  //   padding-bottom: calc(76px + env(safe-area-inset-bottom));
+  // }
+}
+
+.bottom-sheet__handle {
+  @apply mx-auto mt-2.5 h-1 w-10 shrink-0 rounded-full bg-gray-300;
+}
+
+.bottom-sheet__head {
+  @apply flex shrink-0 items-center justify-between px-4 pb-2 pt-2.5;
+}
+
+.bottom-sheet__title {
+  @apply text-base font-bold text-gray-900;
+}
+
+.bottom-sheet__close {
+  @apply inline-flex h-9 w-9 items-center justify-center rounded-full text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-800;
+
+  svg {
+    @apply h-5 w-5;
+  }
+}
+
+.bottom-sheet__body {
+  @apply flex-1 overflow-y-auto overscroll-contain px-4 pb-[4.5rem];
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bottom-sheet__backdrop,
+  .bottom-sheet {
+    transition: none;
+  }
+}

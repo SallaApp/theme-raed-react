@@ -1,0 +1,30 @@
+/*
+ * Global SCSS Variables
+ * Note: CSS custom properties (--color-primary, etc.) should be defined
+ * in the consuming theme's CSS, not here. This allows each theme to customize colors.
+ */
+
+// SCSS Variables (for use within SCSS files)
+$main-color: var(--color-primary);
+$infinte-color: var(--infinte-color);
+$main-text-color: var(--main-text-color);
+
+// Default CSS custom properties (can be overridden by consuming theme)
+:root {
+  // Twilight web components ship their own CSS and read only this token for the
+  // default corner radius; keep it equal to Tailwind's `rounded` for this theme.
+  --s-radius: 16px;
+  --infinte-color: #c9c9c9;
+  --main-text-color: #231f1e;
+  --main-text-color-dark: #2b2d34;
+  --color-text: #7c8082;
+  --bg-gray: #c6c7ce1a;
+  --color-grey: #f5f7f9;
+  --color-light-grey: #eeeeee;
+  
+  /* font-size */
+  --font-sm: 0.8685714286rem;
+  
+  /* plugins */
+  --mm-ocd-width: calc(100% - 51px);
+}

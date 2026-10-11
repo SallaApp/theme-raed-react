@@ -1,0 +1,986 @@
+// Wishlist Product entry
+.product-entry {
+  @apply h-full transition-shadow duration-300 bg-white hover:shadow-default rounded-lg justify-between flex relative;
+
+  &--wishlist {
+    @apply justify-between p-4 flex-col sm:flex-row;
+
+    .product-entry__image {
+      @apply overflow-hidden w-16 h-12 md:w-20 md:h-16 rounded-md;
+    }
+
+    salla-button {
+      @apply flex;
+    }
+  }
+}
+
+.s-comments {
+  &-page {
+    @apply pt-16;
+  }
+
+  &-product {
+    @apply border-y border-gray-200 py-4 md:py-14;
+
+    .s-comments-container {
+      @apply container;
+    }
+  }
+}
+
+// share list
+.share-btns-list {
+  @apply absolute z-10 overflow-hidden opacity-0 top-12 bg-white flex items-center flex-col shadow-huge rounded-3xl;
+
+  a {
+    @apply block p-3 hover:text-primary;
+  }
+}
+
+// cart
+.cart-item {
+  salla-conditional-fields > section {
+    @apply px-0 pt-0 last:mb-0 last:pb-0;
+  }
+}
+
+/* Product layout row (gallery + details, `#product-<id>`). When the breadcrumb
+   trail is missing — disabled in theme settings, or no trail for this product —
+   nothing sits between the header and the row, so add back the space the
+   `.breadcrumbs` nav (`w-full py-5`) would have taken. */
+.product-single .container:not(:has(> .breadcrumbs)) > [id^='product-'] {
+  @apply md:pt-8;
+}
+
+// Digital Rating(SVG)---------------------------
+.s-product-card-content-pie-svg-base {
+  transition: stroke-dashoffset 1s linear;
+  stroke: #e8edf2;
+  stroke-width: 2px;
+  stroke-linecap: round;
+  fill: none;
+}
+
+.s-product-card-content-pie-svg-bar {
+  fill: none;
+  stroke: var(--color-primary);
+  stroke-dasharray: 100 100;
+  stroke-dashoffset: 100;
+}
+
+.s-product-card {
+  &-content-footer {
+    > div {
+      @apply w-full;
+    }
+    salla-button.s-button-wrap {
+      @apply w-full;
+    }
+  }
+  &-content-sub {
+    @apply justify-start gap-3;
+  }
+
+  &-starting-price {
+    @apply w-auto;
+  }
+
+  // Prevent layout shift from lazy-loaded images
+  &-image {
+    aspect-ratio: 1;
+
+    img {
+      @apply w-full h-full;
+    }
+  }
+}
+
+.pie-wrapper {
+  @apply w-[72px] h-[72px] absolute top-2.5 rtl:left-5 ltr:right-5 text-primary flex items-center justify-center;
+
+  .pie-svg {
+    circle {
+      transition: stroke-dashoffset 1s linear;
+      stroke: #e8edf2;
+      stroke-width: 2px;
+      stroke-linecap: round;
+      fill: none;
+
+      &.circle_bar {
+        stroke: var(--color-primary);
+        stroke-dasharray: 100 100;
+        stroke-dashoffset: 100;
+      }
+    }
+  }
+
+  span {
+    display: block;
+    font-size: var(--font-xsm);
+    color: var(--color-text);
+    text-align: center;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    line-height: 1;
+    font-size: var(--font-xsm);
+
+    b {
+      font-size: var(--font-md) !important;
+      margin-bottom: 3px;
+      color: var(--color-primary);
+    }
+  }
+}
+
+/*
+  Product-card enhancements
+  - wishlist button is moved into the footer row (by app/components/product/ProductCard.tsx)
+  - add-to-cart is solid + pill-rounded
+  - content order becomes: subtitle, title, price
+*/
+.s-product-card {
+  /* `ProductCard.tsx` relocates the wishlist button into the footer, but only
+     from a mount effect — every vertical card briefly shows the engine's
+     default image-corner button first (a visible flash on every page with
+     product cards, since every current usage goes through that wrapper).
+     `.s-product-card-vertical` is the engine's own class, present in the
+     first paint, so hiding the image-overlay copy here (rather than behind
+     the JS-added `is-theme-card`) removes the flash instead of just timing
+     it differently. */
+  .s-product-card-vertical .s-product-card-image > .s-product-card-wishlist-btn {
+    display: none;
+  }
+
+  .s-product-card-content-footer {
+    @apply flex items-center gap-1.5;
+
+    /* the add-to-cart fills the row — the deferred loader wraps it in a bare
+       <div>, so target that (and the element itself, once hydrated). */
+    > div,
+    > salla-add-product-button {
+      @apply w-full flex-1 min-w-0;
+    }
+
+    /* wishlist stays a fixed 36px circle, however the engine wraps it
+       (bare button on the grid card, `.s-button-wrap` on the list card) */
+    > .s-product-card-wishlist-btn,
+    > .s-button-wrap {
+      @apply w-9 flex-none;
+    }
+
+    .s-product-card-wishlist-btn {
+      position: static;
+      inset: auto;
+      opacity: 1;
+      @apply w-9 h-9 shrink-0 m-0;
+
+      button,
+      .s-button-btn,
+      .s-button-element {
+        @apply w-9 h-9 min-w-0 m-0 p-0 flex-none inline-flex items-center justify-center rounded-full border border-gray-200 bg-white;
+      }
+
+      svg {
+        @apply w-4 h-4;
+      }
+    }
+
+    /* list-card wishlist arrives wrapped in `.s-button-wrap` (a *direct* footer
+       child — the add-to-cart's own `.s-button-wrap` is nested, so `>` keeps
+       this off it) */
+    > .s-button-wrap .s-button-icon {
+      @apply w-9 h-9 min-w-0 m-0 p-0 inline-flex items-center justify-center rounded-full border border-gray-200 bg-white;
+
+      svg {
+        @apply w-4 h-4;
+      }
+    }
+
+    /* solid, pill-rounded add-to-cart, matched to the wishlist button height
+       (the engine renders it as fill="outline") */
+    .s-button-btn {
+      @apply h-9 bg-primary text-primary-reverse border-primary rounded-full;
+
+      &:hover {
+        @apply bg-primary-d text-primary-reverse border-primary-d opacity-100;
+      }
+
+      svg {
+        @apply fill-current;
+      }
+    }
+  }
+
+  /* subtitle → title → price */
+  .s-product-card-content-main {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .s-product-card-content-subtitle {
+    // order: -1;
+    @apply text-xs sm:text-sm mb-1;
+  }
+
+  .s-product-card-content-title {
+    @apply mb-1 text-base;
+  }
+}
+
+/*
+  Product-card image ratio — square / landscape / portrait.
+  `ThemeLayout` puts `product-card-img--<ratio>` on `.app-inner` from the
+  `product_card_img_ratio` theme setting.
+
+  Uses the padding-bottom % technique (like theme Matjar) rather than the
+  `aspect-ratio` property: the image box height comes from `padding-bottom`, and
+  everything inside — the `<a>`, the engine `<Image>` wrapper (which carries its
+  own inline `aspect-ratio`), the `<picture>` and the `<img>` — is stretched
+  absolutely to fill it.
+*/
+[class*='product-card-img--'] .s-product-card-vertical .s-product-card-image {
+  flex: 0 0 auto;
+  position: relative;
+  overflow: hidden;
+  height: 0;
+  aspect-ratio: auto;
+
+  > a {
+    position: absolute;
+    inset: 0;
+    display: block;
+  }
+
+  [style*='aspect-ratio'] {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    aspect-ratio: auto !important;
+  }
+
+  picture {
+    display: block;
+  }
+
+  picture,
+  img {
+    width: 100%;
+    height: 100%;
+  }
+}
+
+.product-card-img--square .s-product-card-vertical .s-product-card-image {
+  padding-bottom: 100%;
+}
+.product-card-img--landscape .s-product-card-vertical .s-product-card-image {
+  padding-bottom: 75%;
+}
+.product-card-img--portrait .s-product-card-vertical .s-product-card-image {
+  padding-bottom: 133.3333%;
+}
+
+/* Product page — tighten the title's bottom margin (engine renders it as mb-6) */
+.main-content > h1 {
+  @apply mb-2.5;
+}
+
+/*
+  Product page data column — the SKU / remaining-quantity / availability rows are
+  rendered as padded, rounded white cards. Flatten them so they align with the
+  title / price above.
+*/
+.main-content > div.bg-white,
+.main-content > section.bg-white {
+  padding: 0;
+  border-radius: 0;
+}
+
+salla-gifting {
+  @apply mt-0 #{!important};
+}
+
+.s-product-options-option-container {
+  @apply last:mb-0;
+}
+
+.s-metadata-box,
+.s-gifting-widget .s-list-tile-item {
+  @apply p-0;
+}
+
+/*
+  Product page data column — the engine wraps each block (options, weight,
+  attachments, price, quantity) in a padded, rounded `bg-white` card with its
+  own `mb`. Strip the padding / radius / margin off the children and let the
+  form control the vertical rhythm with a single `gap`.
+*/
+.product-form {
+  @apply mt-6 flex flex-col gap-5;
+
+  > salla-hook:empty {
+    display: none;
+  }
+
+  > section,
+  .s-product-options-wrapper {
+    padding: 0;
+    border-radius: 0;
+    margin-bottom: 0;
+  }
+}
+
+/* The option content is `overflow: auto` by default, which clips the border
+    (and rounded corners) of the option pills (country / digital-card / …) at
+    the container edge. Let them paint outside the box. */
+.s-product-options-option-content { 
+  overflow: visible;
+}
+
+/* Promotion badge — pill on the image corner */
+.s-product-card-promotion-title {
+  top: 0.75rem;
+  inset-inline-start: 0.75rem;
+  inset-inline-end: auto;
+  padding: 0.375rem 0.75rem;
+  border-radius: 9999px;
+  max-width: calc(100% - 1.5rem);
+  @apply bg-red-800 text-white text-[11px] font-semibold leading-none shadow-sm;
+}
+
+/* Add to cart sticky bar */
+@media (max-width: 640px) {
+  .is-sticky-product-bar {
+    /* clear the sticky add-to-cart bar, which sits above the mobile bottom nav
+       (see `mobile-bottom-bar.scss`). More specific than that file's generic
+       `.app-inner` rule so it wins here.
+       190px = nav (52 content + 12 own gap) + 10 breathing room + this bar's own height. */
+    &.product-single .app-inner {
+      padding-bottom: calc(190px + env(safe-area-inset-bottom));
+    }
+
+    .sticky-product-bar {
+      @apply flex flex-wrap flex-col gap-2.5 sm:gap-4 fixed z-[2] bottom-0 p-3 justify-between items-center shadow-[-1px_-2px_9px_0_rgba(0,0,0,0.05)] transition duration-700 delay-500 translate-y-100 opacity-0 ease-elastic;
+      /* Floats inset from the screen edges, matching the bottom nav's own
+         rounded pill (mobile-bottom-bar.scss) rather than running flush edge
+         to edge. */
+      left: 16px;
+      right: 16px;
+      width: auto;
+      border-radius: 1.5rem;
+      /* nav (52 content + 12 own gap) + 10 breathing room above it */
+      bottom: calc(70px + env(safe-area-inset-bottom));
+
+      &__quantity,
+      salla-add-product-button {
+        @apply translate-y-5 opacity-0 transition duration-700 ease-elastic w-full;
+      }
+
+      &__price,
+      .form-label {
+        @apply hidden;
+      }
+
+      &__quantity {
+        salla-quantity-input {
+          @apply w-full;
+          .s-quantity-input-container {
+            @apply w-full;
+          }
+          .s-quantity-input-input {
+            @apply w-[80%];
+          }
+        }
+        @apply m-0 delay-[900ms];
+      }
+
+      salla-add-product-button {
+        @apply w-auto m-0 flex-1 delay-1000;
+      }
+
+      .hydrated & {
+        &,
+        &__quantity,
+        salla-add-product-button {
+          @apply translate-y-0 opacity-100;
+        }
+      }
+    }
+  }
+}
+
+// Tabs fix
+.s-tabs-header * {
+  pointer-events: auto !important;
+}
+.product__description {
+  ul,
+  li {
+    list-style: inherit !important;
+  }
+
+  ul,
+  ol {
+    @apply px-6;
+  }
+
+  ol {
+    list-style: auto !important;
+  }
+
+  a {
+    @apply text-blue-700;
+  }
+}
+
+// 3d Image Viewer ------------------------------
+.model-viewer-wrapper {
+  @apply relative mb-4 md:mb-0 w-full;
+}
+
+.switcher-3d-view {
+  @apply absolute top-5 rtl:left-4 ltr:right-4;
+
+  // .has-calories-badge &{
+  //   @apply top-auto bottom-5;
+  // }
+}
+
+.model-viewer {
+  @apply w-full h-full;
+
+  &__poster {
+    @apply absolute inset-0 bg-contain bg-no-repeat bg-center;
+  }
+}
+
+.s-toggle .s-toggle-switcher-has-text:before {
+  @apply content-[attr(data-switcher-text)] font-bold text-center text-gray-400 text-xs leading-[22px];
+  font-family: arial, serif;
+}
+
+.s-toggle .s-toggle-input:checked + div.s-toggle-switcher-bg-white:before {
+  @apply text-gray-600 border-white bg-white;
+}
+
+// product options file upload component
+.product-option-uploader {
+  .s-file-upload-wrapper {
+    min-height: 120px;
+    .filepond--list-scroller {
+      overflow-y: inherit !important;
+    }
+    .filepond--drop-label {
+      min-height: 120px !important;
+      @apply bg-white cursor-pointer border-dashed rounded-md border border-gray-200;
+    }
+    .product-option-uploader-placholder {
+      @apply flex flex-col justify-center items-center;
+      &-icon {
+        @apply mb-1;
+        i {
+          color: #7c8082;
+          @apply text-xl;
+        }
+      }
+    }
+  }
+}
+
+// centered offer modal width fix
+@media (max-width: 640px) {
+  .s-offer-modal-slider-centered .s-offer-modal-slider-item {
+    max-width: 46% !important;
+  }
+}
+
+.s-product {
+  &-card {
+    &-full-image salla-add-product-button {
+      @apply bg-white rounded;
+    }
+
+    &-wishlist-added i {
+      @apply text-red-500;
+    }
+    &-fit-height.s-product-card-vertical .s-product-card-image {
+      @apply flex-none sm:flex-1;
+    }
+  }
+
+  &-options-colors-wrapper {
+    @apply flex flex-wrap gap-4;
+
+    .s-product-options-colors-item {
+      @apply m-0 rtl:m-0 ltr:m-0 w-auto;
+    }
+  }
+}
+
+// Minimal card
+.s-product-card-minimal .s-product-card-image {
+  @apply rtl:rounded-r ltr:rounded-l;
+}
+
+.s-product-card-sale-price h4,
+.s-product-card-starting-price h4,
+.s-product-card-price {
+  @apply text-lg;
+}
+
+.s-product-card-sale-price span {
+  @apply opacity-50;
+}
+
+.s-product-card-starting-price {
+  @apply justify-start gap-2.5;
+
+  h4 {
+    @apply text-red-800;
+  }
+}
+
+.s-product-card-minimal salla-button.s-product-card-wishlist-btn {
+  @apply rtl:left-2.5 ltr:right-2.5 top-2.5;
+}
+
+/* =========================================================================
+   Product page — mobile. The image slider is the first thing on
+   the page (no breadcrumb, no top gap, edge-to-edge), with a floating bar
+   over it (back · wishlist + share). Dots replace the thumb strip — see
+   `04-components/slider.scss`.
+   ========================================================================= */
+@media (max-width: 767px) {
+  /* the gallery bleeds past the `.container`'s 10px padding to the screen
+     edges; everything else keeps the container inset.
+     `top: 0` cancels the `top-24` utility — it was inert while the column was
+     `position: static`, but now bites because `.sidebar` is `relative` (for
+     the overlay bar).
+
+     Keyed off `.sidebar` itself, not `.product-single` — that's a client-effect
+     body class (`ROUTE_CLASS_MAP`) that lands a tick after the real content's
+     first paint, so the column rendered contained-width first and only snapped
+     to edge-to-edge once the class caught up. `ProductGallery.tsx` (the only
+     thing that renders a `.sidebar`) is exclusively used on the product page,
+     so no route gate is needed here at all. */
+  .sidebar {
+    top: -1px;
+    margin-inline: -10px;
+    width: calc(100% + 20px);
+    max-width: none;
+    padding-bottom: 0;
+  }
+
+  /* Keyed off the product row, not `.product-single`: that body class lands after the
+     first paint, so the breadcrumb showed first and the page jumped up when it hid. */
+  .breadcrumbs:has(~ [id^='product-']) {
+    display: none;
+  }
+
+  /* `#product-<id>` has no top padding here (the `:not(:has(> .breadcrumbs))`
+     rule doesn't fire while the breadcrumb is only hidden), so the image
+     starts at y=0. */
+
+  .product-gallery {
+    /* flat image frame — no card border / radius at the screen edge */
+    .details-slider .s-slider-container {
+      border: 0;
+      border-radius: 0;
+    }
+
+    /* the promo badge shares the inline-start edge with the floating bar's back
+       button — push it below the bar */
+    .details-slider .promotion-title {
+      top: auto;
+      bottom: 3rem;
+      font-size: 0.725rem;
+      padding: 0.25rem 0.5rem !important;
+    }
+
+    /* the loaded slider shows no dots here */
+    .s-skeleton-thumbs-centered {
+      display: none;
+    }
+  }
+
+  /* share + wishlist relocate to the gallery bar. Keyed off the element
+     itself, not `.product-single` — same client-effect body-class lag as
+     `.sidebar` above, so it briefly showed before hiding on every load.
+     `ProductDetails.tsx` (the only thing that renders this) is exclusively
+     used on the product page. */
+  .product-details__title-actions {
+    display: none;
+  }
+
+  /* floating bar over the image — hidden until the client has mounted
+     (`useHydrated`, `ProductGallery.tsx`), then slides down into place
+     instead of popping in wherever hydration happens to land mid-paint. */
+  .product-gallery__bar {
+    position: absolute;
+    inset-inline: 0;
+    top: 0;
+    z-index: 3;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: calc(env(safe-area-inset-top) + 0.75rem) 1rem 0;
+    pointer-events: none;
+    visibility: hidden;
+    opacity: 0;
+    transform: translateY(-100%);
+    /* One-way reveal only (never hides again) — `visibility` just needs to
+       flip to `visible` the instant `.is-visible` lands so the transform /
+       opacity transition is what the eye actually sees animate. */
+    transition:
+      transform 0.5s cubic-bezier(0.22, 1, 0.36, 1),
+      opacity 0.35s ease;
+
+    &.is-visible {
+      visibility: visible;
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      transition: none;
+    }
+  }
+
+  /* Own reveal, independent of `.product-gallery__bar`'s — the back button
+     (its sibling) shows as soon as the bar does, but the wishlist/share
+     actions wait for the slider to actually finish loading (`sliderReady`,
+     the `onAfterInit` event, `ProductGallery.tsx`) rather than just React
+     having mounted, so they don't slide in while the images are still
+     stacking/loading underneath. */
+  .product-gallery__bar-actions {
+    display: inline-flex;
+    gap: 0.5rem;
+    pointer-events: none;
+    visibility: hidden;
+    opacity: 0;
+    transform: translateY(-100%);
+    transition:
+      transform 0.5s cubic-bezier(0.22, 1, 0.36, 1),
+      opacity 0.35s ease;
+
+    &.is-visible {
+      pointer-events: auto;
+      visibility: visible;
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      transition: none;
+    }
+  }
+
+  .product-gallery__bar-btn {
+    @apply relative inline-flex h-10 w-10 items-center justify-center rounded-xl text-gray-800;
+    pointer-events: auto;
+    /* `!important` — the store's Twig CSS otherwise strips the background off
+       `<salla-social-share>` */
+    background-color: #fff !important;
+    box-shadow:
+      0 4px 14px rgb(0 0 0 / 5%),
+      0 1px 3px rgb(0 0 0 / 3%);
+
+    svg {
+      @apply h-5 w-5;
+    }
+
+    i {
+      font-size: 1.15rem;
+    }
+
+    /* `<salla-social-share>` renders `.s-social-share-wrapper` (its own
+       positioning context) around the trigger + the `.s-social-share-list`
+       dropdown — stretch it to the button so the list anchors to the button. */
+    .s-social-share-wrapper {
+      @apply flex h-full w-full items-center justify-center bg-transparent;
+    }
+
+    .s-social-share-btn,
+    button {
+      @apply h-full w-full border-0 bg-transparent p-0 text-inherit justify-center items-center flex;
+    }
+
+    /* drop the list straight below the button (engine pins it `left: 2.5px;
+       top: 3rem`, which floats it off to the side against the tiny wrapper) */
+    .s-social-share-list {
+      inset-inline: 0 auto;
+      inset-block-start: calc(100% + 0.4rem);
+      left: 0;
+      right: auto;
+    }
+  }
+}
+
+// image zooming
+.magnify-wrapper {
+  .img-magnifier-glass {
+    @apply hidden sm:block;
+    position: absolute;
+    z-index: 3;
+    border-radius: 50%;
+    cursor: none;
+    /*Set the size of the magnifier glass:*/
+    width: 300px;
+    height: 300px;
+    opacity: 0;
+    pointer-events: none;
+    transform: scale(0);
+    transition: transform 0.5s ease;
+    box-shadow: inset 0px 0px 30px #949494;
+  }
+  &:hover {
+    .img-magnifier-glass {
+      opacity: 1;
+      pointer-events: initial;
+      transform: scale(1);
+      transition-delay: 0.3s;
+    }
+  }
+}
+
+.s-product-card-content {
+  @apply p-0 pt-5 grow;
+}
+
+// Horizontal card
+.s-product-card-horizontal {
+  .s-product-card-content {
+    @apply mb-0;
+  }
+
+  @media (max-width: 480px) {
+    salla-button.s-product-card-wishlist-btn {
+      @apply absolute bottom-2.5 rtl:-right-12 ltr:-left-12;
+    }
+  }
+
+  salla-progress-bar {
+    @apply flex flex-col grow;
+  }
+}
+
+.s-rating-stars-reviews {
+  @apply text-gray-500;
+}
+
+/* Product details column — shrink the raw 30x32 star SVGs, tighten the row
+   (the engine gives each star `px-0.5` + a 0.5rem wrapper gap), and keep a
+   small gap before the "(N reviews)" text. The reviews section's own stars
+   are handled in `04-components/reviews.scss`. */
+.product-single .main-content salla-rating-stars {
+  /* the store's Twig customization CSS centres the rating row on mobile
+     (`.product-single salla-rating-stars { justify-content: center !important }`);
+     override it — the details column reads inline-start. */
+  @media (max-width: 767px) {
+    justify-content: flex-start !important;
+  }
+
+  .s-rating-stars-wrapper {
+    gap: 1px;
+  }
+
+  .s-rating-stars-btn-star {
+    padding-inline: 0;
+
+    svg {
+      width: 15px;
+      height: 16px;
+    }
+  }
+
+  .s-rating-stars-reviews {
+    margin-inline-start: 6px;
+    @apply text-xs;
+  }
+}
+
+/* The store's Twig customization CSS makes the rating row `display: flex`
+   (block-level) on the product page, so the host stretches to the column width
+   and the stars / "(N reviews)" spread to opposite edges. Force it back to
+   `inline-flex` so it shrinks to its content and reads from the inline-start.
+   `#main-content` keeps this above the injected `!important` rules. */
+#main-content salla-rating-stars,
+#main-content salla-rating-stars .s-rating-stars-wrapper {
+  @apply inline-flex w-auto justify-start #{!important};
+}
+
+#main-content salla-rating-stars .s-rating-stars-reviews {
+  margin-inline: 6px 0 #{!important};
+}
+
+.s-product-card-sale-price {
+  h4 {
+    @apply text-red-800 #{!important};
+  }
+
+  span {
+    @apply text-inherit;
+  }
+}
+
+// filters
+@media (max-width: 1024px) {
+  salla-filters {
+    &,
+    > * {
+      @apply px-5 #{!important};
+    }
+  }
+}
+
+// bank offer corner badge
+#offer-corner-badge {
+  @apply float-left absolute bg-red-600 text-white transform rtl:-rotate-45 ltr:rotate-45 px-12 py-1 h-auto w-auto border-0 m-0 z-1 rtl:top-3 ltr:top-5 rtl:-left-12 ltr:-right-14;
+}
+
+// cart options
+.cart-options {
+  @apply bg-white border-dashed border border-gray-400 rounded-md;
+  salla-product-options {
+    @apply mb-0 pt-0;
+
+    .s-product-options-option:not(div.s-product-options-option-booking) {
+      @apply block #{!important};
+    }
+    &-label {
+      @apply mb-3;
+    }
+
+    .s-form-control {
+      @apply rounded-md border-gray-200;
+    }
+
+    .s-datetime-picker-input {
+      @apply rounded-md border-gray-200;
+    }
+
+    .s-product-options-multiple-options-wrapper {
+      @apply block #{!important};
+    }
+  }
+}
+
+/*
+  The quantity stepper pill lives in `04-components/quantity-stepper.scss` (shared
+  with the cart page). Product page only: cap the width so it sits compact next
+  to the price.
+*/
+.sticky-product-bar__quantity .s-quantity-input-container {
+  @apply w-full max-w-[120px];
+}
+
+/* Product-page add-to-cart — pill-rounded, matching the product-card button */
+.sticky-product-bar__btn {
+  .s-button-btn,
+  .s-button-element {
+    @apply rounded-full;
+  }
+}
+
+/* Buy-now button (`<salla-mini-checkout-widget>`, a shadow-DOM widget from the
+   CDN) — same pill as add-to-cart. The widget reads its radius from this custom
+   property (its own `:host` default is 0.375rem); a value set on the host element
+   from out here wins. */
+.s-add-product-button-main .s-add-product-button-mini-checkout {
+  --salla-fast-checkout-button-border-radius: 9999px;
+}
+
+/* The deferred loader wraps `salla-add-product-button` in a bare <div> that
+   doesn't pick up the button's own `w-full`, so it collapses to the pill's
+   intrinsic width. Stretch that wrapper to the bar; the button inside already
+   fills it (`w-full`, or `flex-1` in the mobile sticky bar). */
+.sticky-product-bar > div:has(> .sticky-product-bar__btn) {
+  @apply w-full;
+}
+
+/* At hydration the SDK wrappers swap their skeleton for the element, empty until the SDK renders
+   it: keep the loaded 40px meanwhile, and in the skeletons, so the bar never shrinks and regrows. */
+.sticky-product-bar {
+  salla-quantity-input:not(.hydrated) {
+    min-height: 40px;
+  }
+
+  salla-add-product-button:not(.hydrated) {
+    display: block;
+    min-height: 40px;
+  }
+
+  .s-skeleton-input,
+  .s-skeleton-button,
+  .s-skeleton-input .s-skeleton-pulse,
+  .s-skeleton-button .s-skeleton-pulse {
+    height: 40px !important;
+  }
+}
+
+/* Price bump — a light pulse when the figure changes (quantity / option
+   updates). Retriggered from React by remounting the price wrapper with a
+   changing `key`; the `.price-bump` class is only added after the first change
+   (see `usePriceBump`), so it never fires on initial load. Only the payable
+   figure (`__now`) pulses — the sale price when on sale, otherwise the regular
+   price; the strike-through original is left still. */
+@keyframes price-bump {
+  0% {
+    transform: scale(1);
+  }
+  30% {
+    transform: scale(1.09);
+  }
+  55% {
+    transform: scale(0.98);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.price-bump .price-bump__now {
+  display: inline-block;
+  transform-origin: center;
+  animation: price-bump 0.42s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .price-bump .price-bump__now {
+    animation: none;
+  }
+}
+
+/* The slider skeleton takes the loaded slider's square and bottom gap (`slider.scss`),
+   so nothing moves when the slider replaces it. */
+.product-gallery .s-skeleton-slider {
+  @apply mb-2.5 md:mb-0;
+}
+
+.product-gallery .s-skeleton-slider-image {
+  height: auto !important;
+  aspect-ratio: 1 / 1;
+}
+
+/* A 3D model first: its slide is the model-viewer's 500px minimum, not a square. */
+.product-gallery--model .s-skeleton-slider-image {
+  height: 500px !important;
+  aspect-ratio: auto;
+}
+
+/* SallaRatingStars' server placeholder is a 100px card; the loaded stars are one 30px row. */
+.product-details__rating .s-skeleton-card {
+  height: 30px;
+  overflow: hidden;
+}
+
+/* ProductGallery's SSR copy of the first image, over the slider skeleton until Swiper is up. */
+.product-gallery__poster {
+  position: absolute;
+  inset-inline: 0;
+  top: 0;
+  z-index: 2;
+}

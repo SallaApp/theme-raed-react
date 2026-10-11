@@ -1,0 +1,69 @@
+/* =========================================================================
+   Product metadata / specs — the engine `<salla-metadata>` renders flat
+   `.s-metadata-box` groups; `ProductMetadata` (app/components/product) makes
+   each one a collapsible accordion by toggling `.is-open` on the box.
+   ========================================================================= */
+
+.product-metadata {
+  .s-metadata-wrapper {
+    @apply block;
+  }
+
+  .s-metadata-box {
+    @apply mb-0;
+  }
+
+  /* header — the click target. `justify-between` puts the name on the
+     inline-start side and the +/− affordance on the inline-end side. */
+  .s-metadata-box-header {
+    @apply flex cursor-pointer select-none items-center justify-between gap-3 py-4 text-base font-bold mb-0;
+    color: #1f2937;
+
+    /* drop the engine's leading list icon */
+    i {
+      @apply hidden;
+    }
+
+    &::after {
+      content: '+';
+      @apply grid h-5 w-5 shrink-0 place-items-center text-lg font-normal leading-none text-gray-400;
+    }
+  }
+
+  .s-metadata-box.is-open > .s-metadata-box-header {
+    @apply border-b border-gray-200;
+
+    &::after {
+      content: '\2212'; /* minus sign */
+    }
+  }
+
+  .s-metadata-row{
+    @apply mb-0;
+  }
+
+  /* rows — collapsed unless the box is open */
+  .s-metadata-box-header ~ .s-metadata-row {
+    display: none;
+  }
+
+  .s-metadata-box.is-open > .s-metadata-row {
+    @apply flex items-center justify-between gap-4 px-2 py-3 text-sm;
+
+    &:nth-child(even) {
+      background: #fafafa;
+    }
+  }
+
+  .s-metadata-row-name {
+    @apply m-0 shrink-0 text-gray-400;
+  }
+
+  .s-metadata-row-value {
+    @apply m-0 text-end text-gray-700;
+
+    a {
+      @apply text-primary underline;
+    }
+  }
+}

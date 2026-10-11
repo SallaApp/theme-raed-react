@@ -1,0 +1,24 @@
+# This starter kit is its own pnpm workspace root, so a scaffolded copy
+# carries these settings with it (pnpm 10+ reads settings here, not .npmrc).
+packages:
+  - '.'
+
+# Salla ships fixes on the beta channel; exempt the scope from pnpm's
+# release-age delay so fresh releases install immediately.
+minimumReleaseAgeExclude:
+  - '@salla.sa/*'
+
+# Skip the pre-run lockfile sweep; run `pnpm install` explicitly when deps change.
+verifyDepsBeforeRun: false
+
+# Build scripts required by the toolchain (vite/esbuild, the SSR runtime, sharp, …).
+allowBuilds:
+  '@parcel/watcher': true
+  '@sentry/cli': true
+  bufferutil: true
+  es5-ext: true
+  esbuild: true
+  protobufjs: true
+  sharp: true
+  utf-8-validate: true
+  workerd: true

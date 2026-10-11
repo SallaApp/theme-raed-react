@@ -1,0 +1,247 @@
+.single-order-header-item{
+  @media (max-width: 768px) {
+    @apply flex justify-between items-center;
+  }
+}
+
+/* Customer/account pages' content area. theme-engine's CustomerLayout (shared
+   by every /account/* route) is the only layout that renders `.profile-header`,
+   so key off that with `:has()` rather than a body class (the engine's
+   route-class map doesn't cover the /account/* routes) or a bare
+   `.main-content` (reused by product/cart/blog pages) or the page-level
+   #main-content ID alone (wraps every page). */
+body:has(.profile-header) {
+  #main-content {
+    @apply bg-gray-50;
+  }
+
+  .store-footer {
+    @apply mt-0;
+  }
+}
+
+/* Digital-content / tracking links on the order-details page — raw legacy
+   `.salla-button`/`.salla-button--small` classes (theme-engine's
+   OrderSinglePage.tsx) with no styles anywhere in this theme. Match the
+   neighboring Print button's look (SallaButton fill="outline" size="small",
+   i.e. .s-button-primary-outline.s-button-small from the shared Tailwind
+   preset) instead of leaving it as a bare link. */
+.salla-button.salla-button--small {
+  /* Matches the shared Tailwind preset's own .s-button-small sizing
+     (text-xs px-4 pb-1.5 pt-1) so this lines up height-for-height with the
+     neighboring Print button (SallaButton size="small") — not a guessed size. */
+  @apply inline-flex items-center rounded-full border px-4 pb-1.5 pt-1 text-xs font-medium transition-colors;
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+
+  &:hover {
+    color: white;
+    background-color: var(--color-primary);
+  }
+
+  .salla-button-text {
+    @apply inline-flex items-center gap-1.5;
+  }
+}
+
+/* Bump both the Print button (.s-button-small, from the shared preset) and
+   the digital-content/tracking buttons up from the preset's default xs size,
+   and force Print to the same rounded-full pill as the digital-content
+   button (the preset's .s-button-small is rounded-sm) — scoped to this row
+   only, not a global .s-button-small override, so it doesn't affect other
+   "small" SallaButton usages elsewhere in the theme. The larger size is
+   desktop-only: an order can carry digital content, a receipt and several
+   tracking links, so on narrow screens keep the compact size and let the
+   actions wrap instead of running past the (overflow-hidden) row. */
+.single-order-header-item {
+  .s-button-small,
+  .salla-button.salla-button--small {
+    @apply rounded-full;
+
+    @media (min-width: 769px) {
+      @apply px-5 py-2.5 text-sm;
+    }
+  }
+
+  @media (max-width: 768px) {
+    @apply flex-wrap gap-y-2 whitespace-normal;
+
+    > div,
+    > div > div {
+      @apply flex-wrap gap-y-2;
+    }
+  }
+}
+
+/* Orders status filter tabs — "All" + one tab per status (markup:
+   theme-engine's account/orders/OrdersPage.tsx, `OrdersFilters`). The engine
+   ships these unstyled on purpose; pill-tab look matches
+   .s-catalog-toolbar__views' selected-state treatment. */
+.s-orders-filters {
+  @apply mb-6 flex flex-wrap items-center gap-2;
+
+  &-item {
+    /* Not `@apply bg-white` — `.main-content > div.bg-white` / `section.bg-white`
+       in product.scss target that utility in a compound selector, and Tailwind's
+       `@apply` carries such rules over onto anything else applying the same
+       utility, silently zeroing this pill's radius/padding. Plain CSS avoids it. */
+    @apply rounded-full border border-gray-200 px-4 py-2 text-sm text-gray-600 transition-colors hover:border-gray-300 hover:text-gray-900;
+    background-color: white;
+
+    &-active {
+      @apply border-primary text-white hover:border-primary hover:text-white;
+      background-color: var(--color-primary);
+    }
+  }
+}
+
+.order-file {
+  .s-button-text {
+    @apply flex gap-2
+  }
+}
+
+/* tags */
+.tag {
+  @apply px-3 pt-0.5 pb-1 inline-block text-sm rounded-2xl border border-gray-200;
+
+  &--primary {
+    @apply text-primary border-primary;
+  }
+}
+
+/* Profile Header section */
+.profile-header {
+  @apply relative lg:h-48 overflow-hidden;
+
+  .breadcrumbs {
+    @screen lg {
+      @apply mt-2.5;
+    }
+
+    a {
+      @apply text-primary-reverse hover:opacity-80;
+    }
+
+    span {
+      @apply text-primary-reverse opacity-80;
+    }
+
+    .arrow {
+      @apply text-primary-reverse opacity-70;
+    }
+  }
+}
+
+.s-file-upload-profile-image .s-file-upload-has-error .filepond--file-status{
+  @apply ltr:-left-1/2 rtl:right-1/2;
+}
+
+
+.rating-header {
+  @apply relative from-primary to-primary-d p-5 text-primary-reverse rounded-md;
+}
+
+/* Profile additional fields */
+.form--user-profile{
+  .s-file-upload-wrapper{
+    min-height: 120px;
+    .filepond--list-scroller{
+      overflow-y: inherit !important;
+    }
+    .filepond--drop-label {
+      min-height: 120px !important;
+      @apply bg-white cursor-pointer border-dashed rounded-md border border-gray-200;
+    }
+    .profile-filepond-placholder{
+      @apply flex flex-col justify-center items-center;
+      &-icon {
+        @apply mb-1;
+        i {
+          color: #7c8082;
+          @apply text-xl;
+        }
+      }
+    }
+
+  }
+}
+
+
+/* 
+* thank you page 
+*/
+.thankyou-block{
+  @apply duration-500 hover:shadow-default flex-1 bg-white p-8 rounded-md mb-6 md:mb-8 flex flex-col items-center justify-center;
+
+  &.sent{
+    @apply text-green-500 font-bold;
+
+    &:before{
+      @apply w-16 h-16 bg-green-100 text-green-500 flex items-center justify-center text-2xl rounded-full mb-2;
+      content: "\ea9d";
+      font-family: 'sallaicons';
+    }
+  }
+}
+
+
+/* 
+* Order rating actions
+*/
+
+.rating-actions{
+  @apply flex items-center gap-2;
+  salla-button {
+    button {
+      @apply rounded mx-0 w-8 h-8 #{!important}
+    }
+  }
+}
+
+/* 
+* Blog single page
+*/
+.blog-single .s-comments-item-user-info-name{
+  @apply mx-0
+}
+/* Wishlist "Share" bar — dropdown (share the list / share specific items) and the
+   selection mode that puts a checkbox on each card. Markup: theme-engine's
+   account/wishlist/WishlistShare.tsx. */
+.s-wishlist-actions-menu {
+  @apply border border-gray-100;
+}
+
+/* The SDK auto-renders its own `<salla-wishlist-actions>` widget into the wishlist
+   page's `customer:wishlist.items.start` hook slot (always, unconditionally -- see
+   WishlistPage.tsx's own comment above that slot). It needs a sibling
+   `<salla-products-list>` web component to do anything, which this page never
+   renders (it uses the React-native `ItemsList` instead), so the widget sits
+   permanently disabled. Hiding it here rather than removing the hook slot itself
+   keeps that slot available for anything else a theme/app registers there -- the
+   SDK always inserts this widget as `#wishlist`'s first child. */
+#wishlist > salla-wishlist-actions {
+  display: none;
+}
+
+.product-entry--wishlist {
+  &.is-selected {
+    @apply ring-2 ring-primary;
+  }
+
+  .s-wishlist-select {
+    @apply h-5 w-5 accent-primary;
+  }
+
+  /* `salla-add-product-button`'s own inner wrapper skips `w-full` whenever the
+     store has fast-checkout enabled (`#fast-checkout-js` present) -- a
+     platform-wide "leave room for the fast-checkout button" behavior (see its
+     own component source, marked there as a temporary fix). Nothing else sits
+     next to it on this card, so on mobile force it back to filling the row
+     next to the small round remove button. */
+  @media (max-width: 767px) {
+    salla-add-product-button > div {
+      @apply w-full;
+    }
+  }
+}

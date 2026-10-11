@@ -1,0 +1,41 @@
+/* `@salla.sa/twilight-components`' `<salla-social>` bundles the wrong glyph
+ * for "snapchat" — an unrelated face/alien shape, not the ghost — in the
+ * pre-release SDK build this store currently falls back to (no
+ * `theme.twilight.version` pinned yet; see `theme-engine`'s
+ * `resolveTwilightSdkUrl`). The asset lives in that external, CDN-hosted
+ * SDK, not this repo, so it can't be corrected at the source here.
+ *
+ * Hide the vendor's wrong inline SVG for that link only and mask-draw the
+ * real Snapchat ghost instead — as a stroke outline (Tabler Icons'
+ * `brand-snapchat`, MIT, https://tabler.io/icons/icon/brand-snapchat) to
+ * match the thin-outline look of the other social icons, not a solid brand
+ * mark.
+ *
+ * Scoped to the `<salla-social>` element itself, not a theme wrapper class,
+ * so it applies wherever `SallaSocial` is rendered (header, footer, ...).
+ */
+salla-social a[title='snapchat'] svg {
+  @apply hidden;
+}
+
+salla-social a[title='snapchat'] .s-social-icon {
+  @apply inline-block;
+  width: 1.25rem;
+  height: 1.25rem;
+  // The mask's fill, not a decorative circle — `currentColor` so it matches
+  // whatever color the sibling icons have in context (primary in the header,
+  // white/light on a dark footer, etc.) instead of a fixed color. `!important`
+  // since some contexts (e.g. the header) have a more specific hover rule
+  // that also sets `background-color` on `.s-social-icon`, which would
+  // otherwise blank the masked ghost out on hover.
+  background-color: currentColor !important;
+  $snapchat-ghost-outline: 'data:image/svg+xml;utf8,<svg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 24 24%27 fill=%27none%27 stroke=%27black%27 stroke-width=%272%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27><path d=%27M16.882 7.842a4.882 4.882 0 0 0 -9.764 0c0 4.273 -.213 6.409 -4.118 8.118c2 .882 2 .882 3 3c3 0 4 2 6 2s3 -2 6 -2c1 -2.118 1 -2.118 3 -3c-3.906 -1.709 -4.118 -3.845 -4.118 -8.118m-13.882 8.119c4 -2.118 4 -4.118 1 -7.118m17 7.118c-4 -2.118 -4 -4.118 -1 -7.118%27/></svg>';
+  mask-image: url('#{$snapchat-ghost-outline}');
+  mask-repeat: no-repeat;
+  mask-position: center;
+  mask-size: contain;
+  -webkit-mask-image: url('#{$snapchat-ghost-outline}');
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  -webkit-mask-size: contain;
+}

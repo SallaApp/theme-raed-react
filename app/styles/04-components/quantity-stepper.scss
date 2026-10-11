@@ -1,0 +1,62 @@
+/*
+  Shared quantity stepper — pill container with a solid-primary "+" circle, a
+  plain centered number and a light-gray "−" circle. DOM order is increase →
+  input → decrease. Used by:
+   - the product page's `<salla-quantity-input>` (host carries `.s-quantity-input`)
+   - the cart's plain-React `CartQuantity` (same class names)
+  Overrides the twilight-tailwind base `.s-quantity-input-*` rules. Icons may be
+  stroke- or fill-based, so both `text-*` and `fill-*` are set.
+*/
+.s-quantity-input {
+  @apply inline-flex;
+
+  .s-quantity-input-container {
+    @apply h-10 items-center justify-between gap-1 rounded-full border border-gray-200 bg-white p-1;
+  }
+
+  .s-quantity-input-button {
+    @apply flex h-8 w-8 shrink-0 items-center justify-center rounded-full border-0 p-0 transition-colors;
+
+    svg {
+      @apply mx-auto h-4 w-4;
+    }
+
+    &:disabled {
+      @apply opacity-40;
+    }
+  }
+
+  .s-quantity-input-increase-button {
+    @apply bg-primary fill-white text-white;
+
+    &:hover:not(:disabled) {
+      @apply bg-primary-d fill-white text-white;
+    }
+  }
+
+  .s-quantity-input-decrease-button {
+    @apply bg-gray-100 fill-gray-500 text-gray-500;
+
+    &:hover:not(:disabled) {
+      @apply bg-gray-200 fill-gray-700 text-gray-700;
+    }
+  }
+
+  .s-quantity-input-input {
+    @apply w-10 border-0 bg-transparent px-1 text-center text-base font-bold text-gray-900 shadow-none;
+
+    &:focus {
+      @apply border-0 shadow-none ring-0;
+    }
+  }
+
+  &[max='1'] {
+    input {
+      @apply pointer-events-none opacity-50;
+    }
+
+    .s-quantity-input-button {
+      @apply cursor-not-allowed;
+    }
+  }
+}

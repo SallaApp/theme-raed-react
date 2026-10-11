@@ -1,0 +1,17 @@
+
+.loyalty{
+  .breadcrumbs {
+    @apply pb-0 pt-4;
+
+    ol{
+      @apply justify-center lg:justify-start;
+    }
+    
+    a,
+    span,
+    .arrow {
+      @apply text-white/90;
+      text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.3);
+    }
+  }
+}

@@ -1,0 +1,42 @@
+/* Breadcrumb — markup: @salla.sa/twilight-theme-engine `BreadcrumbTrail`
+   (`<nav class="breadcrumbs w-full py-5"><ol class="s-breadcrumb-wrapper">…`).
+
+   New UI: a full-bleed bar tinted with the primary colour at 10%. The <nav>
+   renders inside `.container`, so pull it edge-to-edge with the classic
+   full-bleed trick (`.app-inner` has `overflow-x: clip`, so the 100vw can't
+   spawn a scrollbar), then re-constrain the <ol> to the content column with
+   `@apply container` so the crumbs line up with the page below. */
+.breadcrumbs {
+  width: 100vw;
+  max-width: 100vw;
+  margin-inline: calc(50% - 50vw);
+  margin-bottom: 1.25rem;
+  background: color-mix(in srgb, var(--color-primary) 5%, transparent);
+  @apply py-1 sm:py-5;
+
+  .s-breadcrumb-wrapper {
+    @apply container flex flex-wrap items-center gap-y-1;
+  }
+}
+
+/* Account pages (`CustomerLayout`) render the breadcrumb on the gradient
+   profile-header banner with its own styling — keep it out of the new bar. */
+.profile-header .breadcrumbs {
+  width: auto;
+  max-width: none;
+  margin-inline: 0;
+  margin-bottom: 0;
+  padding-block: 1.25rem;
+  background: transparent;
+
+  .s-breadcrumb-wrapper {
+    @apply block m-0 max-w-none p-0;
+  }
+}
+
+/* The base theme sets `.s-breadcrumb-item` to `inline-block`, so the separator
+   `<svg>` (an `inline-flex` span) sits on the text baseline and rides high.
+   Make the item a centered flex row so the chevron lines up with the label. */
+.s-breadcrumb-item {
+  @apply inline-flex items-center;
+}

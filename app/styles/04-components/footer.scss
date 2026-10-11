@@ -1,0 +1,101 @@
+/*
+  When the page ends on a full-bleed block (`s-block--full-bg` — its own colour
+  band runs edge-to-edge and butts against the footer), drop the gap above the
+  footer. Trailing empty `<salla-hook>`s aren't the last block, so match the
+  last `<section>`.
+*/
+#main-content:has(> section[class*='full-bg']:last-of-type) + .store-footer {
+  margin-top: 0;
+}
+
+/* `Footer` (`@salla.sa/twilight-theme-engine/layout`) owns its own structure
+   and colors (including footer_is_dark) via Tailwind classNames in the
+   component itself now -- nothing left to add there. What's left here is
+   just the handful of pieces rendered by web components Footer has no markup
+   of its own for, which it explicitly leaves to the consuming theme. */
+.store-footer {
+  .social-link {
+    @apply flex h-8 w-8 items-center justify-center rounded-full border border-gray-200 text-sm transition duration-300 hover:opacity-75;
+  }
+
+  /* Footer menu — `<salla-menu source="footer">` renders a bare
+     `.s-menu-footer-list` of `.s-menu-footer-item` anchors (no list markup).
+     Two presentations, picked by the modifier class `Footer` adds:
+       `--stacked` (columns layout) — a vertical list, splitting into two
+       columns once it has 6+ links;
+       `--inline`  (centered layout) — a single pipe-separated row. */
+  &__menu {
+    @apply block;
+
+    &--stacked {
+      .s-menu-footer-list {
+        @apply block;
+
+        /* 6+ links → two columns on desktop (`:nth-child(6)` = "a 6th item exists") */
+        @media (min-width: 1024px) {
+          &:has(> .s-menu-footer-item:nth-child(6)) {
+            column-count: 2;
+            column-gap: 2.5rem;
+          }
+        }
+      }
+
+      .s-menu-footer-item {
+        @apply block text-[15px] leading-snug text-gray-600;
+        margin-bottom: 0.625rem;
+        break-inside: avoid;
+
+        &:last-child {
+          margin-bottom: 0;
+        }
+      }
+    }
+
+    &--inline {
+      .s-menu-footer-list {
+        @apply flex flex-wrap items-center justify-center gap-y-2;
+      }
+
+      .s-menu-footer-item {
+        @apply border-e border-gray-300 px-3 text-[15px] leading-none text-gray-600 mb-0;
+
+        &:first-child {
+          @apply ps-0;
+        }
+      }
+    }
+  }
+
+  .s-payments-list-item {
+    @apply w-16;
+  }
+}
+
+/* Mobile: no page footer — its widgets live in the bottom bar's account sheet
+   (`MobileAccountSheet`, `.store-footer--sheet`). Same breakpoint as the bar.
+   Hidden with CSS rather than unmounted so the SSR'd footer (links, tax / SBC
+   details) stays in the document. Only the widgets are hidden: the
+   `footer:start` / `footer:end` hook output stays visible for apps. */
+@media (max-width: 767px) {
+  .store-footer:not(.store-footer--sheet) {
+    margin-top: 0;
+
+    > .store-footer__inner,
+    > .store-footer__bottom {
+      display: none;
+    }
+  }
+}
+
+/* `footer_is_dark` darkens `.s-menu-footer-item`'s own border/text too -- the
+   one piece of dark-mode handling still theme-owned, since the two menu
+   variants above are. */
+body.footer-is-dark .store-footer {
+  &__menu--stacked .s-menu-footer-item {
+    @apply text-white;
+  }
+
+  &__menu--inline .s-menu-footer-item {
+    @apply border-white/10 text-white;
+  }
+}

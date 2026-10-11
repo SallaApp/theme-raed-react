@@ -1,0 +1,48 @@
+/* First-screen CSS for the product route, inlined by __root.tsx; app.css's order, and app.css takes over once loaded. */
+
+@config './critical-product.tailwind.cjs';
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import './01-settings/global';
+@import './01-settings/breakpoints';
+
+@import './02-generic/reset';
+@import './02-generic/common';
+@import './02-generic/animations';
+@import './02-generic/rtl';
+@import './02-generic/ltr';
+@import './02-generic/mixins';
+
+@import './vendor/swiper.css';
+
+@import './03-elements/form';
+@import './03-elements/buttons';
+@import './03-elements/radio';
+@import './03-elements/radio-images';
+
+@import './04-components/header';
+@import './04-components/social';
+@import './04-components/mobile-bottom-bar';
+@import './04-components/mobile-page-title';
+@import './04-components/breadcrumb';
+@import './04-components/slider';
+@import './04-components/product';
+@import './04-components/metadata';
+@import './04-components/quantity-stepper';
+
+@import './05-utilities/font-customization';
+
+/* Root basics mirrored from app.css (kept in sync). */
+[dir='rtl'] {
+  --font-main: var(--font-ar);
+}
+
+body {
+  font-family: var(--font-main);
+}
+
+html {
+  scrollbar-gutter: stable;
+}

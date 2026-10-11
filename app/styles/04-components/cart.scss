@@ -1,0 +1,63 @@
+/*
+  Cart page — column-heading row above flat item rows.
+  Markup: app/components/cart/{CartPage,CartItem}.tsx
+*/
+.cart-titles {
+  span span:first-child {
+    @apply w-[120px] text-center;
+  }
+}
+
+.cart-item {
+  &__controls {
+    @apply md:justify-end;
+  }
+
+  /* line the stepper up under the "Quantity" heading (fixed 120px column) */
+  &__controls .s-quantity-input .s-quantity-input-container {
+    @apply w-[120px];
+  }
+
+  &__delete {
+    @apply w-5;
+
+    &:disabled {
+      @apply cursor-wait;
+    }
+  }
+
+  /* spinner shown in place of the trash icon while the row is being removed */
+  &__delete-spinner {
+    @apply inline-block h-5 w-5 animate-spin rounded-full border-2 border-gray-200 border-t-gray-500;
+  }
+
+  /* per-item product options render inside the flat row — drop the wrapper's
+     card padding (mirrors the product page's `.product-form` treatment) */
+  .s-product-options-wrapper {
+    @apply p-0 rtl:lg:pr-[112px] ltr:lg:pl-[112px];
+    border-radius: 0;
+    margin: 0;
+  }
+}
+
+/*
+  Sidebar cards (engine): the Order Summary box (`… transition-height`) and the
+  free-shipping progress box (`#free-shipping`) — flat and gray instead of the
+  default white drop-shadow card.
+*/
+.cart .shadow-default.transition-height,
+.cart #free-shipping {
+  @apply bg-gray-100 shadow-none rounded;
+}
+
+/* Free-shipping progress track (engine default `bg-border-color`) — darken it so
+   it reads against the now-gray card behind it. The fill stays `bg-primary`. */
+.cart #free-shipping-bar {
+  @apply bg-gray-200;
+}
+
+/* Coupon field — match the 16px button roundness (`.s-button-btn`), not the
+   6px `.form-input` default. */
+#coupon-input {
+  @apply rounded-2xl;
+}

@@ -1,0 +1,127 @@
+// Dropdown toggler
+.dropdown__trigger {
+  @apply rounded-full overflow-hidden w-10 h-10 font-medium focus:ring-offset-transparent;
+
+  &.filter {
+    @apply rounded-none w-auto h-auto overflow-visible;
+  }
+}
+
+.dropdown__menu {
+  @apply origin-top-right duration-200 transition-all scale-y-90 absolute opacity-0 -translate-y-4 invisible rtl:left-0 ltr:right-0 z-30 w-80 lg:w-60 rounded-t-md lg:rounded-t-none rounded-b-md shadow-default bg-white top-full lg:border-t lg:border-gray-300/30;
+  outline: none;
+}
+
+.dropdown-toggler {
+  @apply inline-flex items-center lg:h-full w-10 mx-0 text-gray-500;
+
+  &.cat-filter {
+    @apply static w-auto;
+
+    .dropdown__trigger {
+      @apply rounded-none w-auto h-auto overflow-visible;
+    }
+  }
+
+  &:before {
+    content: '';
+    background: rgba(113, 113, 122, 0.75);
+    @apply fixed w-screen h-screen left-0 top-0 opacity-0 pointer-events-none invisible duration-300 z-10;
+  }
+
+  &.is-opened {
+    .dropdown__menu {
+      @apply opacity-100 visible translate-y-0 scale-100;
+    }
+  }
+
+  @media (max-width: 1024px) {
+    .dropdown__menu {
+      left: 0 !important;
+      @apply fixed bottom-0 top-auto w-full opacity-0 translate-y-10 origin-center duration-300 rounded-b-none;
+
+      .menu-item {
+        @apply rtl:pl-2.5 ltr:pr-2.5;
+      }
+    }
+
+    &.is-opened {
+      .dropdown__menu {
+        @apply opacity-100 translate-y-0;
+      }
+
+      &:before {
+        @apply opacity-100 visible pointer-events-auto;
+      }
+    }
+  }
+}
+/* ── Account-menu item icons ──────────────────────────────────────────────
+   `<salla-user-menu>` hard-codes its item SVGs, so swap them for the theme's
+   HugeIcons-style set with a CSS mask (keyed off each item's `href`). Items
+   the store doesn't render (wallet, loyalty) keep their built-in icon. */
+@mixin account-menu-icon($d) {
+  .s-user-menu-dropdown-item-prefix {
+    @apply block h-[18px] w-[18px] bg-gray-400;
+    margin-inline-end: 0.75rem;
+    $src: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='#{$d}'/%3E%3C/svg%3E";
+    -webkit-mask: url($src) center / contain no-repeat;
+    mask: url($src) center / contain no-repeat;
+
+    svg {
+      display: none;
+    }
+  }
+}
+
+.s-user-menu-dropdown-list,
+.s-user-menu-inline {
+  .s-user-menu-dropdown-item-link[href*='notification'] {
+    @include account-menu-icon(
+      'M18 8.4C18 4.87 15.31 2 12 2C8.69 2 6 4.87 6 8.4C6 15.33 3 17.31 3 17.31H21C21 17.31 18 15.33 18 8.4Z M13.73 21.31C13.55 21.62 13.29 21.87 12.98 22.05C12.68 22.22 12.33 22.31 11.97 22.31C11.62 22.31 11.27 22.22 10.96 22.05C10.66 21.87 10.4 21.62 10.22 21.31'
+    );
+  }
+
+  .s-user-menu-dropdown-item-link[href*='/orders'] {
+    @include account-menu-icon(
+      'M12 22V12 M12 12L21 7 M12 12L3 7 M21 7.2V16.8C21 17.16 20.81 17.49 20.5 17.67L12.5 22.35C12.19 22.53 11.81 22.53 11.5 22.35L3.5 17.67C3.19 17.49 3 17.16 3 16.8V7.2C3 6.84 3.19 6.51 3.5 6.33L11.5 1.65C11.81 1.47 12.19 1.47 12.5 1.65L20.5 6.33C20.81 6.51 21 6.84 21 7.2Z M7.5 4L16.5 9.2'
+    );
+  }
+
+  .s-user-menu-dropdown-item-link[href*='pending'] {
+    @include account-menu-icon(
+      'M8 20C8.55 20 9 20.45 9 21C9 21.55 8.55 22 8 22C7.45 22 7 21.55 7 21C7 20.45 7.45 20 8 20Z M17 20C17.55 20 18 20.45 18 21C18 21.55 17.55 22 17 22C16.45 22 16 21.55 16 21C16 20.45 16.45 20 17 20Z M3 3H4.3C4.8 3 5.2 3.36 5.29 3.85L5.65 6 M5.65 6H20.4C21.05 6 21.53 6.62 21.38 7.26L20.1 12.66C19.9 13.53 19.13 14.15 18.24 14.15H8.2C7.28 14.15 6.5 13.5 6.32 12.6L5.65 6Z'
+    );
+  }
+
+  .s-user-menu-dropdown-item-link[href*='wishlist'] {
+    @include account-menu-icon(
+      'M13.7276 3.44418L15.4874 6.99288C15.7274 7.48687 16.3673 7.9607 16.9073 8.05143L20.0969 8.58575C22.1367 8.92853 22.6167 10.4206 21.1468 11.8925L18.6671 14.3927C18.2471 14.8161 18.0172 15.6327 18.1471 16.2175L18.8571 19.3125C19.417 21.7623 18.1271 22.71 15.9774 21.4296L12.9877 19.6452C12.4478 19.3226 11.5579 19.3226 11.0079 19.6452L8.01827 21.4296C5.8785 22.71 4.57865 21.7522 5.13859 19.3125L5.84851 16.2175C5.97849 15.6327 5.74852 14.8161 5.32856 14.3927L2.84884 11.8925C1.389 10.4206 1.85895 8.92853 3.89872 8.58575L7.08837 8.05143C7.61831 7.9607 8.25824 7.48687 8.49821 6.99288L10.258 3.44418C11.2179 1.51861 12.7777 1.51861 13.7276 3.44418Z'
+    );
+  }
+
+  .s-user-menu-dropdown-item-link[href*='profile'] {
+    @include account-menu-icon(
+      'M12 12C13.66 12 15 10.66 15 9C15 7.34 13.66 6 12 6C10.34 6 9 7.34 9 9C9 10.66 10.34 12 12 12Z M6.34 18.16C6.99 16.1 9.28 14.5 12 14.5C14.72 14.5 17.01 16.1 17.66 18.16 M12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22Z'
+    );
+  }
+
+  .s-user-menu-dropdown-item-link[href*='settings'] {
+    @include account-menu-icon(
+      'M12 15C13.66 15 15 13.66 15 12C15 10.34 13.66 9 12 9C10.34 9 9 10.34 9 12C9 13.66 10.34 15 12 15Z M2 12.88V11.12C2 10.08 2.85 9.22 3.9 9.22C5.71 9.22 6.45 7.94 5.54 6.37C5.02 5.47 5.33 4.3 6.24 3.78L7.97 2.79C8.76 2.32 9.78 2.6 10.25 3.4L10.36 3.59C11.27 5.16 12.76 5.16 13.68 3.59L13.79 3.4C14.26 2.6 15.28 2.32 16.07 2.79L17.8 3.78C18.71 4.3 19.02 5.47 18.5 6.37C17.59 7.94 18.33 9.22 20.14 9.22C21.18 9.22 22.04 10.07 22.04 11.12V12.88C22.04 13.92 21.19 14.78 20.14 14.78C18.33 14.78 17.59 16.06 18.5 17.63C19.02 18.54 18.71 19.7 17.8 20.22L16.07 21.21C15.28 21.68 14.26 21.4 13.79 20.6L13.68 20.41C12.76 18.84 11.27 18.84 10.36 20.41L10.25 20.6C9.78 21.4 8.76 21.68 7.97 21.21L6.24 20.22C5.33 19.7 5.02 18.53 5.54 17.63C6.45 16.06 5.71 14.78 3.9 14.78C2.85 14.78 2 13.92 2 12.88Z'
+    );
+  }
+
+  .s-user-menu-dropdown-item-logout .s-user-menu-dropdown-item-link {
+    @include account-menu-icon(
+      'M14 8.5V6C14 4.9 13.1 4 12 4H6C4.9 4 4 4.9 4 6V18C4 19.1 4.9 20 6 20H12C13.1 20 14 19.1 14 18V15.5 M9 12H21 M21 12L18 9 M21 12L18 15'
+    );
+  }
+
+  /* Same selector depth as the mixin so this wins on source order. */
+  .s-user-menu-dropdown-item-logout
+    .s-user-menu-dropdown-item-link
+    .s-user-menu-dropdown-item-prefix {
+    background-color: #ff443a;
+  }
+}

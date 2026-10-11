@@ -1,0 +1,250 @@
+
+// Main Menu
+.main-menu > li > a[href*="offer"]{
+  @apply text-red-800
+}
+
+@media only screen and (min-width: 1024px) {
+  .main-menu {
+    @apply hidden lg:flex flex-wrap items-center mx-6 pt-8 pb-0;
+
+    .fixed-pinned & {
+      padding-top: 0;
+      padding-bottom: 0;
+    }
+
+    li{
+      > a{
+        @apply flex justify-between items-center transition duration-300 p-3 text-sm hover:text-primary hover:no-underline; 
+      }
+
+      &.root-level{
+        @apply inline-block;
+
+        /* Was `pt-0 pb-8` -- all the vertical room sat below the text, so
+           `items-center` (the parent `> a` rule above) centered the link's
+           52px box instead of the text itself, reading as "pinned near the
+           top" against the row's other elements (logo, action icons).
+           Symmetric padding, matching `.s-menu-root-level > a`'s `py-2` in
+           header.scss (the newer SallaMenu class names this old selector
+           predates) keeps the text centered like everything else in the row. */
+        > a{
+          @apply font-bold py-2;
+        }
+      }
+    }
+
+    > .has-children:hover > a{
+      color: var(--color-primary);
+    }
+
+    .has-children{
+      li a:hover,
+      .has-children:hover > a{
+        color: var(--color-primary);
+        @apply bg-gray-200/20;
+      }
+
+      > a:after{
+        font-family: 'sallaicons';
+        content: "\e970";
+        @apply inline-block transition-transform duration-300 self-end mx-0.5 text-lg opacity-50 leading-4;
+      }
+
+      &.root-level {
+        > a:after{
+          content: "\e96e";
+        }
+
+        &:hover > a:after{
+          opacity: 1;
+          transform: scaleY(-1);
+        }
+      }
+    }
+
+    .sub-menu {
+      @apply z-20 transition opacity-0 invisible pointer-events-none absolute bg-white -translate-y-3 shadow-default rounded-b-md border-t border-gray-300/30 max-h-[400px] overflow-y-auto;
+
+      .sub-menu {
+        top: -1px;
+        right: 100%;
+
+        [dir="ltr"] & {
+          left: 100%;
+          right: auto;
+        }
+      }
+
+      .s-product-card-entry{
+        @apply border border-gray-100;
+      }
+
+      .btn {
+        padding: 8px 10px 10px;
+      }
+
+      li.mega-menu .container {
+        ul{
+          @apply p-0 m-0 border-none;
+        }
+  
+        > div{
+          @apply hidden;
+        }
+      }
+    }
+
+    .change-menu-dir .sub-menu  .sub-menu {
+      @apply rtl:left-full rtl:right-auto ltr:right-full ltr:left-auto;
+    }
+
+    li:hover {
+      > .sub-menu {
+        opacity: 1;
+        visibility: visible;
+        pointer-events: auto;
+        transform: translateY(0);
+      }
+    }
+
+    // More dropdown specific styles
+    #more-menu-dropdown {
+      @apply flex-shrink-0;
+
+      > a {
+        @apply whitespace-nowrap;
+      }
+
+      // Make the More dropdown scrollable if it becomes taller than the viewport
+      > .sub-menu {
+        max-height: 400px;
+        overflow-y: auto;
+      }
+
+      // Keep deeper levels visible inside the same column (no fly-out)
+      > .sub-menu {
+        .sub-menu {
+          @apply static opacity-0 invisible transform-none shadow-none border-0 m-0 p-0 bg-transparent max-h-0 overflow-hidden transition-[max-height,opacity,visibility] duration-200 ease-in;
+          transition-duration: 250ms, 200ms, 200ms; 
+        }
+
+        li.has-children {
+          @apply relative;
+
+          > a {
+            @apply justify-between;
+          }
+
+          &:hover > .sub-menu,
+          &:focus-within > .sub-menu {
+            @apply opacity-100 visible max-h-[1000px];
+          }
+        }
+
+        // Indent nested lists for readability
+        .sub-menu > ul {
+          @apply rtl:pr-4 ltr:pl-4;
+        }
+      }
+    }
+  }
+
+  .main-menu .sub-menu ul > li:not(:first-child) > .sub-menu{
+    border-top-right-radius: 0.375rem;
+    border-top-left-radius: 0.375rem;
+    border: none;
+  }
+}
+// Mobile Slide Menu
+@media only screen and (max-width: 1024px) {
+  .filters-opened{
+    .close-filters{
+      display: block !important;
+    }
+  } 
+  .menu-opened{
+    .btn--close-sm.close-mobile-menu{
+      display: block !important;
+    }
+  }
+  .mobile-menu {
+      @apply lg:hidden overflow-hidden;
+
+
+    @media (max-width: 480px) {
+      .btn--close-sm {
+        opacity: 1;
+        visibility: visible;
+        transform: translateY(0);
+        z-index: 99999999;
+      }
+    }
+  }
+
+  .mobile-menu.mobile-menu--light {
+    color: #000;
+    background: #ffffff;
+  }
+
+  .mobile-menu {
+    ul.main-menu li:before{
+      @apply w-2 h-2; 
+    }
+
+    &.mobile-menu--navbar{
+      &:after {
+        @apply transition-all duration-300 rtl:pr-12 ltr:pl-12 text-start opacity-90 font-bold;
+      }
+
+      &.mobile-menu--main{
+        &:after{
+          @apply rtl:pr-3 ltr:pl-3;
+        }
+      }
+    }
+
+    &.mobile-menu--navbar:before {
+      [dir="rtl"] & {
+        transform: rotate(135deg) translateY(77%);
+        right: var(--mm-spn-item-indent);
+        left: auto;
+      }
+    }
+
+    li {
+      a,
+      > span {
+		@apply flex items-center gap-4;
+	  }
+
+	  img{
+		@apply w-12 h-12 object-cover bg-[#f5f7f9] pointer-events-none;
+	  }
+
+      a span{
+        padding: 0;
+      }
+
+      &:before {
+        [dir="rtl"] & {
+          width: 6px;
+          height: 6px;
+          top: 50%;
+          left: 25px;
+          left: calc(var(--mm-spn-item-height) / 2);
+          right: auto;
+          border-bottom: 1px solid;
+          border-left: 1px solid;
+          border-right: none;
+          border-top: none;
+        }
+      }
+
+      &:after {
+        width: 100%;
+        border-color: var(--infinte-color);
+      }
+    }
+  }
+}

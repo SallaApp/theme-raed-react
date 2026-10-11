@@ -1,0 +1,483 @@
+/* Mobile "More" sheet — the bottom bar's More (···) tab.
+   Markup: app/components/layout/MobileAccountSheet.tsx (a `BottomSheet` with
+   `.account-sheet`). Two card groups -- settings (profile, language,
+   currency, branch, important links) and contacts (telegram, email, mobile,
+   whatsapp) -- then the footer widgets (`.store-footer--sheet`). */
+
+/* Full screen height — overrides the base sheet's `max-h-[85vh]`. `dvh` so the
+   mobile browser's collapsing toolbar doesn't push the bottom out of view. */
+.bottom-sheet.account-sheet {
+  @apply rounded-none;
+  height: 100vh;
+  height: 100dvh;
+  max-height: 100vh;
+  max-height: 100dvh;
+}
+
+.account-sheet__login {
+  @apply flex w-full items-center justify-center rounded-xl bg-primary px-4 py-3 text-sm font-bold text-primary-reverse transition-opacity hover:opacity-90;
+}
+
+/* Settings card: profile / language / currency / branch / important links.
+   Each row is a button or link sharing one shape -- icon, label (+ optional
+   muted current-value), a trailing disclosure chevron. */
+.account-sheet__list {
+  @apply mb-4 overflow-hidden rounded-2xl;
+
+  & + .account-sheet__list {
+    @apply mb-0 mt-4;
+  }
+}
+
+/* The card's outline used to live on `.account-sheet__list` itself -- a
+   static box that was already fully drawn before any row had faded in. Each
+   row now carries its own slice of it (left/right always, top only on the
+   first row, bottom on every row), so the outline builds up with the rows
+   instead of sitting there complete while they animate inside it. Every row
+   keeps a bottom border (not just non-last ones) -- without it there'd be no
+   line between the first and second rows: the first has no bottom and
+   nothing below it has a top to draw one either. */
+.account-sheet__list-item {
+  @apply flex w-full items-center gap-3 border-x border-b border-gray-100 bg-white px-4 py-3.5 text-start text-sm font-medium text-gray-800 hover:bg-gray-50;
+  /* Entrance (opacity/transform, staggered below) alongside the hover
+     background-color -- one combined list, same reasoning as the
+     important-links sheet's own rows (see that file's comment). */
+  opacity: 0;
+  transform: translateY(10px);
+  transition:
+    opacity 0.35s ease,
+    transform 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+    background-color 0.15s ease;
+
+  &:first-child {
+    @apply rounded-t-2xl border-t;
+  }
+
+  &:last-child {
+    @apply rounded-b-2xl;
+  }
+}
+
+.account-sheet__list-icon {
+  @apply flex h-6 w-6 shrink-0 items-center justify-center text-gray-500;
+
+  svg {
+    @apply h-6 w-6;
+  }
+
+  /* sicon-* glyphs (no line-icon equivalent in icons.tsx for these) sized to
+     match the 24px SVG icons beside them. */
+  i {
+    font-size: 20px;
+    line-height: 1;
+  }
+}
+
+.account-sheet__list-label {
+  @apply min-w-0 flex-1 truncate;
+}
+
+.account-sheet__list-value {
+  @apply shrink-0 truncate text-gray-400;
+  max-width: 40%;
+}
+
+.account-sheet__list-chevron {
+  @apply h-4 w-4 shrink-0 text-gray-400;
+
+  [dir='ltr'] & {
+    transform: scaleX(-1);
+  }
+}
+
+/* Contacts card: each row is a label over its value (phone, email, …), icon
+   trailing on the far side -- a different shape from the settings rows above,
+   so it gets its own item class rather than reusing `__list-item`. Border
+   split per row exactly as specified: first gets top/left/right only, every
+   other row gets bottom/left/right only (unlike `.account-sheet__list-item`
+   above, the first row does *not* also get a bottom border here -- with a
+   single contact that means a lone row has no bottom edge, and with more
+   than one it means no divider line between the first and second rows,
+   since neither side draws it). */
+.account-sheet__contact-item {
+  @apply flex w-full items-center justify-between gap-3 border-x border-gray-100 bg-white px-4 py-3.5 text-start hover:bg-gray-50;
+  opacity: 0;
+  transform: translateY(10px);
+  transition:
+    opacity 0.35s ease,
+    transform 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+    background-color 0.15s ease;
+
+  &:first-child {
+    @apply rounded-t-2xl border-y;
+  }
+
+  &:not(:first-child) {
+    @apply border-b;
+  }
+
+  &:last-child {
+    @apply rounded-b-2xl;
+  }
+}
+
+.account-sheet__contact-text {
+  @apply flex min-w-0 flex-col gap-0.5;
+}
+
+.account-sheet__contact-label {
+  @apply text-sm font-medium text-gray-800;
+}
+
+/* `.unicode` (common.scss) on the element itself handles LTR content like
+   phone numbers and emails reading correctly within RTL flow. */
+.account-sheet__contact-value {
+  @apply truncate text-sm text-gray-400;
+}
+
+.account-sheet__contact-item i {
+  @apply shrink-0 text-xl text-gray-500;
+}
+
+/* The footer widgets under the menu: bleed to the sheet edges (the sheet body
+   pads `px-4`) and drop the page footer's top margin. Redesigned for the
+   sheet specifically -- two cards (brand, apps) matching the settings/
+   contacts cards' own rounded-2xl border language above, then copyright and
+   payment icons standalone underneath with no card, everything centered.
+   None of this touches `inSheet={false}` (the real page footer), which keeps
+   its own left-aligned / column layout untouched -- `FooterTrust`'s own
+   content (tax number, SBC badge, trust badges) is unchanged here too, only
+   its container is recentred. */
+.store-footer--sheet {
+  @apply -mx-4 mt-6 mb-0 sm:mt-6;
+
+  &.store-footer{
+    @apply bg-transparent;
+  }
+
+  .store-footer__inner {
+    @apply py-0 border-0;
+
+    .container {
+      @apply gap-6;
+    }
+  }
+
+  .store-footer__brand,
+  .store-footer__centered {
+    @apply flex flex-col items-center gap-5 rounded-2xl border border-gray-100 bg-white px-5 py-6 text-center;
+  }
+
+  .store-footer__logo {
+    @apply mx-auto mb-0;
+  }
+
+  .store-footer__desc {
+    @apply mx-auto my-0 text-center;
+  }
+
+  salla-social {
+    @apply mb-0 flex flex-wrap justify-center gap-2;
+  }
+
+  .store-footer__trust {
+    @apply w-full justify-center;
+  }
+
+  .store-footer__apps {
+    @apply flex flex-col items-center gap-3 rounded-2xl border border-gray-100 bg-white px-5 py-6 text-center;
+  }
+
+  .store-footer__bottom {
+    @apply flex flex-col items-center gap-3 border-0 py-4;
+  }
+
+  salla-payments {
+    @apply flex flex-wrap justify-center gap-3;
+  }
+}
+
+/* `footer_is_dark` sets `color: white` on `.store-footer` itself
+   (footer.scss) -- the sheet's cards stay light regardless (matching the
+   settings/contacts cards above them), but that white inherits straight into
+   them with nothing of this redesign's own to override it, so text (the
+   description, tax / SBC labels, FooterTrust's own content) turns invisible
+   against their white background. Forced back to the light-card colors. */
+body.footer-is-dark .store-footer--sheet {
+  .store-footer__brand,
+  .store-footer__centered,
+  .store-footer__apps {
+    @apply text-gray-600;
+
+    h3 {
+      @apply text-gray-900;
+    }
+  }
+}
+
+/* Row entrance -- same staggered fade + slide as the main menu drawer's root
+   links and the important-links sheet's own rows (`MobileAccountSheet.tsx`
+   sets `.is-in` on the content wrapper once the sheet has settled; see that
+   component's comment for the timing). Settings, contacts and the footer
+   widgets below each stagger independently from their own first row/widget,
+   rather than counting one sequence across all three -- none of them waits
+   on how many rows came before it. */
+.account-sheet__content.is-in .account-sheet__list-item,
+.account-sheet__content.is-in .account-sheet__contact-item {
+  opacity: 1;
+  transform: none;
+}
+
+@for $i from 1 through 20 {
+  .account-sheet__content.is-in .account-sheet__list .account-sheet__list-item:nth-child(#{$i}),
+  .account-sheet__content.is-in
+    .account-sheet__contacts
+    .account-sheet__contact-item:nth-child(#{$i}) {
+    transition-delay: #{($i - 1) * 70}ms;
+  }
+}
+
+/* Footer widgets: `Footer.tsx` renders one of two layouts (`footer_layout`
+   theme setting) -- grid (brand / links / apps) or centered (logo, desc,
+   social, menu, trust, apps as a single stacked column) -- but either way
+   each top-level block is a direct child of the same `.store-footer__inner
+   > .container`, so one selector covers both without caring which one
+   rendered. `.store-footer__bottom` (copyright + payments) carries its own
+   `.container` class too (a grid helper, unrelated to this one) but sits
+   outside `.store-footer__inner` as a sibling -- the extra `.store-footer__inner >`
+   keeps the selector from also reaching into *its* children and animating
+   the copyright text and payment icons separately; it gets one fixed delay
+   past any realistic number of widgets above it instead. */
+.store-footer--sheet .store-footer__inner > .container > *,
+.store-footer--sheet .store-footer__bottom {
+  opacity: 0;
+  transform: translateY(10px);
+  transition:
+    opacity 0.35s ease,
+    transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.account-sheet__content.is-in .store-footer--sheet .store-footer__inner > .container > *,
+.account-sheet__content.is-in .store-footer--sheet .store-footer__bottom {
+  opacity: 1;
+  transform: none;
+}
+
+@for $i from 1 through 8 {
+  .account-sheet__content.is-in
+    .store-footer--sheet
+    .store-footer__inner
+    > .container
+    > *:nth-child(#{$i}) {
+    transition-delay: #{($i - 1) * 70}ms;
+  }
+}
+
+.account-sheet__content.is-in .store-footer--sheet .store-footer__bottom {
+  transition-delay: 560ms; // 8 widgets' worth of headroom (8 * 70ms)
+}
+
+/* Header — the old user-menu sheet's: avatar, greeting and name, with a red
+   close button on the far side. */
+.account-sheet .bottom-sheet__head {
+  @apply py-2;
+}
+
+body:not(.footer-is-dark) .store-footer--sheet .store-footer__bottom {
+  @apply bg-white;
+}
+
+.account-sheet .bottom-sheet__close {
+  @apply text-[#ff443a] hover:text-[#ff443a];
+
+  svg {
+    @apply h-6 w-6;
+  }
+}
+
+/* Important links sheet — the More sheet's "Important links" row opens this
+   one in turn (`ImportantLinksSheet.tsx`), full-screen like `.account-sheet`
+   rather than a drill-in within it. */
+.bottom-sheet.important-links-sheet {
+  @apply rounded-none;
+  height: 100vh;
+  height: 100dvh;
+  max-height: 100vh;
+  max-height: 100dvh;
+}
+
+/* User menu sheet — the More sheet's "Account" row opens this one in turn
+   (`UserMenuSheet.tsx`), mirroring the desktop header's user-menu dropdown.
+   Full-screen like `.account-sheet`, same reasoning as important-links above. */
+.bottom-sheet.user-menu-sheet {
+  @apply rounded-none;
+  height: 100vh;
+  height: 100dvh;
+  max-height: 100vh;
+  max-height: 100dvh;
+}
+
+/* `<salla-user-menu inline>` renders a bare `.s-user-menu-inline` list of
+   `.s-user-menu-dropdown-item` rows, each wrapping a
+   `.s-user-menu-dropdown-item-link` anchor with its own icon + title -- same
+   rounded card + divided-row shape as `.account-sheet__list` above
+   (duplicated via @apply rather than shared literally -- web-component-
+   rendered elements, no element to put the `account-sheet__list-item` class
+   on). */
+.user-menu-sheet__menu .s-user-menu-inline {
+  @apply block overflow-hidden rounded-2xl border border-gray-100;
+}
+
+.user-menu-sheet__menu .s-user-menu-dropdown-item {
+  @apply border-b border-gray-100 bg-white last:border-b-0;
+  opacity: 0;
+  transform: translateY(10px);
+  transition:
+    opacity 0.35s ease,
+    transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.user-menu-sheet__menu .s-user-menu-dropdown-item-link {
+  @apply flex w-full items-center gap-3 px-4 py-3.5 text-start text-sm font-medium text-gray-800 transition-colors hover:bg-gray-50;
+
+  /* Icon -- an inline SVG the component renders itself (`innerHTML`), sized
+     to match the 24px icons elsewhere in this sheet. */
+  .s-user-menu-dropdown-item-prefix {
+    @apply flex h-6 w-6 shrink-0 items-center justify-center text-gray-500;
+
+    svg {
+      @apply h-6 w-6;
+    }
+  }
+
+  .s-user-menu-dropdown-item-title {
+    @apply min-w-0 flex-1 truncate;
+  }
+
+  /* Disclosure chevron -- same `sicon-caret-left` treatment as the
+     important-links sheet's own web-component rows (no element here either
+     to put a React `ArrowLeftIcon` child on). Logout (below) is an action,
+     not a link to somewhere else, so it gets none. */
+  &::after {
+    font-family: 'sallaicons';
+    content: '\ea65';
+    @apply shrink-0 text-base leading-none text-gray-400;
+
+    [dir='ltr'] & {
+      transform: scaleX(-1);
+    }
+  }
+}
+
+/* Logout row: red, matching the desktop dropdown and this sheet's own close
+   button (`.account-sheet .bottom-sheet__close`, below). The component
+   marks it with this class on the `<li>` itself (always the last item --
+   see salla-user-menu.tsx), not a separate wrapper. */
+.user-menu-sheet__menu .s-user-menu-dropdown-item-logout .s-user-menu-dropdown-item-link {
+  @apply text-[#ff443a];
+
+  &:hover {
+    @apply bg-red-50;
+  }
+
+  .s-user-menu-dropdown-item-prefix {
+    @apply text-[#ff443a];
+  }
+
+  &::after {
+    content: none;
+  }
+}
+
+.user-menu-sheet__menu.is-in .s-user-menu-dropdown-item {
+  opacity: 1;
+  transform: none;
+}
+
+/* Same reasoning as the important-links sheet's own stagger (nth-child
+   standing in for a per-item delay there's no element to set directly). */
+@for $i from 1 through 20 {
+  .user-menu-sheet__menu.is-in .s-user-menu-dropdown-item:nth-child(#{$i}) {
+    transition-delay: #{($i - 1) * 70}ms;
+  }
+}
+
+/* `<salla-menu source="footer">` renders a bare `.s-menu-footer-list` of
+   `.s-menu-footer-item` anchors (no list markup, no wrapping <li> -- the
+   class is on the <a> itself; see footer.scss). Styled as the same rounded
+   card + divided-row shape as `.account-sheet__list` (duplicated via @apply
+   rather than shared literally -- these are web-component-rendered elements,
+   so there's no element to put the `account-sheet__list-item` class on). */
+
+.important-links-sheet__menu .s-menu-footer-list {
+  @apply block rounded border border-gray-100;
+}
+
+.important-links-sheet__menu .s-menu-footer-item {
+  @apply flex w-full items-center justify-between gap-3 border-b border-gray-100 bg-white px-4 py-3.5 text-start text-sm font-medium text-gray-800 last:border-b-0 hover:bg-gray-50 mb-0;
+  /* Entrance (opacity/transform, staggered below) alongside the hover
+     background-color -- one combined transition list so the stagger's
+     `transition-delay` doesn't also push the hover feedback out, the way it
+     would with Tailwind's separate `transition-colors` utility. */
+  opacity: 0;
+  transform: translateY(10px);
+  transition:
+    opacity 0.35s ease,
+    transform 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+    background-color 0.15s ease;
+
+  /* The row's disclosure chevron -- `ArrowLeftIcon` everywhere else in this
+     sheet is a React child, which isn't an option on an element the web
+     component renders itself. `sicon-caret-left` is the sallaicons glyph
+     closest to that icon's own weight/size. */
+  &::after {
+    font-family: 'sallaicons';
+    content: '\ea65';
+    @apply shrink-0 text-base leading-none text-gray-400;
+
+    [dir='ltr'] & {
+      transform: scaleX(-1);
+    }
+  }
+}
+
+.important-links-sheet__menu.is-in .s-menu-footer-item {
+  opacity: 1;
+  transform: none;
+}
+
+/* `<salla-menu>` renders its own rows, so there's no element to set a
+   per-item `transitionDelay` style on the way HeaderNav's root links do
+   (`site-nav-drawer__list`'s `index * 40ms`) -- `nth-child` stands in for
+   the same cascade, capped well past any realistic footer menu length.
+   70ms/row (vs. the drawer's 40ms) -- this list is reached as its own
+   full-screen destination rather than glimpsed while the drawer slides in,
+   so the cascade needs to read clearly on its own, not just add polish to
+   motion that's already happening. Scoped to `.is-in` so, like that inline
+   style's `: '0ms'` branch, the delay only applies going in -- not stacked
+   onto the close/reset too. */
+@for $i from 1 through 20 {
+  .important-links-sheet__menu.is-in .s-menu-footer-item:nth-child(#{$i}) {
+    transition-delay: #{($i - 1) * 70}ms;
+  }
+}
+
+/* `BottomSheet` already turns off its own enter transition for this
+   preference (`04-components/bottom-sheet.scss`) -- these are its
+   descendants: the settings/contacts rows, footer widgets and important-links
+   rows all still slid and faded in with staggered delays regardless. Skip
+   straight to the settled (`.is-in`) state with no transition, rather than
+   just zeroing the delay -- the fade/slide itself is motion too, not only the
+   stagger between rows. */
+@media (prefers-reduced-motion: reduce) {
+  .account-sheet__list-item,
+  .account-sheet__contact-item,
+  .store-footer--sheet .store-footer__inner > .container > *,
+  .store-footer--sheet .store-footer__bottom,
+  .important-links-sheet__menu .s-menu-footer-item,
+  .user-menu-sheet__menu .s-user-menu-dropdown-item {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+}

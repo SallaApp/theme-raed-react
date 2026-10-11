@@ -1,0 +1,387 @@
+/* =========================================================================
+   Product reviews — restyle of the engine `<salla-comments>` web component
+   (light DOM, `.s-*` classes) to a card layout:
+
+     · desktop: rating summary in a sticky left rail, review list on the right
+     · summary: big average + brown stars, brown breakdown bars
+     · each review: avatar + name row, a compact star pill at the inline-start,
+       body text, and a footer strip (ghost "helpful" button + date)
+
+   Nothing here changes markup — it's all overrides on the classes the
+   component renders. Scoped to `.s-comments-product` so the account-page /
+   blog comment lists keep the engine look. Mounted from
+   `app/components/product/ProductPage.tsx`.
+   ========================================================================= */
+
+.s-comments-product {
+  /* Rating accent — a warm brown that reads as "rating" regardless of the
+     store's primary colour (same rationale as the cart-count badge). */
+  --rev-accent: #fbbf24;
+  --rev-accent-d: #d8a116;
+  --rev-line: #f0f0f0;
+  --rev-muted: #9ca3af;
+  --rev-ink: #1f2937;
+
+  /* ---- section heading + comment form (full-width band) ---------------- */
+  .s-comments-title {
+    @apply mb-5 text-xl font-bold;
+    color: var(--rev-ink);
+  }
+
+  .s-comment-form-input {
+    @apply w-full rounded-xl border border-gray-200 px-4 py-3 text-sm;
+
+    &:focus {
+      @apply outline-none;
+      border-color: var(--rev-accent);
+    }
+  }
+
+  .s-comment-form-action {
+    @apply mt-3;
+  }
+
+  /* ---- two-column layout (desktop) ----------------------------------- */
+  @media (min-width: 1024px) {
+    .s-comments-container {
+      display: grid;
+      /* two equal halves — list track first (inline-start), summary last */
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      column-gap: clamp(2rem, 4vw, 4rem);
+      align-items: start;
+    }
+
+    /* the title, form, list, header and translate toggle all stack in the wide
+       track … */
+    .s-comments-container > * {
+      grid-column: 1;
+      min-width: 0;
+    }
+
+    /* … and the summary is the sticky rail on the inline-end side, spanning the
+       full height alongside them. */
+    .s-comments-container > salla-reviews-summary {
+      grid-column: 2;
+      grid-row: 1 / span 999;
+      position: sticky;
+      top: 5rem;
+    }
+  }
+
+  /* ---- rating summary ------------------------------------------------- */
+  .s-reviews-summary-wrapper {
+    @apply block;
+  }
+
+  .s-reviews-summary-header {
+    @apply mb-0 flex items-center justify-center gap-5;
+  }
+
+  .s-reviews-summary-overall-section {
+    @apply p-0;
+  }
+
+  /* "التقييم العام" label — the number + stars speak for themselves */
+  .s-reviews-summary-overall-label {
+    @apply hidden;
+  }
+
+  .s-reviews-summary-overall-row {
+    @apply flex items-center gap-3;
+
+    > div {
+      @apply flex flex-col items-start gap-1;
+    }
+
+    salla-rating-stars{
+      @apply leading-none;
+    }
+  }
+
+  .s-reviews-summary-average {
+    @apply m-0 text-[2.75rem] font-bold leading-none;
+    color: var(--rev-ink);
+  }
+
+  .s-reviews-summary-count {
+    @apply m-0 text-xs text-inherit;
+  }
+
+  /* "%100 أوصوا بالمنتج" — separated from the overall score by a short vertical
+     rule (50% height, centred) drawn as a pseudo-element rather than a border. */
+  .s-reviews-summary-header-section {
+    @apply relative flex flex-col items-start gap-0.5 ps-5;
+
+    &::before {
+      content: '';
+      position: absolute;
+      inset-inline-start: 0;
+      top: 50%;
+      height: 60%;
+      width: 1px;
+      transform: translateY(-50%);
+      @apply bg-gray-200;
+    }
+
+    .s-reviews-summary-recommendation-percentage {
+      @apply m-0 font-bold text-2xl;
+    }
+  }
+
+  /* star-breakdown bars: "★ N" (inline-end) · bar · "NN%" (inline-start) */
+  .s-reviews-summary-rows {
+    @apply mt-5 flex flex-col gap-2.5 w-full;
+  }
+
+  .s-reviews-summary-row {
+    @apply flex items-center gap-2.5;
+  }
+
+  .s-reviews-summary-row-rate {
+    @apply inline-flex shrink-0 items-center justify-end gap-1 text-xs;
+    min-width: 2.4ch;
+    color: #6b7280;
+
+    span {
+      @apply inline-flex h-3 w-3;
+      fill: var(--rev-accent);
+
+      svg {
+        @apply h-full w-full;
+      }
+    }
+  }
+
+  .s-reviews-summary-percentage {
+    @apply shrink-0 text-right text-xs;
+    min-width: 3.4ch;
+  }
+
+  .s-reviews-summary-progress {
+    @apply block flex-1;
+
+    /* "هدف الحملة" — salla-progress-bar's donation/campaign header, force-set by
+       its lang-subscribe callback; it has no meaning here. */
+    .s-progress-bar-header {
+      @apply hidden;
+    }
+
+    .s-progress-bar-container {
+      @apply m-0;
+    }
+
+    .s-progress-bar-wrapper {
+      height: 7px;
+      border-radius: 9999px;
+      background: #ededed;
+      overflow: hidden;
+    }
+
+    .s-progress-bar-progress {
+      height: 100%;
+      border-radius: 9999px;
+      background: var(--rev-accent) !important; /* engine paints it black */
+    }
+  }
+
+  /* brown stars in the summary's big rating */
+  .s-reviews-summary-overall-row .s-rating-stars-btn-star.s-rating-stars-selected {
+    fill: var(--rev-accent);
+  }
+
+  /* ---- list header ("N تعليقات" + sort) ----------------------------- */
+  .s-comments-header {
+    @apply mb-4 flex items-center justify-between border-b pb-3;
+    border-color: var(--rev-line);
+
+    &.has-total {
+      @apply flex;
+    }
+  }
+
+  .s-comments-count-label {
+    @apply text-base font-bold;
+    color: var(--rev-ink);
+  }
+
+  .s-comments-filter-wrapper {
+    @apply inline-flex items-center gap-2;
+  }
+
+  .s-comments-filter-label {
+    @apply text-xs;
+    color: var(--rev-muted);
+  }
+
+  .s-comments-sort-input {
+    @apply rounded-full border border-gray-200 bg-white py-1.5 pe-8 ps-3.5 text-xs;
+  }
+
+  .s-translate-all-wrap {
+    @apply mb-3 text-xs;
+  }
+
+  /* ---- one review --------------------------------------------------- */
+  .s-comments-item {
+    @apply block mb-6 pb-6;
+
+    &:not(:last-child) {
+      border-bottom: 1px solid var(--rev-line);
+    }
+  }
+
+  .s-comments-item-wrapper {
+    @apply relative;
+    /* bottom strip holds the absolutely-placed footer: date (left) and the
+       ghost "helpful" button (right). */
+  }
+
+  .s-comments-item-inner {
+    @apply flex items-start gap-3;
+  }
+
+  .s-comments-item-avatar-img {
+    @apply h-11 w-11 rounded-full object-cover;
+  }
+
+  /* name over verified-buyer line, stacked and hugging the avatar side.
+     `padding-inline-end` reserves room for the star pill on the far side so a
+     long name can't slide under it. */
+  .s-comments-item-user-wrapper {
+    @apply flex justify-start items-start gap-2.5 mb-0;
+  }
+
+  .s-comments-item-user-info {
+    @apply flex flex-col items-start;
+  }
+
+  .s-comments-item-user-info-name-with-margin,
+  .s-comments-item-user-info-name {
+    @apply m-0 text-[0.95rem] font-bold leading-tight;
+    color: var(--rev-ink);
+  }
+
+  .s-comments-item-user-info .s-comments-flex {
+    @apply mt-1 inline-flex items-center gap-1 text-xs;
+    color: var(--rev-muted);
+  }
+
+  .s-comments-item-has-order-check-icon {
+    @apply inline-flex h-3.5 w-3.5;
+
+    svg {
+      @apply h-[80%];
+    }
+  }
+
+  .s-comments-item-rated-widget {
+    color: var(--rev-muted);
+  }
+
+  /* compact star pill, pinned to the card's far side on the name row.
+     `flex flex-row gap-4 mt-2 mb-4` is the engine's own utility-class wrapper
+     around <salla-rating-stars> — the only bare flex-row child of the inner
+     column. `inset-inline-end` (physical left in this RTL block) puts it
+     opposite the avatar. No numeric value is exposed in the DOM, so it stays a
+     5-star pill rather than "★ 5.0". */
+  .s-comments-item-inner > .s-comments-flex-1 > div[class~='flex-row'] {
+    @apply absolute m-0 items-center rounded-full px-2 py-1;
+    inset-block-start: 1.25rem;
+    inset-inline-end: 0;
+    gap: 0.3rem;
+    background: #f4f4f5;
+  }
+
+  .s-comments-item salla-rating-stars {
+    .s-rating-stars-wrapper {
+      gap: 1px;
+    }
+
+    .s-rating-stars-btn-star {
+      padding-inline: 0;
+
+      svg {
+        @apply h-3 w-3;
+      }
+    }
+
+    .s-rating-stars-btn-star.s-rating-stars-selected {
+      fill: var(--rev-accent);
+    }
+  }
+
+  /* the factors toggle ("التفاصيل ⌃"), when a review has rating factors */
+  .s-comments-item-review-factors-toggle {
+    @apply text-xs;
+    color: var(--rev-muted);
+  }
+
+  /* body text — a rating-only review renders an empty <p>, drop it so it
+     doesn't reserve a blank line */
+  .s-comments-item-content-container p {
+    @apply mb-0 text-sm leading-7;
+    color: #4b5563;
+
+    &:empty {
+      @apply hidden;
+    }
+  }
+
+  .s-comments-item-images {
+    @apply mt-2.5 empty:hidden;
+  }
+
+  /* footer strip: date pinned to the left, ghost "helpful" button to the right
+     (physical props — the date carries `.s-ltr`, so logical ones would flip) */
+  .s-comments-item-like-btn.s-button-wrap {
+    @apply inline-flex;
+  }
+
+  .s-comments-item-like-btn .s-button-btn {
+    @apply h-auto gap-1.5 border-0 p-0 text-xs;
+    background: transparent !important;
+    color: var(--rev-muted) !important;
+
+    &:hover {
+      background: transparent !important;
+      color: var(--rev-accent) !important;
+      opacity: 1;
+    }
+
+    svg {
+      @apply h-3.5 w-3.5;
+      fill: currentColor;
+    }
+  }
+
+  .s-comments-item-like-btn .s-button-text {
+    @apply inline-flex items-center gap-1.5;
+  }
+
+  .s-comments-item-like-btn.liked .s-button-btn {
+    color: var(--rev-accent-d) !important;
+  }
+
+  .s-comments-item-timestamp {
+    @apply m-0 text-xs opacity-60;
+  }
+
+  /* "- HH:MM" tail — drop it, the date alone is enough */
+  .s-comments-item-time {
+    @apply hidden;
+  }
+
+  /* admin replies keep the engine treatment, just tint the accent */
+  .s-comments-item-admin {
+    .s-comments-item-reply-icon {
+      color: var(--rev-accent);
+      fill: var(--rev-accent);
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .s-comments-product .s-comments-item {
+    animation: none !important;
+  }
+}

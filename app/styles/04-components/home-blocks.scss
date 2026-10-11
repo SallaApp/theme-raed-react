@@ -1,0 +1,1060 @@
+/*
+  Block Title
+*/
+.s-block {
+  &__title {
+    @apply center-between mb-4 md:mb-8;
+
+    .right-side {
+      @apply rtl:pl-8 ltr:pr-8;
+    }
+
+    h2 {
+      @apply text-lg font-bold relative leading-[1.2];
+    }
+
+    p {
+      @apply text-sm opacity-60 mt-2 line-clamp-1 sm:line-clamp-2 rtl:md:pl-16 ltr:md:pr-16;
+    }
+
+    &-nav {
+      @apply hidden sm:flex ltr:flex-row-reverse rtl:space-x-reverse space-x-2.5 rtl:mr-6 ltr:ml-6;
+    }
+  }
+
+  &__display-all {
+    @apply inline-flex items-center gap-2 text-sm font-bold opacity-80 hover:opacity-100;
+
+    i {
+      @apply ltr:rotate-180 inline-block;
+    }
+  }
+}
+
+/*
+  Main slider
+*/
+.s-block--hero-slider {
+  .swiper-slide {
+    @apply relative bg-gray-800;
+    aspect-ratio: 1 / 0.5;
+
+    @media (min-width: 640px) {
+      aspect-ratio: 12 / 5;
+    }
+
+    @media (min-width: 1024px) {
+      aspect-ratio: 12 / 5.5;
+    }
+
+    @media (min-width: 1280px) {
+      aspect-ratio: 12 / 5.5;
+    }
+
+    .swiper-lazy {
+      &:after {
+        @apply content-[''] absolute transition top-0 bg-black/60 w-full h-full;
+      }
+    }
+
+    .overlay-bg {
+      &:after {
+        @apply content-[''] absolute top-0 bg-black/60 w-full h-full;
+      }
+    }
+  }
+}
+
+/* Slider-block skeletons (SSR and the lazy placeholders registered in
+   router.tsx): sized like the loaded blocks, not the generic 380px + dots, so
+   nothing below moves when they load (CLS 0.255). Only while a skeleton shows:
+   otherwise the reserved height stays. */
+.s-block--enhanced-slider:has(.s-skeleton-slider),
+.s-block--main-links:has(.s-skeleton-slider),
+.s-block--square-links:has(.s-skeleton-slider) {
+  min-height: 0 !important;
+
+  .s-skeleton-thumbs-centered,
+  .s-skeleton-slider-thumbs {
+    display: none;
+  }
+}
+
+.s-block--enhanced-slider .s-skeleton-slider-image {
+  height: auto !important;
+  aspect-ratio: 12 / 5; /* EnhancedSlider's slide ratio */
+}
+
+/* Boxed variant: the loaded slider is `.container`-capped, so the skeleton
+   matches (same width, padding and cap as the container class). */
+.s-block--enhanced-slider-boxed .s-skeleton-slider-image {
+  margin-inline: auto;
+  max-width: calc(1280px - 20px);
+  width: calc(100% - 20px);
+}
+
+.s-block--main-links .s-skeleton-slider-image {
+  height: 112px !important;
+
+  @media (min-width: 768px) {
+    height: 128px !important;
+  }
+}
+
+/* square-links keeps the 144px card look (.slide--cat-entry h-36), not
+   main-links' avatar restyle. */
+.s-block--square-links .s-skeleton-slider-image {
+  height: 144px !important;
+}
+
+/* EnhancedSlider's SSR poster of slide 1, laid over the slider until Swiper is up. */
+.enhanced-slider {
+  position: relative;
+}
+
+.enhanced-slider__poster {
+  position: absolute;
+  inset-inline: 0;
+  top: 0;
+  z-index: 3; /* takes taps until handover: its CTA works, the controls under it stay inert */
+}
+
+/* Banner Block */
+.banner {
+  @media screen and (min-width: 768px) {
+    &:hover {
+      .banner__title {
+        animation: toTopFromBottom 0.9s;
+      }
+
+      .banner__description {
+        animation: delayKeyframe 0.3s, toTopFromBottom 0.9s 0.3s;
+      }
+    }
+  }
+
+  &--fixed {
+    img {
+      @apply w-full object-cover rounded-md border-none block bg-gray-100;
+    }
+  }
+}
+
+/* Square Banner Block */
+.banner-entry {
+  @apply h-[200px] min-h-[200px] bg-gray-100 text-white text-center p-3 xs:p-4 rounded-md overflow-hidden relative !bg-cover !bg-no-repeat !bg-center;
+
+  article {
+    @apply flex flex-col items-center justify-center h-full p-2.5
+  }
+
+  &.square-photos h3 {
+    @apply h-full px-3;
+  }
+
+  h3 {
+    @apply flex flex-col justify-center xs:px-1;
+
+    &.text-with-border {
+      @apply xs:border border-dashed border-gray-200 rounded-md;
+
+      span {
+        @apply line-clamp-2;
+      }
+    }
+  }
+
+  p {
+    @apply line-clamp-2 opacity-80;
+  }
+
+  h3,
+  p {
+    @apply lg:opacity-0 transition-all duration-300 relative z-1 lg:translate-y-6;
+  }
+
+  &:hover {
+    h3 {
+      @apply opacity-100 translate-y-0;
+    }
+
+    p {
+      @apply opacity-80 translate-y-0;
+    }
+  }
+
+  .two-row & {
+    &:first-child {
+      @apply md:h-full sm:col-span-1 sm:row-span-2 p-5;
+
+      >a {
+        @apply opacity-100;
+      }
+
+      h3 {
+        @apply text-2xl leading-12;
+      }
+    }
+  }
+}
+
+.has-overlay {
+  &:after {
+    @apply content-[''] h-full w-full bg-black/60 absolute top-0 left-0 transition-colors duration-300;
+  }
+
+  &.with-hover {
+    &:after {
+      transition: opacity .3s;
+      opacity: 0;
+    }
+
+    &:hover {
+      &:after {
+        opacity: 1;
+      }
+    }
+  }
+
+  &:hover:after {
+    @apply bg-black/70
+  }
+}
+
+
+/* Full banner block */
+.full-banner-entry {
+  @apply row-span-2 bg-stone-200 transition-opacity hover:opacity-95 bg-center bg-cover text-white text-center p-5 overflow-hidden relative bg-fixed;
+  aspect-ratio: 12 / 5;
+  min-height: 320px;
+
+  background-attachment: initial;
+
+  &::after,
+  &::before {
+    height: 100%;
+    width: 100%;
+    top: 0;
+    right: -93%;
+    content: "";
+    background: var(--color-primary);
+    position: absolute;
+    transition: all 0.3s ease-in-out;
+    transform: rotate(220deg) translateY(-50%) translateX(33%);
+    opacity: 0.25;
+  }
+
+  &::before {
+    background: #fff;
+    right: auto;
+    transform: rotate(220deg) translateY(-40%) translateX(0);
+
+    [dir="ltr"] & {
+      left: -52%;
+    }
+  }
+
+  @media (max-width: 1330px) {
+    &::after {
+      top: -50%;
+    }
+  }
+
+  @media (max-width: 480px) {
+    &::before {
+      top: 20%;
+    }
+
+    &::after {
+      top: -80%;
+    }
+  }
+}
+
+/*
+  Tabs Block
+*/
+.tabs-wrapper {
+  .tabs__item {
+    @apply hidden transition-all duration-300;
+
+    &.is-active {
+      @apply block;
+    }
+  }
+}
+
+.s-block--tabs-produtcs {
+  .tabs {
+    @apply text-center pb-6 sm:pb-10 px-5 -mx-2.5 sm:-mx-5 lg:mx-0 rtl:space-x-reverse space-x-1 md:space-x-4 whitespace-nowrap overflow-x-auto;
+  }
+
+  .tab-trigger {
+    @apply text-gray-800;
+
+    &.is-active button {
+      @apply text-primary-reverse bg-primary-dark border-primary-dark;
+    }
+  }
+}
+
+.s-block--special-products {
+  .tabs {
+    @apply mb-4 sm:mb-0 rtl:space-x-reverse space-x-2 md:space-x-8 whitespace-nowrap overflow-x-auto;
+
+    &__item {
+      @apply flex-1 gap-2.5 sm:gap-8;
+
+      &.is-active {
+        display: grid;
+      }
+    }
+  }
+
+  .tab-trigger {
+    @apply text-gray-800 font-bold leading-7;
+
+    &.is-active button {
+      @apply text-primary-dark border-primary-dark;
+    }
+  }
+}
+
+.s-block--tabs-produtcs,
+.s-block--special-products {
+  &:not(.tabs-initialized) {
+    .tabs-wrapper>div:not(:first-child) {
+      display: none;
+    }
+  }
+}
+
+/*
+  Featured-products pill tab bar — full-viewport-width strip, primary/10 ground,
+  rounded buttons that fill with primary on hover / active.
+  Markup: app/components/home/FeaturedProducts.tsx (TabTriggers).
+*/
+.s-block--featured-products {
+  .tabs {
+    @apply flex items-center justify-center gap-2 mb-6 lg:mb-12 px-4 h-[76px] overflow-x-auto whitespace-nowrap;
+    /* break out of the centered `.container` to span the whole viewport
+       (`.app-inner` clips the ~scrollbar overhang from `100vw`) */
+    width: 100vw;
+    margin-inline: calc(50% - 50vw);
+    background-color: color-mix(in srgb, var(--color-primary) 10%, transparent);
+  }
+
+  .tab-trigger {
+    @apply inline-flex items-center justify-center rounded-full px-5 h-11 shrink-0 text-sm font-semibold leading-none text-gray-700 bg-transparent transition-colors;
+
+    .s-button-text {
+      @apply leading-[1.6];
+    }
+
+    &:hover,
+    &.is-active {
+      @apply bg-primary text-primary-reverse opacity-100;
+    }
+  }
+
+  .s-products-list-wrapper.s-products-list-vertical-cards {
+    @apply lg:grid-cols-5 lg:gap-6;
+  }
+}
+
+/* feature products*/
+.s-block--features-products {
+  &.two-cols {
+    .inner {
+      display: grid;
+      @apply lg:grid-cols-2 gap-5;
+    }
+  }
+}
+
+/* slider with bg block */
+.s-block--slider-with-bg {
+  @apply bg-gray-100 pb-8 sm:pb-16 mt-8 sm:mt-16 first-of-type:mt-0;
+
+  .slider-bg {
+    @apply transition-opacity bg-center bg-cover text-white relative;
+    aspect-ratio: 12 / 5;
+    min-height: 384px;
+
+    &:before {
+      content: '';
+      @apply h-full w-full bg-black opacity-60 absolute top-0 left-0;
+    }
+  }
+
+  .s-slider-block {
+    &__title-right {
+      @apply hidden;
+    }
+
+    &__title-left {
+      @apply w-full flex justify-between;
+    }
+
+    &__display-all {
+      @apply block btn btn--outline light btn--rounded-full;
+      @apply grow-0 bg-transparent text-white #{!important};
+    }
+  }
+}
+
+/*
+  Main Links Block
+*/
+.slide--cat-entry {
+  @apply bg-white rounded-md h-36 p-3 text-center flex flex-col items-center justify-center transition duration-500 hover:shadow-default hover:text-gray-500 border border-gray-100;
+
+  i {
+    @apply inline-block text-primary text-icon-lg mb-4;
+  }
+
+  h2 {
+    @apply font-bold text-sm;
+  }
+}
+
+/*
+  offers slider
+*/
+.slide--offer-entry {
+  @apply bg-white rounded-md h-36 text-center flex flex-col items-center justify-between text-gray-600 transition duration-500 hover:shadow-default border border-gray-200;
+}
+
+/*
+  Photos slider — plain linked images/banners in a horizontal scroller with
+  a progress bar + arrows (the same `ScrollCarousel` as the testimonials and
+  products sliders). Markup: app/components/home/PhotosSlider.tsx
+*/
+.s-photos-slider__slide {
+  @apply block shrink-0 rounded-2xl overflow-hidden bg-gray-100;
+  flex: 0 0 88%;
+  aspect-ratio: 3 / 2;
+  scroll-snap-align: start;
+
+  @media (min-width: 640px) {
+    flex-basis: 70%;
+  }
+
+  @media (min-width: 1024px) {
+    flex-basis: calc(50% - 1rem);
+  }
+
+  img {
+    @apply w-full h-full object-cover;
+  }
+}
+
+.s-block--photos-slider {
+  /* Same container treatment as the testimonials carousel: the row starts
+     flush with the container's edge but is free to bleed past it into the
+     viewport edge, instead of being boxed in on both sides. */
+  .scroll-carousel__track {
+    padding-inline-start: max(1rem, calc(50% - 630px));
+    padding-inline-end: 1rem;
+    scroll-padding-inline-start: max(1rem, calc(50% - 630px));
+  }
+
+  .scroll-carousel__controls {
+    @apply container;
+  }
+}
+
+
+.s-block {
+  @apply mt-8 sm:mt-16;
+
+  &:first-of-type {
+    @apply mt-5;
+  }
+
+  &.skeleton-block-hero {
+    min-height: 350px;
+  }
+
+  &.skeleton-block-products {
+    min-height: 450px;
+  }
+
+  &--full-bg {
+
+    +footer,
+    +.s-block--full-bg,
+    &:first-of-type {
+      @apply mt-0;
+    }
+
+    +.merge-with-top-component {
+      @apply -mt-28 md:-mt-32 z-1;
+
+      .s-slider-block__title {
+        color: #fff !important;
+        @apply text-center sm:text-start sm:mb-4;
+      }
+    }
+
+    +.merged-has-no-title {
+      @apply -mt-16 md:-mt-[74px];
+
+      .s-slider-block__title {
+        @apply sm:mb-0;
+      }
+    }
+  }
+
+  &--categories {
+    @apply relative overflow-hidden;
+
+    &__title {
+      @apply font-bold text-base sm:text-lg sm:mb-4 relative z-1 min-h-[28px];
+    }
+  }
+
+  &--features {
+    &__item {
+      @apply cursor-pointer bg-white transition-shadow duration-500 shadow-[5px_10px_30px_rgba(43,45,52,0.12)] hover:shadow-[5px_10px_30px_rgba(43,45,52,0.2)] rounded-2xl flex-grow flex flex-col items-center px-4 py-8 md:px-8 text-center;
+
+      &:first-child {
+        @apply col-span-2 md:col-span-1;
+      }
+
+      .feature-icon {
+        @apply mb-3 bg-primary w-16 h-16 rounded-full flex items-center justify-center overflow-hidden;
+
+        i {
+          @apply text-primary-reverse text-3xl;
+        }
+      }
+
+      h2 {
+        @apply font-bold text-sm text-gray-800 mb-1;
+      }
+
+      p {
+        @apply text-sm text-gray-500;
+      }
+
+      &:hover {
+        .feature-icon i {
+          animation: toRightFromLeft 0.3s forwards;
+        }
+      }
+    }
+  }
+}
+
+// repeated block with narrow top spacing
+.s-block--features+.s-block--features,
+.s-block--fixed-banner+.s-block--fixed-banner,
+.s-block--banners+.s-block--banners {
+  margin-top: 2em;
+}
+
+.s-block--tabs-produtcs+.s-block--tabs-produtcs {
+  padding-top: 2em;
+}
+
+/*
+  Fixed Products Grid
+*/
+.s-products-list-wrapper.s-products-list-vertical-cards {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 1rem;
+
+  @media (max-width: 767px) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  &.s-products-list-with-filters {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+
+    /* mobile: 2 columns (the unconditional 3-col rule above would otherwise
+       beat the parent's `max-width: 767px` rule) */
+    @media (max-width: 767px) {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    /* desktop: 4 columns even with the filter sidebar */
+    @media (min-width: 1024px) {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+  }
+}
+
+/*
+  Component path-based classes
+  Each s-block--{path} extends the original CSS classes it needs.
+  RenderWhenVisible applies s-block s-block--${data.path} as className.
+*/
+%salla-container {
+  width: 100%;
+  margin-right: auto;
+  margin-left: auto;
+  padding-right: 10px;
+  padding-left: 10px;
+  max-width: 1280px;
+}
+
+.s-block--products-slider {
+  @extend %salla-container;
+  @apply overflow-hidden;
+}
+
+.s-block--fixed-products {
+  @extend %salla-container;
+  @apply overflow-hidden;
+}
+
+.s-block--testimonial {
+  @extend .s-block--testimonials;
+  @extend %salla-container;
+  @apply overflow-hidden;
+}
+
+.s-block--store-features {
+  @extend .s-block--features;
+  @extend %salla-container;
+}
+
+.s-block--parallax-background {
+  @extend .s-block--full-bg;
+}
+
+.s-block--square-photos {
+  @extend %salla-container;
+}
+
+.s-block--square-photos+.s-block--square-photos {
+  margin-top: 2em;
+}
+
+.s-block--brands {
+  @extend .s-block--full-bg;
+  @apply bg-gray-100 pt-8 sm:pt-12 pb-8 sm:pb-20;
+}
+
+.s-block--enhanced-slider {
+  @extend .s-block--hero-slider;
+  @extend .s-block--full-bg;
+
+  /* CTA pill under the title / subtitle — `EnhancedSlider.tsx` only renders it
+     when the slide has a `btnname`. */
+  .home-slider__cta {
+    @apply mt-6 inline-flex items-center justify-center rounded-full bg-white px-7 py-3 text-sm font-bold text-gray-900 shadow-lg transition-transform hover:scale-[1.03] hover:no-underline;
+  }
+
+  salla-slider.fullwidth-slider {
+    position: relative;
+  }
+
+  /* Optional "in container" layout (twilight.json `in_container` toggle on
+     the home.enhanced-slider block) — boxed width matching `.container`,
+     with rounded corners on the slider as a whole (not per-slide, so the
+     rounding stays put while slides transition underneath it) instead of an
+     edge-to-edge image. */
+  salla-slider.in-container {
+    @apply container;
+
+    .s-slider-container {
+      @apply rounded-2xl overflow-hidden;
+    }
+  }
+
+  .s-slider-block__title {
+    @apply flex justify-center items-center absolute inset-x-0 bottom-6 z-[3] m-0 h-0 bg-transparent p-0 sm:bottom-8 max-w-none #{!important};
+  }
+
+  .s-slider-block__title-nav {
+    @apply relative gap-10 w-full;
+    @apply top-0 transform-none left-0 #{!important};
+  }
+
+  /* More than 5 slides needs extra breathing room between the arrows. */
+  salla-slider:has(.swiper-slide:nth-child(4)) .s-slider-block__title-nav {
+    @apply gap-16;
+  }
+
+  /* More than 5 slides needs extra breathing room between the arrows. */
+  salla-slider:has(.swiper-slide:nth-child(6)) .s-slider-block__title-nav {
+    @apply gap-[100px];
+  }
+
+  /* More than 5 slides needs extra breathing room between the arrows. */
+  salla-slider:has(.swiper-slide:nth-child(10)) .s-slider-block__title-nav {
+    @apply gap-[140px];
+  }
+
+  .s-slider-nav-arrow {
+    @apply shrink-0 z-[1] inline-flex h-12 w-12 m-0 items-center justify-center rounded-full border-0 bg-transparent p-0 text-white shadow-none transition-colors hover:bg-white/15 #{!important};
+
+    .s-slider-button-icon {
+      display: none !important;
+    }
+
+    &::before {
+      content: '';
+      display: block;
+      width: 1.5rem;
+      height: 1.5rem;
+      background-color: currentColor;
+      -webkit-mask-repeat: no-repeat;
+      mask-repeat: no-repeat;
+      -webkit-mask-position: center;
+      mask-position: center;
+      -webkit-mask-size: contain;
+      mask-size: contain;
+    }
+  }
+
+  .s-slider-prev::before {
+    -webkit-mask-image: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2024%2024'%20fill='none'%20stroke='black'%20stroke-width='1.5'%20stroke-linecap='round'%20stroke-linejoin='round'%3E%3Cpath%20d='M9.00005%206C9.00005%206%2015%2010.4189%2015%2012C15%2013.5812%209%2018%209%2018'/%3E%3C/svg%3E");
+    mask-image: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2024%2024'%20fill='none'%20stroke='black'%20stroke-width='1.5'%20stroke-linecap='round'%20stroke-linejoin='round'%3E%3Cpath%20d='M9.00005%206C9.00005%206%2015%2010.4189%2015%2012C15%2013.5812%209%2018%209%2018'/%3E%3C/svg%3E");
+  }
+
+  .s-slider-next::before {
+    -webkit-mask-image: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2024%2024'%20fill='none'%20stroke='black'%20stroke-width='1.5'%20stroke-linecap='round'%20stroke-linejoin='round'%3E%3Cpath%20d='M15%206C15%206%209.00001%2010.4189%209%2012C8.99999%2013.5812%2015%2018%2015%2018'/%3E%3C/svg%3E");
+    mask-image: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2024%2024'%20fill='none'%20stroke='black'%20stroke-width='1.5'%20stroke-linecap='round'%20stroke-linejoin='round'%3E%3Cpath%20d='M15%206C15%206%209.00001%2010.4189%209%2012C8.99999%2013.5812%2015%2018%2015%2018'/%3E%3C/svg%3E");
+  }
+
+  .swiper-pagination-bullets.swiper-pagination-horizontal.swiper-pagination {
+    @apply absolute inset-x-0 bottom-7 z-[2] m-0 flex items-center justify-center gap-1.5;
+  }
+
+  .swiper-pagination-bullet {
+    @apply h-1.5 w-1.5 rounded-full bg-white/40 opacity-100;
+    margin: 0 !important;
+    transition:
+      width 0.25s ease,
+      background-color 0.25s ease;
+  }
+
+  .swiper-pagination-bullet-active {
+    @apply w-6 bg-white;
+  }
+}
+
+/*
+  Custom testimonials — full-width gray band with a horizontal card scroller.
+  Markup: app/components/home/CustomTestimonials.tsx
+*/
+.s-block--custom-testimonials {
+  @apply bg-gray-50 py-10 lg:py-16 overflow-hidden;
+}
+
+/*
+  `salla-reviews` (the engine "testimonials" block, also rendered at the bottom
+  of the product page) always paints its heading + an empty slider even with no
+  reviews. Collapse it while it has no real slides so it leaves no gap.
+*/
+salla-reviews:not(:has(.s-reviews-swiper-slide)) {
+  display: none;
+}
+
+.s-testimonials {
+  &__head {
+    @apply mb-6 lg:mb-10;
+  }
+
+  &__title {
+    @apply text-xl font-bold text-gray-900;
+  }
+
+  &__desc {
+    @apply mt-2 text-sm text-gray-500;
+  }
+
+  &__scroller {
+    @apply flex gap-4 lg:gap-6 overflow-x-auto pb-1 cursor-grab;
+    scroll-snap-type: x proximity;
+    /* the row starts at the container's start edge (right in RTL) and its tail
+       bleeds to the opposite viewport edge */
+    padding-inline-start: max(1rem, calc(50% - 630px));
+    padding-inline-end: 1rem;
+    scroll-padding-inline-start: max(1rem, calc(50% - 630px));
+
+    &.is-dragging {
+      @apply cursor-grabbing select-none;
+      scroll-snap-type: none;
+      scroll-behavior: auto;
+    }
+  }
+
+  &__controls {
+    @apply flex items-center gap-4 mt-6 lg:mt-8;
+  }
+
+  &__nav {
+    @apply flex items-center gap-2 shrink-0;
+
+    button {
+      @apply w-11 h-11 rounded-full border border-gray-300 text-gray-600 inline-flex items-center justify-center transition-colors hover:border-primary hover:text-primary;
+
+      svg {
+        @apply w-5 h-5;
+      }
+    }
+  }
+
+  &__progress {
+    @apply relative flex-1 h-0.5 bg-gray-200 rounded-full;
+  }
+
+  &__progress-thumb {
+    @apply absolute top-0 h-0.5 bg-gray-900 rounded-full transition-all duration-200;
+  }
+}
+
+.testimonial-card {
+  @apply flex-shrink-0 flex flex-col bg-white rounded-2xl p-5 lg:p-6;
+  flex-basis: clamp(260px, 30%, 340px);
+  scroll-snap-align: start;
+
+  &__head {
+    @apply flex items-start justify-between gap-3 mb-4;
+  }
+
+  &__rating {
+    @apply inline-flex items-center gap-1 shrink-0 bg-gray-100 rounded-full px-2.5 py-1 text-sm font-bold text-gray-800;
+
+    svg {
+      @apply w-3.5 h-3.5 fill-current text-amber-400;
+    }
+  }
+
+  &__person {
+    @apply flex items-center gap-2.5 rtl:text-right ltr:text-left;
+  }
+
+  &__name {
+    @apply text-sm font-bold text-gray-900 whitespace-nowrap;
+  }
+
+  &__avatar {
+    @apply w-11 h-11 rounded-full object-cover shrink-0 bg-gray-100;
+  }
+
+  &__text {
+    @apply text-sm leading-6 text-gray-600 line-clamp-4;
+  }
+}
+
+/*
+  Shared scroll carousel (app/components/common/ScrollCarousel.tsx) — used by the
+  products slider block and the product page's "similar products" slider.
+*/
+.scroll-carousel {
+  &__track {
+    @apply flex gap-4 lg:gap-6 overflow-x-auto pb-1 cursor-grab;
+    scroll-snap-type: x proximity;
+
+    &.is-dragging {
+      @apply cursor-grabbing select-none;
+      scroll-snap-type: none;
+      scroll-behavior: auto;
+    }
+  }
+
+  &__controls {
+    @apply flex items-center gap-4 mt-6;
+  }
+
+  &__nav {
+    @apply flex items-center gap-2 shrink-0;
+
+    button {
+      @apply w-11 h-11 rounded-full border border-gray-300 text-gray-600 inline-flex items-center justify-center transition-colors hover:border-primary hover:text-primary;
+
+      svg {
+        @apply w-5 h-5;
+      }
+    }
+  }
+
+  &__progress {
+    @apply relative flex-1 h-0.5 bg-gray-200 rounded-full;
+  }
+
+  &__progress-thumb {
+    /* no transition — it must track `scrollLeft` frame-for-frame, otherwise it
+       lags behind (most visible at the start/end of a scroll). */
+    @apply absolute top-0 h-0.5 bg-gray-900 rounded-full;
+  }
+}
+
+.s-products-carousel {
+  @apply mt-4;
+
+  &__head {
+    @apply flex items-center justify-between mb-4;
+  }
+
+  &__title {
+    @apply text-lg font-bold text-gray-900;
+  }
+
+  /* Mobile shows two cards + a peek of the third; 4–5 across on desktop. */
+  &__slide {
+    flex: 0 0 calc(43% - 0.5rem);
+    scroll-snap-align: start;
+
+    @media (min-width: 640px) {
+      flex-basis: 42%;
+    }
+
+    @media (min-width: 768px) {
+      flex-basis: 30%;
+    }
+
+    @media (min-width: 1024px) {
+      flex-basis: 21%;
+    }
+  }
+}
+
+.s-block--main-links {
+  @extend .s-block--categories;
+
+  /* Circular avatar-style items: a rounded, tinted "bubble" holding the image
+     or icon, with the title sitting below it rather than inside a card. */
+  .slide--cat-entry {
+    @apply flex flex-col items-center gap-3 h-auto p-0 bg-transparent border-0 shadow-none hover:shadow-none hover:text-inherit;
+
+    &__media {
+      @apply flex shrink-0 items-center justify-center w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-gray-100 overflow-hidden transition-colors duration-300;
+    }
+
+    img {
+      @apply w-full h-full object-cover;
+    }
+
+    i {
+      @apply m-0 text-primary text-icon-lg;
+    }
+
+    h2 {
+      @apply text-sm font-bold text-gray-800 line-clamp-2;
+    }
+
+    &:hover {
+      .slide--cat-entry__media {
+        @apply bg-gray-200;
+      }
+
+      h2 {
+        @apply text-primary;
+      }
+    }
+  }
+}
+
+.s-block--square-links {
+  @extend .s-block--categories;
+}
+
+.s-block--slider-products-with-header {
+  @extend .s-block--slider-with-bg;
+  @extend .s-block--full-bg;
+
+  .s-product-card-content {
+    @apply p-3;
+  }
+
+  /* Mobile: two product cards + a peek of the third, matching the scroll
+     carousel. This block renders a Salla `salla-products-slider`, whose
+     `salla-slider type="carousel"` runs Swiper with `slidesPerView: 'auto'`
+     and `spaceBetween: 0`, so the slide's own width drives how many show; the
+     trailing padding stands in for the carousel's `gap`. */
+  @media (max-width: 639px) {
+    .swiper-slide {
+      width: 43vw;
+      padding-inline-end: 0.75rem;
+    }
+  }
+}
+
+.s-block--enhanced-square-banners {
+  @extend %salla-container;
+}
+
+.s-block--enhanced-square-banners+.s-block--enhanced-square-banners {
+  margin-top: 2em;
+}
+
+/*
+  Enhanced square banners — 5-photo hero mosaic: two stacked banners on each
+  side, one tall banner spanning both rows in the center. Only rendered when
+  there are exactly 5 banners (EnhancedSquareBanners.tsx); fewer banners keep
+  the plain `.banner-entry` grid above.
+*/
+.enhanced-square-banners-mosaic {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(2, minmax(0, 1fr));
+  grid-template-areas: 'tl center tr' 'bl center br';
+  @apply gap-3 sm:gap-6;
+  aspect-ratio: 21 / 8;
+
+  @media (max-width: 767px) {
+    grid-template-columns: 1fr;
+    grid-template-rows: none;
+    grid-template-areas: 'tl' 'center' 'tr' 'bl' 'br';
+    aspect-ratio: auto;
+  }
+}
+
+.enhanced-square-banner {
+  @apply relative flex items-center justify-center overflow-hidden rounded-2xl text-center text-white transition-opacity hover:opacity-95;
+
+  &:nth-child(1) {
+    grid-area: tl;
+  }
+
+  &:nth-child(2) {
+    grid-area: center;
+
+    .enhanced-square-banner__title {
+      @apply text-2xl sm:text-3xl;
+    }
+  }
+
+  &:nth-child(3) {
+    grid-area: tr;
+  }
+
+  &:nth-child(4) {
+    grid-area: bl;
+  }
+
+  &:nth-child(5) {
+    grid-area: br;
+  }
+
+  @media (max-width: 767px) {
+    aspect-ratio: 3 / 2;
+  }
+
+  &::after {
+    content: '';
+    @apply absolute inset-0 bg-black/35;
+  }
+
+  &__content {
+    @apply relative z-1 flex flex-col items-center gap-2 px-4;
+  }
+
+  &__title {
+    @apply text-xl sm:text-2xl font-bold leading-tight;
+  }
+
+  &__description {
+    @apply text-sm sm:text-base opacity-90;
+  }
+
+  &__cta {
+    @apply mt-3 inline-flex items-center justify-center rounded-full bg-white px-6 py-2.5 text-sm font-bold text-gray-900 shadow-lg transition-transform hover:scale-[1.03] hover:no-underline;
+  }
+}

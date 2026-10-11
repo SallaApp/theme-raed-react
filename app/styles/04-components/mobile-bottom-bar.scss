@@ -1,0 +1,221 @@
+/* =========================================================================
+   Mobile bottom bar — fixed, floating pill of four tabs (Home · Categories ·
+   Cart · User). Small screens only; hidden from `md` up where the header nav
+   takes over. The active tab (current route, or Categories while the drawer is
+   open) expands into a filled primary pill that reveals its label.
+   Markup: app/components/layout/MobileBottomBar.tsx (mounted in ThemeLayout).
+   ========================================================================= */
+
+.mobile-bottom-bar {
+  --mbb-badge-bg: #b3261e;
+  --mbb-badge-text: #ffffff;
+  /* Inactive icons read near-black in the design; nudge the theme text colour
+     darker rather than hard-coding so a light-on-dark theme still works. */
+  --mbb-muted: color-mix(in srgb, var(--color-text, #7c8082) 55%, #000 45%);
+
+  /* Above every overlay — the nav side panel (z-200), bottom sheets and the
+     user-menu sheet (z-210). Those panels pad their own bottoms to clear it. */
+  @apply fixed inset-x-0 bottom-0 z-[220] flex justify-center md:hidden;
+  padding: 0 16px calc(12px + env(safe-area-inset-bottom));
+  pointer-events: none;
+}
+
+/* Glass scrim — its own fixed layer, pinned to the viewport bottom and sitting
+   one z-index below the bar (220), so page content dissolves into it instead of
+   butting against a hard edge. Rendered as a sibling of the bar in
+   MobileBottomBar.tsx.
+
+   iOS-style frosted glass: a heavy blur plus a saturation / brightness lift
+   (Apple's "vibrancy" trick — colour behind bleeds through the frost) under a
+   translucent white tint that ramps from ~72% at the base to nothing up top.
+   The same ramp is the mask, so the blur itself feathers out instead of ending
+   on a hard line. Translucency lives in the gradient's alpha rather than a
+   blanket `opacity`, which would wash the frost out. */
+.mobile-bottom-bar-scrim {
+  @apply fixed inset-x-0 bottom-0 z-[219] md:hidden;
+  height: calc(72px + env(safe-area-inset-bottom));
+  pointer-events: none;
+  background: linear-gradient(
+    to top,
+    rgb(255 255 255 / 72%) 0%,
+    rgb(255 255 255 / 52%) 42%,
+    rgb(255 255 255 / 0%) 100%
+  );
+  backdrop-filter: blur(22px) saturate(180%) brightness(1.06);
+  -webkit-backdrop-filter: blur(22px) saturate(180%) brightness(1.06);
+  mask-image: linear-gradient(to top, #000 32%, rgb(0 0 0 / 0%) 100%);
+  -webkit-mask-image: linear-gradient(to top, #000 32%, rgb(0 0 0 / 0%) 100%);
+}
+
+.mobile-bottom-bar__inner {
+  @apply flex w-full max-w-md items-center justify-between gap-1 bg-white;
+  height: 52px;
+  border-radius: 9999px;
+  padding: 0 8px;
+  box-shadow: 0 8px 30px rgb(0 0 0 / 12%);
+  pointer-events: auto;
+  /* Not `overflow: hidden` — on the narrowest phones the active tab's
+     expanded pill (padding + label, below) can come within a few px of the
+     row's total width. Clipping would silently drop a tab (its icon read as
+     "missing"); letting it graze the rounded corner instead keeps every tab
+     visible and tappable. */
+}
+
+.mobile-bottom-bar__item {
+  @apply relative inline-flex flex-none items-center justify-center gap-0 no-underline;
+  min-width: 40px;
+  height: 36px;
+  padding: 0 6px;
+  border: 0;
+  border-radius: 9999px;
+  background: transparent;
+  color: var(--mbb-muted);
+  font: inherit;
+  cursor: pointer;
+  /* one shared curve + timing for the pill so the grow / colour shift read as
+     a single motion; slower than the label fade so the fill leads. */
+  transition:
+    color 0.32s cubic-bezier(0.22, 1, 0.36, 1),
+    background-color 0.32s cubic-bezier(0.22, 1, 0.36, 1),
+    padding 0.32s cubic-bezier(0.22, 1, 0.36, 1);
+
+  &.is-active {
+    /* Fallback: `--color-primary` is only set client-side, in a `useEffect`
+       (engine `applyTheme`) — before that runs (SSR, first paint, early
+       hydration) the property is unset and the pill would render with no
+       background at all, i.e. invisible against the bar's own white. */
+    background: var(--color-primary, #9ca3af);
+    color: var(--color-primary-reverse, #ffffff);
+    padding: 0 10px;
+  }
+}
+
+.mobile-bottom-bar__icon {
+  @apply relative flex flex-none items-center justify-center;
+  width: 24px;
+  height: 24px;
+}
+
+.mobile-bottom-bar svg {
+  width: 24px;
+  height: 24px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* The More tab's icon is a sallaicons glyph (no line-icon equivalent for
+   "horizontal ellipsis" in icons.tsx), sized to read at the same visual
+   weight as the 24px stroke icons beside it. */
+.mobile-bottom-bar__icon .sicon-ellipsis {
+  font-size: 22px;
+  line-height: 1;
+}
+
+.mobile-bottom-bar__label {
+  @apply block overflow-hidden whitespace-nowrap font-semibold;
+  max-width: 0;
+  margin-inline-start: 0;
+  font-size: 14px;
+  line-height: 1;
+  opacity: 0;
+  transform: translateX(4px);
+  /* deactivating: label fades + slides out quickly, then the pill collapses */
+  transition:
+    max-width 0.6s cubic-bezier(0.22, 1, 0.36, 1),
+    margin-inline-start 0.6s cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 0.14s ease,
+    transform 0.6s ease;
+}
+
+.mobile-bottom-bar__item.is-active .mobile-bottom-bar__label {
+  max-width: 6.5rem;
+  margin-inline-start: 8px;
+  opacity: 1;
+  transform: none;
+  /* activating: pill widens first, label eases in a beat later */
+  transition:
+    max-width 0.6s cubic-bezier(0.22, 1, 0.36, 1),
+    margin-inline-start 0.6s cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 0.22s ease 0.1s,
+    transform 0.22s cubic-bezier(0.22, 1, 0.36, 1) 0.1s;
+}
+
+/* Count badge on the cart icon. Brand-independent red so it always reads as an
+   alert regardless of the store's primary colour. */
+.mobile-bottom-bar__badge {
+  @apply absolute flex items-center justify-center rounded-full font-bold;
+  /* Bottom-centred on the icon, matching the header cart badge. */
+  bottom: -6px;
+  left: 50%;
+  transform: translateX(-50%);
+  min-width: 16px;
+  height: 16px;
+  padding: 0 3px;
+  border: 2px solid #ffffff;
+  background: var(--mbb-badge-bg);
+  color: var(--mbb-badge-text);
+  font-size: 10px;
+  line-height: 1;
+  animation: mbb-badge-pop 0.28s ease;
+}
+
+.mobile-bottom-bar__item.is-active .mobile-bottom-bar__badge {
+  border-color: var(--color-primary, #9ca3af);
+}
+
+@keyframes mbb-badge-pop {
+  from {
+    transform: translateX(-50%) scale(0.4);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(-50%) scale(1);
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mobile-bottom-bar__item,
+  .mobile-bottom-bar__label {
+    transition: none;
+  }
+
+  .mobile-bottom-bar__label {
+    transform: none;
+  }
+
+  .mobile-bottom-bar__badge {
+    animation: none;
+  }
+}
+
+/* Reserve room so the floating bar never covers the end of the page. The bar is
+   `md:hidden`, so this only applies on small screens. On the product page the
+   sticky add-to-cart bar adds more room on top of this (see `product.scss`). */
+@media (max-width: 767px) {
+  .app-inner {
+    /* bar (52) + its bottom gap (12) + breathing room (12) */
+    padding-bottom: calc(76px + env(safe-area-inset-bottom));
+  }
+}
+
+/* The engine's default product-page "add to cart" bar (`04-components/product.scss`,
+   `.sticky-product-bar`) is also `position: fixed; bottom: 0`, at a far lower
+   z-index (2) than this bar (220) — it would render directly underneath ours,
+   covered and untappable, with `product.scss`'s own `pb-28` reserving space only
+   for its own height, not ours on top of it. Lift it clear of this bar's real
+   footprint (76px, matching the reservation above) and extend the page's reserved
+   space to match. A stopgap until `product.scss` gets its own theme-owned sticky
+   bar (a later PR in this split) with its own coordination. */
+@media (max-width: 767px) {
+  body.product-single.is-sticky-product-bar {
+    padding-bottom: calc(76px + 112px + env(safe-area-inset-bottom)) #{!important};
+  }
+
+  body.product-single .sticky-product-bar {
+    bottom: calc(76px + env(safe-area-inset-bottom)) #{!important};
+  }
+}

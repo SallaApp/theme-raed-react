@@ -1,0 +1,592 @@
+html {
+  scroll-behavior: smooth;
+}
+
+// using salla.document.onClick(...), become effective when all children are none pointer events.
+.cursor-pointer * {
+  pointer-events: none;
+}
+
+.flip-x {
+  transform: scaleX(-1);
+}
+
+input[type='file'] {
+  display: none;
+}
+
+body {
+  [type='text'],
+  [type='email'],
+  [type='url'],
+  [type='password'],
+  [type='number'],
+  [type='date'],
+  [type='datetime-local'],
+  [type='month'],
+  [type='search'],
+  [type='tel'],
+  [type='time'],
+  [type='week'],
+  [multiple],
+  textarea,
+  select {
+    @apply focus:ring-0;
+  }
+}
+
+.text-start {
+  @apply rtl:text-right ltr:text-left;
+}
+
+/* Chrome, Safari, Edge, Opera */
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+[type='submit'] {
+  -webkit-appearance: listitem; // safari fix, none: disable css on web component
+}
+
+/* Firefox */
+input[type='number'] {
+  -moz-appearance: textfield;
+}
+
+.unicode {
+  unicode-bidi: plaintext;
+}
+
+.spinner-loader {
+  border-right-color: var(--color-primary) !important;
+
+  &.reverse {
+    border-right-color: #9f7171 !important;
+    background-color: #f98181;
+  }
+}
+
+.hide-scroll {
+  /* hide scrollbar but allow scrolling */
+  -ms-overflow-style: none;
+  /* for Internet Explorer, Edge */
+  scrollbar-width: none;
+  /* for Firefox */
+  overflow-y: scroll;
+
+  &::-webkit-scrollbar {
+    display: none;
+    /* for Chrome, Safari, and Opera */
+  }
+}
+
+.remove-item-btn:after {
+  content: '\ea47';
+  font-family: 'sallaicons' !important;
+  // speak: never;
+  font-style: normal;
+  font-weight: normal;
+  font-variant: normal;
+  text-transform: none;
+  line-height: 1;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.cart-thumb {
+  position: fixed;
+  z-index: 30;
+  transition: all 0.3s cubic-bezier(0.2, 1, 0.3, 1);
+}
+
+/* Hide scrollbar for Chrome, Safari and Opera */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* Hide scrollbar for IE, Edge and Firefox */
+.no-scrollbar {
+  -ms-overflow-style: none;
+  /* IE and Edge */
+  scrollbar-width: none;
+  /* Firefox */
+}
+
+// hide chat tags
+body {
+  &.fslightbox-open,
+  &.modal-open {
+    #tidio-chat-iframe,
+    .fb_reset,
+    [id^='gb-widget'] {
+      display: none !important;
+    }
+  }
+
+  // &.modal-open {
+  //   #tidio-chat-iframe, .fb_reset, [id^=gb-widget] {
+  //     display: none !important;
+  //   }
+  // }
+}
+
+// Loading Btn state
+.loader {
+  &:before {
+    content: '';
+    opacity: 1;
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    border: 2px solid;
+    border-top-color: var(--color-primary);
+    border-bottom-color: #eee;
+    border-left-color: var(--color-primary);
+    border-right-color: #eee;
+    animation: loader 1s ease-in-out infinite;
+
+    .btn--danger & {
+      border-top-color: #ff6767;
+      border-left-color: #ff6767;
+    }
+  }
+
+  &--small {
+    &:before {
+      width: 16px;
+      height: 16px;
+    }
+  }
+}
+
+@keyframes loader {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* originally authored by Nick Pettit - https://github.com/nickpettit/glide */
+.animated {
+  animation-duration: var(--animate-duration);
+  animation-fill-mode: both;
+}
+
+@keyframes pulse-anime {
+  from {
+    transform: scale3d(1, 1, 1);
+  }
+
+  50% {
+    transform: scale3d(1.05, 1.05, 1);
+  }
+
+  to {
+    transform: scale3d(1, 1, 1);
+  }
+}
+
+.pulse-anime {
+  animation-name: pulse-anime;
+  animation-timing-function: ease-in-out;
+}
+
+/*
+** Single page
+*/
+.content {
+  .content-entry {
+    img {
+      margin: 15px 0 25px;
+    }
+    ul,
+    li {
+      list-style: inherit !important;
+    }
+    ol {
+      list-style: auto !important;
+    }
+  }
+}
+
+/* Components Init*/
+
+salla-modal {
+  &:not(.hydrated) {
+    display: none;
+  }
+}
+
+// Unhydrated web components — reserve space to prevent CLS
+salla-slider {
+  display: block;
+}
+
+salla-advertisement {
+  display: block;
+}
+
+salla-offer-modal,
+salla-login-modal,
+salla-scopes {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 50;
+}
+
+salla-localization-modal {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  /* Opened from inside the header nav drawer (z-200 in header.scss); keep it
+     above so it isn't trapped behind the drawer's backdrop. */
+  z-index: 210;
+}
+
+/* On mobile every `salla-modal` (appended to <body>, e.g. the language /
+   currency picker) renders as a bottom sheet. The mobile bottom bar
+   (`.mobile-bottom-bar`, z-220) would otherwise paint over its lower rows,
+   so lift the whole modal above the bar. */
+@media (max-width: 767px) {
+  .s-modal-container {
+    @apply z-[999];
+  }
+
+  .s-modal-body {
+    bottom: 15px;
+  }
+
+  /* The SDK's own `.s-search-modal .s-modal-body` rule sets
+     `background: transparent` (confirmed in DevTools -- not theme CSS). On
+     desktop that's invisible, since the panel sits over its own opaque
+     container; on mobile the body *is* the bottom sheet's own surface, so
+     the backdrop dims straight through it, washing out the search box and
+     every suggestion row behind it. `!important` to beat the SDK rule's own
+     specificity -- same reasoning as `mobile-bottom-bar.scss`'s existing
+     `#{!important}` overrides for the same "beat a rule from outside this
+     theme" situation. */
+  .s-search-modal .s-modal-body {
+    background-color: #fff;
+    margin: 0;
+    max-width: 100%;
+    transform: none;
+    border-radius: 0;
+    bottom: 0;
+  }
+}
+
+/* video aspect ratio*/
+.videoWrapper {
+  position: relative;
+  padding-bottom: 56.25%; /* 16:9 */
+  height: 0;
+
+  > * {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    max-width: initial;
+  }
+}
+
+// grid trigger
+.grid-trigger {
+  @apply cursor-pointer mx-1 text-xl w-10 h-10 rounded-md flex items-center justify-center text-gray-400;
+}
+
+// center classes
+.flex-center {
+  @apply flex justify-center items-center;
+}
+
+.center-between {
+  @apply flex justify-between items-center;
+}
+
+.grow-0 {
+  flex-grow: 0 !important;
+}
+
+.basis-0 {
+  flex-basis: 0;
+}
+
+// Gradient Background
+.gradient-bg {
+  @apply from-primary to-primary-d;
+
+  [dir='ltr'] & {
+    @apply bg-gradient-to-r;
+  }
+
+  [dir='rtl'] & {
+    @apply bg-gradient-to-l;
+  }
+
+  @media (max-width: 1024px) {
+    &.profile-header {
+      background-image: none;
+
+      .breadcrumbs {
+        a,
+        span,
+        .arrow {
+          @apply text-gray-600;
+        }
+      }
+    }
+  }
+}
+
+// Small badge
+.badge {
+  @apply p-1 min-w-[20px] h-5 rounded-full inline-flex items-center justify-center text-xs;
+
+  &--red {
+    @apply bg-red-400 text-white;
+  }
+}
+
+// copy icon
+.copy-icon {
+  @apply text-xs;
+}
+
+.s-localization-modal-inner {
+  width: 100%;
+}
+
+// fix rating modal when there is multiple products in mobile
+.s-rating-modal-wrap .s-modal-body {
+  position: relative !important;
+}
+
+.s-verify-back {
+  top: 0.5rem;
+  svg {
+    max-width: 18px;
+    fill: rgba(107, 114, 128, var(--tw-text-opacity));
+  }
+}
+
+[dir='rtl'] .s-verify-back {
+  right: 0.5rem;
+}
+
+[dir='ltr'] .s-verify-back {
+  left: 0.5rem;
+}
+
+@media (max-width: 639px) {
+  .s-verify-back {
+    display: none;
+  }
+}
+
+.article {
+  &--main {
+    iframe {
+      width: 100%;
+      height: 30vw;
+      @media (max-width: 639px) {
+        height: 50vw;
+      }
+    }
+  }
+}
+
+// cart submit actions buttons
+.cart-submit-wrap {
+  @apply flex ltr:flex-wrap justify-between items-center -mx-[5px] gap-2.5;
+
+  > * {
+    @apply grow mx-[5px];
+  }
+}
+
+.s-button-btn,
+.s-price-range-number-input {
+  @apply rounded;
+}
+
+// salla app install banner
+.s-app-install-banner {
+  @apply hidden flex-row items-center fixed left-0 right-0 w-[95%] my-4 mx-auto z-[999] rounded-md p-3 gap-2 drop-shadow-md;
+  background-color: color-mix(in srgb, var(--color-primary) 15%, white);
+  &[open='false'] {
+    @apply hidden;
+  }
+  &[open='true'][position='top'] {
+    @apply flex transform duration-500;
+  }
+  &[open='true'][position='bottom'] {
+    @apply flex animate-slideUpFromBottom;
+  }
+  &[position='top'] {
+    @apply top-0 relative m-0 w-full rounded-none;
+  }
+  &[position='bottom'] {
+    @apply bottom-0;
+  }
+  &[closing][position='bottom'] {
+    @apply animate-slideDownFromBottom;
+    animation-fill-mode: forwards;
+  }
+  &-title {
+    @apply text-base font-bold text-primary;
+  }
+  &-sub-title {
+    @apply text-sm font-normal max-w-[95%];
+  }
+  &-cta {
+    @apply text-primary underline;
+  }
+  &-cancel-button {
+    @apply absolute top-2 rtl:left-3 ltr:right-3;
+  }
+}
+
+.blog-category {
+  ul,
+  ol {
+    @apply rtl:pr-4 ltr:pl-4;
+  }
+
+  ul li {
+    list-style: disc;
+  }
+
+  ol li {
+    list-style: auto;
+  }
+
+  a {
+    @apply text-primary hover:text-primary-d;
+  }
+}
+
+// Collapse component using CSS Grid
+.collapse-content {
+  display: grid;
+  grid-template-rows: 0fr;
+  opacity: 0;
+  transition:
+    grid-template-rows 225ms ease-out,
+    opacity 225ms ease-out;
+
+  > * {
+    overflow: hidden;
+    min-height: 0;
+  }
+
+  /* No `height: 0` / `height: auto` here — it isn't transitioned, so on close it
+     snaps the panel shut before the `grid-template-rows` animation can run. The
+     `0fr` ⇄ `1fr` row track (with the child's `overflow: hidden`) collapses and
+     expands on its own, animated both ways. */
+  &.is-closed {
+    overflow: hidden;
+  }
+
+  &.is-opened {
+    grid-template-rows: 1fr;
+    opacity: 1;
+  }
+}
+
+// Slide in animation (from right)
+@keyframes slideInStart {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.slide-in-start {
+  animation: slideInStart 500ms ease-out forwards;
+}
+
+// Scale pulse animation
+@keyframes scalePulse {
+  0% {
+    transform: scale(0.88);
+  }
+  50% {
+    transform: scale(1.2);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.scale-pulse {
+  animation: scalePulse 400ms ease-out;
+}
+
+// Fade out and collapse animation
+.fade-out-collapse {
+  transition:
+    height 300ms ease-in-out,
+    opacity 300ms ease-in-out;
+  height: 0 !important;
+  opacity: 0;
+  overflow: hidden;
+}
+
+/*
+  Loading-skeleton placeholder pulse (`Pulse` from
+  @salla.sa/twilight-components-react/skeletons, used across every
+  `*Skeleton` block). The component itself ships no CSS — its zoom in/out
+  comes from the runtime-injected base stylesheet, which loads after this one
+  and wins the cascade, so beating it needs `!important`. Swap it for a plain
+  opacity fade.
+*/
+@keyframes s-skeleton-pulse-fade {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.4;
+  }
+}
+
+.s-skeleton-pulse {
+  animation: s-skeleton-pulse-fade 1.5s ease-in-out infinite #{!important};
+  transform: none #{!important};
+}
+
+/* Off-screen, not-yet-mounted home blocks skip rendering, so their skeletons don't pulse unseen. */
+main > .s-block:nth-of-type(n + 4)[style*='min-height'] {
+  content-visibility: auto;
+}
+
+/* `SliderSkeleton`'s image placeholder (`photos-slider`'s loading state,
+   `app/router.tsx`) — the runtime stylesheet sets its own height, so match
+   the block's real rendered height instead of leaving the vendor default. */
+.s-skeleton-slider-image {
+  height: 380px #{!important};
+}
+
+/* `ProductDetailSkeleton`'s thumb strip (`app/routes/$slug.p$id.tsx`'s
+   `pendingComponent`) — the real slider hides thumbs on mobile too
+   (`.s-slider-thumbs`, `04-components/slider.scss`), so match that here
+   instead of showing a row the loaded page won't have. Scoped to the
+   product-detail skeleton's own wrapper — `SliderSkeleton` (home page)
+   reuses the same `.s-skeleton-slider-thumbs` class for its own thumbs. */
+@media (max-width: 767px) {
+  .s-skeleton-detail-images .s-skeleton-slider-thumbs {
+    display: none #{!important};
+  }
+}
