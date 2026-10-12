@@ -6,7 +6,7 @@ built with TanStack Start and Vite, rendered server-side in workerd via
 
 ## Quick start
 
-You need Node.js 22 or later and pnpm 10.
+You need pnpm 10 and Node.js 22 (22.22.2 or later), 24 (24.15.0 or later) or 26+.
 
 Scaffold a new theme with the Salla CLI:
 
