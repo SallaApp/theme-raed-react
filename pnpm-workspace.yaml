@@ -22,3 +22,8 @@ allowBuilds:
   sharp: true
   utf-8-validate: true
   workerd: true
+
+# Security patches for versions the engine's Cloudflare tooling pins; drop once the engine ships them.
+overrides:
+  'undici@>=7.0.0 <7.29.1': 7.29.1
+  'sharp@>=0.35.0 <0.35.5': 0.35.5
