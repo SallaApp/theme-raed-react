@@ -7,7 +7,7 @@ records where each one came from, so you can see what changed upstream.
 **Base** is the engine version in the repo when the fork was last edited. It is the oldest
 upstream change the fork might have taken in, not proof that it was synced then.
 
-| Fork (`app/components/…`)     | Engine source (`packages/theme-engine/src/…`) | Wired in by                                        | Base   | What the fork changes                                                                                      |
+| Fork (`app/components/…`)     | Engine source (`tailwind/…` in the engine)    | Wired in by                                        | Base   | What the fork changes                                                                                      |
 | ----------------------------- | --------------------------------------------- | -------------------------------------------------- | ------ | ---------------------------------------------------------------------------------------------------------- |
 | `product/ProductPage.tsx`     | `routes/product/ProductPage.tsx`              | `app/routes/$slug.p$id.tsx`                        | 1.0.78 | Renders the forks below and the theme `ProductsSlider`; drops the store-wide testimonials block            |
 | `product/ProductDetails.tsx`  | `components/product/ProductDetails.tsx`       | `ProductPage`                                      | 1.0.85 | Flat data-column blocks (no card background, rounding or padding)                                          |
@@ -21,18 +21,20 @@ upstream change the fork might have taken in, not proof that it was synced then.
 
 ## Upgrading the engine
 
-For each fork, diff its engine source from **Base** to the new version and port what applies:
+The engine package ships each component's source as `tailwind/<path>.tsx.txt`, under the path in
+**Engine source**. For each fork, compare that file between **Base** and the new version and port
+what applies:
 
 ```bash
-git diff engine-v1.0.78 engine-v1.0.90 -- packages/theme-engine/src/routes/product/ProductPage.tsx
+for v in 1.0.86 1.0.90; do
+  mkdir -p engine-$v && tar -xzf "$(npm pack @salla.sa/twilight-theme-engine@$v --silent)" -C engine-$v
+done
+diff -u engine-1.0.86/package/tailwind/routes/product/ProductPage.tsx.txt \
+  engine-1.0.90/package/tailwind/routes/product/ProductPage.tsx.txt
 ```
 
-Then set **Base** to the new version.
-
-Outside this monorepo, engine 1.0.86 and later ship each component's source in
-`node_modules/@salla.sa/twilight-theme-engine/tailwind/` as `<path>.tsx.txt`; compare that folder
-across the two versions. Older packages have no source copy, so for a **Base** before 1.0.86 diff
-the `engine-v<version>` tags above instead.
+Then set **Base** to the new version. Packages before 1.0.86 have no source copy, so for an older
+**Base** compare the fork with the 1.0.86 source in full.
 
 ## Adding a fork
 

@@ -6,6 +6,8 @@ built with TanStack Start and Vite, rendered server-side in workerd via
 
 ## Quick start
 
+You need Node.js 22 or later and pnpm 10.
+
 Scaffold a new theme with the Salla CLI:
 
 ```bash
@@ -26,13 +28,14 @@ store's settings don't pin a release (`theme.twilight.version`).
 
 ## Scripts
 
-| Script           | Description                          |
-| ---------------- | ------------------------------------ |
-| `pnpm dev`       | Start the Vite dev server (workerd)  |
-| `pnpm build`     | Production build                     |
-| `pnpm preview`   | Preview the production build         |
-| `pnpm typecheck` | TypeScript type checking             |
-| `pnpm test`      | Run the test suite (Vitest)          |
+| Script                | Description                         |
+| --------------------- | ----------------------------------- |
+| `pnpm dev`            | Start the Vite dev server (workerd) |
+| `pnpm build`          | Production build                    |
+| `pnpm preview`        | Preview the production build        |
+| `pnpm typecheck`      | TypeScript type checking            |
+| `pnpm test`           | Run the test suite (Vitest)         |
+| `pnpm check:manifest` | Validate `twilight.json`            |
 
 ## Deployment
 
