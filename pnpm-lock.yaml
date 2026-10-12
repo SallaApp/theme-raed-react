@@ -13,7 +13,7 @@ importers:
         version: 3.0.0-beta.1(@salla.sa/twilight-components@3.0.0-beta.1(@jitsu/protocols@1.11.0)(@types/dlv@1.1.5)(lit@3.3.3)(webpack@5.111.1(esbuild@0.28.2)(postcss@8.5.26)))(@stencil/core@4.45.2)(@types/react@19.3.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       '@salla.sa/twilight-theme-engine':
         specifier: ^1.0.0
-        version: 1.0.87(251326fd98eed1e5c3ac3697c77261e8)
+        version: 1.0.89(251326fd98eed1e5c3ac3697c77261e8)
       '@tanstack/react-query':
         specifier: ~5.102.8
         version: 5.102.8(react@19.2.8)
@@ -1291,8 +1291,8 @@ packages:
   '@salla.sa/twilight-tailwind-theme@3.0.0-beta.1':
     resolution: {integrity: sha512-h9+fWPUOpus7xe+Oh6fS4/lBoIXDEWzALBolgYZ/ADTBFWh9oO4761LMoPbR5ItSTCYjQKUlRy7OJ5qu47X1Aw==}
 
-  '@salla.sa/twilight-theme-engine@1.0.87':
-    resolution: {integrity: sha512-R2UMYS9ddKHozBkxf20xJ7hujnIgwtMzz6A1QhGMej1e5uOzSAt+EciXbpREb959Ds8BmUbJFyuE+qXUU3+yjQ==}
+  '@salla.sa/twilight-theme-engine@1.0.89':
+    resolution: {integrity: sha512-h+4R0J538KmlMHrweDollxZrKo4N/md4ytU9mFV1eulF8c15JEHfGza4RNjT0qv5sLANpSIAGC5nLyeJ5lj6Nw==}
     hasBin: true
     peerDependencies:
       '@tanstack/react-query': ~5.102.8
@@ -4576,7 +4576,7 @@ snapshots:
 
   '@salla.sa/twilight-tailwind-theme@3.0.0-beta.1': {}
 
-  '@salla.sa/twilight-theme-engine@1.0.87(251326fd98eed1e5c3ac3697c77261e8)':
+  '@salla.sa/twilight-theme-engine@1.0.89(251326fd98eed1e5c3ac3697c77261e8)':
     dependencies:
       '@cloudflare/vite-plugin': 1.53.1(bufferutil@4.1.0)(utf-8-validate@5.0.10)(vite@8.2.2(@types/node@26.6.5)(esbuild@0.28.2)(jiti@1.21.7)(sass@1.105.1)(terser@5.51.2))(wrangler@4.125.0(bufferutil@4.1.0)(utf-8-validate@5.0.10))
       '@justinribeiro/lite-youtube': 1.9.0
