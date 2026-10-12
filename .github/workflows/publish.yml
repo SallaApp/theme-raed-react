@@ -21,7 +21,7 @@ concurrency:
 jobs:
   publish:
     name: Publish
-    if: github.repository == 'SallaApp/theme-raed-react'
+    if: github.repository == 'SallaApp/theme-raed-react' && github.ref == 'refs/heads/master'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -75,7 +75,7 @@ jobs:
             console.log((newer > 0 ? own : next).join("."));
           ' "$(node -p 'require("./package.json").version')" "$LATEST")
           echo "npm latest ${LATEST}, releasing ${VERSION}"
-          (cd "$STAGE" && npm version "$VERSION" --no-git-tag-version)
+          (cd "$STAGE" && npm version "$VERSION" --no-git-tag-version --allow-same-version)
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
 
       - name: Publish to npm
