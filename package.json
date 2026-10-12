@@ -1,6 +1,6 @@
 {
   "name": "@salla.sa/theme-raed",
-  "version": "1.0.56",
+  "version": "1.0.57",
   "description": "Raed — Salla React storefront theme starter: a TanStack Start (workerd SSR) storefront powered by @salla.sa/twilight-theme-engine",
   "type": "module",
   "scripts": {

@@ -94,10 +94,10 @@ Before using one, `read` `/web-components/<tag>` (for example `/web-components/s
 ## Verify
 
 ```bash
+pnpm build
 pnpm typecheck
 pnpm test
-pnpm build
 pnpm check:manifest   # after editing twilight.json: duplicate ids, missing options, bad values
 ```
 
-Do not start `pnpm dev` yourself; ask the user to run it. The engine's `dist/` must exist for typecheck to work.
+Do not start `pnpm dev` yourself; ask the user to run it. Typecheck needs `app/routeTree.gen.ts`, which `pnpm build` or `pnpm dev` generates.

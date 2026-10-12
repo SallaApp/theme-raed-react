@@ -56,7 +56,11 @@ function RootComponent() {
           </a>
           .
         </noscript>
-        <TwilightProvider translations={themeTranslations} layout={ThemeLayout}>
+        <TwilightProvider
+          translations={themeTranslations}
+          layout={ThemeLayout}
+          toastMobilePosition="top-center"
+        >
           <Outlet />
         </TwilightProvider>
         <TanStackRouterDevtools position="bottom-right" />

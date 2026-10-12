@@ -11,10 +11,7 @@ import { withHead } from '@salla.sa/twilight-theme-engine/tanstack';
  */
 export const Route = createFileRoute('/{-$locale}/blog/$slug/c-{$id}')({
   loader: ({ params }): Promise<BlogCategoryLoaderData> =>
-    BlogCategoryRoute.loader({
-      params: { slug: params.slug, id: params.id },
-      locale: params.locale,
-    }),
+    BlogCategoryRoute.loader({ params: { slug: params.slug, id: params.id }, locale: params.locale }),
   head: withHead(BlogCategoryRoute),
   pendingComponent: () => <BlogSkeleton />,
   component: BlogCategoryRouteComponent,

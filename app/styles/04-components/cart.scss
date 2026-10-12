@@ -45,9 +45,18 @@
   free-shipping progress box (`#free-shipping`) — flat and gray instead of the
   default white drop-shadow card.
 */
+#cart-gifting,
 .cart .shadow-default.transition-height,
 .cart #free-shipping {
   @apply bg-gray-100 shadow-none rounded;
+}
+
+#cart-gifting .s-gifting-widget .s-list-tile-item{
+  @apply bg-transparent;
+}
+
+salla-list-tile.s-gifting-widget .s-list-tile-item-content::before{
+  @apply max-w-[100%];
 }
 
 /* Free-shipping progress track (engine default `bg-border-color`) — darken it so
