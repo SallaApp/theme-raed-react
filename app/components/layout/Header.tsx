@@ -286,7 +286,8 @@ export function Header({ navOpen: navOpenProp, onNavOpenChange }: HeaderProps = 
         </div>
       </div>
 
-      <HeaderIntro />
+      {/* Store name, description, social and contacts: home page only. */}
+      {isHomePage && <HeaderIntro />}
 
       <HeaderNav open={navOpen} onClose={() => setNavOpen(false)} />
 

@@ -2,6 +2,7 @@ import React from 'react';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, fireEvent, act } from '@testing-library/react';
 import { Header } from '../../../app/components/layout/Header';
+import { HOME_ROUTE_ID } from '../../../app/lib/routeIds';
 
 const state = {
   store: {
@@ -106,6 +107,7 @@ describe('Header', () => {
   });
 
   it('renders the store name, description and social links in the intro row', () => {
+    state.routeIds = [HOME_ROUTE_ID];
     const { container } = render(<Header />);
     const intro = container.querySelector('.site-header__intro-inner');
     expect(intro?.querySelector('.site-header__intro-title')?.textContent).toBe('Acme');
@@ -116,6 +118,7 @@ describe('Header', () => {
   });
 
   it('hides the store info row when header_show_store_info is off', () => {
+    state.routeIds = [HOME_ROUTE_ID];
     state.theme = { settings: { header_show_store_info: false } };
     const { container } = render(<Header />);
     expect(container.querySelector('.site-header__intro')).toBeNull();
@@ -123,11 +126,13 @@ describe('Header', () => {
   });
 
   it('shows the store info row when header_show_store_info is unset', () => {
+    state.routeIds = [HOME_ROUTE_ID];
     const { container } = render(<Header />);
     expect(container.querySelector('.site-header__intro')).toBeTruthy();
   });
 
   it("labels the header phone with Twig's contact title, not a placeholder", () => {
+    state.routeIds = [HOME_ROUTE_ID];
     state.store = { ...state.store, contacts: { phone: '+971500000000' } };
     const { container } = render(<Header />);
     expect(container.querySelector('salla-contacts')?.getAttribute('data-contacts-title')).toBe(
@@ -136,17 +141,27 @@ describe('Header', () => {
   });
 
   it('omits the description block when the store has none', () => {
+    state.routeIds = [HOME_ROUTE_ID];
     state.store.description = '';
     const { container } = render(<Header />);
     expect(container.querySelector('.site-header__intro-text')).toBeNull();
   });
 
-  it('uses <h1> for the intro title on the homepage and <p> elsewhere', () => {
-    const { container, rerender } = render(<Header />);
+  it('uses <h1> for the intro title on the homepage', () => {
+    state.routeIds = [HOME_ROUTE_ID];
+    const { container } = render(<Header />);
     expect(container.querySelector('h1.site-header__intro-title')?.textContent).toBe('Acme');
+  });
+
+  it('shows the store info row only on the homepage', () => {
+    state.routeIds = [HOME_ROUTE_ID];
+    const { container, rerender } = render(<Header />);
+    expect(container.querySelector('.site-header__intro')).toBeTruthy();
+
+    state.routeIds = ['/{-$locale}/$slug/p{$id}'];
     state.isHome = false;
     rerender(<Header />);
-    expect(container.querySelector('p.site-header__intro-title')?.textContent).toBe('Acme');
+    expect(container.querySelector('.site-header__intro')).toBeNull();
   });
 
   it('opens the nav drawer when the menu button is clicked', () => {
@@ -233,11 +248,13 @@ describe('Header', () => {
   });
 
   it('reserves the social row when the store has social links', () => {
+    state.routeIds = [HOME_ROUTE_ID];
     const { container } = render(<Header />);
     expect(container.querySelector('.site-header__social-slot.has-links')).toBeTruthy();
   });
 
   it('does not reserve the social row when the store has no social links', () => {
+    state.routeIds = [HOME_ROUTE_ID];
     state.store = { ...state.store, social: { twitter: '' } };
     const { container } = render(<Header />);
     expect(container.querySelector('.site-header__social-slot')).toBeTruthy();
@@ -251,6 +268,7 @@ describe('Header', () => {
   });
 
   it('reserves the contacts row only when the store has contacts', () => {
+    state.routeIds = [HOME_ROUTE_ID];
     const { container, rerender } = render(<Header />);
     expect(container.querySelector('.site-header__contacts-slot.has-contacts')).toBeNull();
     state.store = { ...state.store, contacts: { email: 'hi@acme.test' } };
