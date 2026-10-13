@@ -359,7 +359,7 @@ salla-gifting {
        `.app-inner` rule so it wins here.
        190px = nav (52 content + 12 own gap) + 10 breathing room + this bar's own height. */
     &.product-single .app-inner {
-      padding-bottom: calc(190px + env(safe-area-inset-bottom));
+      padding-bottom: calc(190px + var(--flow-safe-bottom));
     }
 
     .sticky-product-bar {
@@ -372,7 +372,7 @@ salla-gifting {
       width: auto;
       border-radius: 1.5rem;
       /* nav (52 content + 12 own gap) + 10 breathing room above it */
-      bottom: calc(70px + env(safe-area-inset-bottom));
+      bottom: calc(70px + var(--safe-bottom));
 
       &__quantity,
       salla-add-product-button {
@@ -626,7 +626,7 @@ salla-gifting {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: calc(env(safe-area-inset-top) + 0.75rem) 1rem 0;
+    padding: calc(var(--flow-safe-top) + 0.75rem) 1rem 0;
     pointer-events: none;
     visibility: hidden;
     opacity: 0;

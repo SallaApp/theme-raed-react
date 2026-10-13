@@ -40,7 +40,9 @@
     box-shadow 0.25s ease;
 
   &.is-scrolled {
-    @apply fixed inset-x-0 top-0 bg-white border-gray-100 shadow-sm;
+    @apply fixed inset-x-0 bg-white border-gray-100 shadow-sm;
+    /* below the status bar inside the Salla app; 0 in a browser */
+    top: var(--app-safe-area-top, 0px);
   }
 }
 
@@ -245,7 +247,7 @@
   .site-header__actions .s-user-menu-dropdown {
     @apply absolute inset-x-0 bottom-0 max-h-[85vh] overflow-y-auto overscroll-contain rounded-t-2xl bg-white shadow-2xl;
     /* clear the mobile bottom bar, which sits on top (z-220) */
-    padding-bottom: calc(76px + env(safe-area-inset-bottom));
+    padding-bottom: calc(76px + var(--safe-bottom));
     transform: translateY(100%);
     transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
@@ -474,7 +476,7 @@
     transform: translateY(100%);
     /* the mobile bottom bar overlays the sheet (z-220); pad so the footer bar
        and the last links clear it */
-    padding-bottom: calc(76px + env(safe-area-inset-bottom));
+    padding-bottom: calc(76px + var(--safe-bottom));
 
     /* grab handle */
     &::before {

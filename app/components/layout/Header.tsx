@@ -13,6 +13,7 @@ import { Image } from '@salla.sa/twilight-theme-engine/common';
 import { PageAdvertisements } from '@salla.sa/twilight-theme-engine/layout';
 import { MapPinIcon, SearchIcon, ShoppingBagIcon } from '../icons';
 import { useHydrated } from '../../hooks/useHydrated';
+import { useAppSafeAreaTop } from '../../hooks/useAppSafeAreaTop';
 import { HOME_ROUTE_ID, PRODUCT_ROUTE_ID } from '../../lib/routeIds';
 import { HeaderNav } from './HeaderNav';
 import { HeaderTopnav } from './HeaderTopnav';
@@ -160,6 +161,9 @@ export function Header({ navOpen: navOpenProp, onNavOpenChange }: HeaderProps = 
   // Marker in the flow, right where the main bar sits. The bar pins once this
   // scrolls out the top of the viewport (see below).
   const stickySentinelRef = useRef<HTMLDivElement>(null);
+  // Inside the Salla app the pinned bar sits below the status bar, so it must
+  // pin when the sentinel reaches that line, not the screen's top edge.
+  const safeTop = useAppSafeAreaTop();
 
   // Pin the main bar on scroll.
   //  - lite: near-immediately, once the page moves off the top;
@@ -186,10 +190,11 @@ export function Header({ navOpen: navOpenProp, onNavOpenChange }: HeaderProps = 
     if (!sentinel) return;
     const observer = new IntersectionObserver(([entry]) => setScrolled(!entry.isIntersecting), {
       threshold: 0,
+      rootMargin: `-${safeTop}px 0px 0px 0px`,
     });
     observer.observe(sentinel);
     return () => observer.disconnect();
-  }, [isDefaultLayout, stickyEnabled]);
+  }, [isDefaultLayout, stickyEnabled, safeTop]);
 
   const searchLabel = t('blocks.header.search', 'Search');
 

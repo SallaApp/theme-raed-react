@@ -16,7 +16,7 @@
   /* Above every overlay — the nav side panel (z-200), bottom sheets and the
      user-menu sheet (z-210). Those panels pad their own bottoms to clear it. */
   @apply fixed inset-x-0 bottom-0 z-[220] flex justify-center md:hidden;
-  padding: 0 16px calc(12px + env(safe-area-inset-bottom));
+  padding: 0 16px calc(12px + var(--safe-bottom));
   pointer-events: none;
 }
 
@@ -33,7 +33,7 @@
    blanket `opacity`, which would wash the frost out. */
 .mobile-bottom-bar-scrim {
   @apply fixed inset-x-0 bottom-0 z-[219] md:hidden;
-  height: calc(72px + env(safe-area-inset-bottom));
+  height: calc(72px + var(--safe-bottom));
   pointer-events: none;
   background: linear-gradient(
     to top,
@@ -197,8 +197,9 @@
    sticky add-to-cart bar adds more room on top of this (see `product.scss`). */
 @media (max-width: 767px) {
   .app-inner {
-    /* bar (52) + its bottom gap (12) + breathing room (12) */
-    padding-bottom: calc(76px + env(safe-area-inset-bottom));
+    /* bar (52) + its bottom gap (12) + breathing room (12); body padding
+       already covers the app's inset */
+    padding-bottom: calc(76px + var(--flow-safe-bottom));
   }
 }
 
@@ -212,10 +213,10 @@
    bar (a later PR in this split) with its own coordination. */
 @media (max-width: 767px) {
   body.product-single.is-sticky-product-bar {
-    padding-bottom: calc(76px + 112px + env(safe-area-inset-bottom)) #{!important};
+    padding-bottom: calc(76px + 112px + var(--safe-bottom)) #{!important};
   }
 
   body.product-single .sticky-product-bar {
-    bottom: calc(76px + env(safe-area-inset-bottom)) #{!important};
+    bottom: calc(76px + var(--safe-bottom)) #{!important};
   }
 }

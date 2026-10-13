@@ -15,6 +15,13 @@ input[type='file'] {
   display: none;
 }
 
+/* Inside the Salla app, keep the page clear of the status bar and the home
+   indicator with the insets the app reports. Unset (0) in a browser. */
+body {
+  padding-top: var(--app-safe-area-top, 0px);
+  padding-bottom: var(--app-safe-area-bottom, 0px);
+}
+
 body {
   [type='text'],
   [type='email'],

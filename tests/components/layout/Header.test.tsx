@@ -86,6 +86,11 @@ beforeEach(() => {
   state.routeIds = [];
 });
 
+afterEach(() => {
+  document.documentElement.style.removeProperty('--app-safe-area-top');
+  vi.unstubAllGlobals();
+});
+
 describe('Header', () => {
   it('renders the shell: logo, actions, search modal, cart, and the hook slots', () => {
     const { container, getAllByLabelText } = render(<Header />);
@@ -166,6 +171,33 @@ describe('Header', () => {
     Object.defineProperty(window, 'scrollY', { value: 10, configurable: true });
     fireEvent.scroll(window);
     expect(container.querySelector('.site-header__bar.is-scrolled')).toBeTruthy();
+  });
+
+  it("pins the default layout at the Salla app's status bar line, and follows the inset", async () => {
+    const margins: string[] = [];
+    vi.stubGlobal(
+      'IntersectionObserver',
+      class {
+        constructor(_cb: unknown, options: { rootMargin?: string }) {
+          margins.push(options.rootMargin ?? '');
+        }
+        observe() {}
+        unobserve() {}
+        disconnect() {}
+      }
+    );
+    // Only the header's pin observer sets a top margin; other observers on the page don't.
+    const pinMargins = () => margins.filter((m) => m.startsWith('-'));
+    state.theme = { settings: { header_layout: 'default' } };
+    document.documentElement.style.setProperty('--app-safe-area-top', '62px');
+    render(<Header />);
+    expect(pinMargins().at(-1)).toBe('-62px 0px 0px 0px');
+
+    // The app reports a new inset: the engine rewrites the variable.
+    await act(async () => {
+      document.documentElement.style.setProperty('--app-safe-area-top', '47px');
+    });
+    expect(pinMargins().at(-1)).toBe('-47px 0px 0px 0px');
   });
 
   it('never pins the bar when header_is_sticky is disabled', () => {
