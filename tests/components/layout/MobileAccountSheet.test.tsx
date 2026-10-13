@@ -207,6 +207,29 @@ describe('MobileAccountSheet', () => {
       expect(whatsapp?.getAttribute('target')).toBe('_blank');
     });
 
+    it('lists a landline phone the store set, linking it as tel:', async () => {
+      twilight.store = { scope: null, settings: {}, contacts: { phone: '+966 11 000 0000' } };
+      renderSheet();
+      await settle();
+
+      const phone = screen.getByText('+966 11 000 0000').closest('a');
+      expect(screen.getByText('Phone')).toBeTruthy();
+      expect(phone?.getAttribute('href')).toBe('tel:+966 11 000 0000');
+    });
+
+    it('lists the number once when the phone and mobile are the same', async () => {
+      twilight.store = {
+        scope: null,
+        settings: {},
+        contacts: { phone: '+966500000000', mobile: '+966500000000' },
+      };
+      renderSheet();
+      await settle();
+
+      expect(screen.getAllByText('+966500000000')).toHaveLength(1);
+      expect(screen.queryByText('Phone')).toBeNull();
+    });
+
     it('strips a leading @ from a telegram handle when building its link', async () => {
       twilight.store = { scope: null, settings: {}, contacts: { telegram: '@acme_store' } };
       renderSheet();

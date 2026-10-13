@@ -207,6 +207,17 @@ function ContactsList() {
           href: `tel:${contacts.mobile}`,
         }
       : null,
+    // The landline, when the store has one apart from its mobile. The footer's
+    // phone / email row is hidden in this sheet, so the number is listed here.
+    contacts?.phone && contacts.phone !== contacts.mobile
+      ? {
+          key: 'phone',
+          icon: 'sicon-phone',
+          label: t('blocks.footer.phone', 'Phone'),
+          value: contacts.phone,
+          href: `tel:${contacts.phone}`,
+        }
+      : null,
     contacts?.whatsapp
       ? {
           key: 'whatsapp',
@@ -247,7 +258,7 @@ function ContactsList() {
 /**
  * Full-height sheet the mobile bottom bar's More tab opens. Two card groups --
  * settings (account, language, currency, branch, important links) then
- * contacts (telegram, email, mobile, WhatsApp, each conditional on the
+ * contacts (telegram, email, mobile, phone, WhatsApp, each conditional on the
  * merchant actually having set it) -- followed by the same footer widgets
  * (logo, description, social, tax / SBC / trust badges, footer menu, app
  * buttons, copyright, payments) the page footer itself hides on mobile.
