@@ -62,6 +62,47 @@
         }
       ]
     },
+        {
+      "type": "boolean",
+      "icon": "sicon-toggle-off",
+      "label": "عرض معلومات المتجر أسفل الشريط الرئيسي",
+      "description": "اسم المتجر ووصفه وروابط التواصل الاجتماعي وبيانات التواصل أسفل اللوجو (في الهيدر المبسّط فقط)",
+      "id": "header_show_store_info",
+      "format": "switch",
+      "required": false,
+      "value": true,
+      "selected": true,
+      "conditions": [
+        {
+          "id": "header_layout",
+          "operation": "=",
+          "value": "lite"
+        }
+      ]
+    },
+    {
+      "type": "boolean",
+      "icon": "sicon-toggle-off",
+      "label": "عرض معلومات المتجر في الصفحة الرئيسية فقط",
+      "description": "عند إلغاء التفعيل تظهر معلومات المتجر في جميع الصفحات",
+      "id": "header_store_info_home_only",
+      "format": "switch",
+      "required": false,
+      "value": true,
+      "selected": true,
+      "conditions": [
+        {
+          "id": "header_layout",
+          "operation": "=",
+          "value": "lite"
+        },
+        {
+          "id": "header_show_store_info",
+          "operation": "=",
+          "value": true
+        }
+      ]
+    },
     {
       "id": "header_is_sticky",
       "label": "تثبت القائمة الرئيسية أعلى الصفحة عند التمرير لأسفل",
@@ -105,47 +146,6 @@
       "required": false,
       "value": true,
       "selected": true
-    },
-    {
-      "type": "boolean",
-      "icon": "sicon-toggle-off",
-      "label": "عرض معلومات المتجر أسفل الشريط الرئيسي",
-      "description": "اسم المتجر ووصفه وروابط التواصل الاجتماعي وبيانات التواصل أسفل اللوجو (في الهيدر المبسّط فقط)",
-      "id": "header_show_store_info",
-      "format": "switch",
-      "required": false,
-      "value": true,
-      "selected": true,
-      "conditions": [
-        {
-          "id": "header_layout",
-          "operation": "=",
-          "value": "lite"
-        }
-      ]
-    },
-    {
-      "type": "boolean",
-      "icon": "sicon-toggle-off",
-      "label": "عرض معلومات المتجر في الصفحة الرئيسية فقط",
-      "description": "عند إلغاء التفعيل تظهر معلومات المتجر في جميع الصفحات",
-      "id": "header_store_info_home_only",
-      "format": "switch",
-      "required": false,
-      "value": true,
-      "selected": true,
-      "conditions": [
-        {
-          "id": "header_layout",
-          "operation": "=",
-          "value": "lite"
-        },
-        {
-          "id": "header_show_store_info",
-          "operation": "=",
-          "value": true
-        }
-      ]
     },
     {
       "type": "static",
