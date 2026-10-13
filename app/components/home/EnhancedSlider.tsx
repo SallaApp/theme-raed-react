@@ -36,12 +36,12 @@ export interface EnhancedSliderProps {
 
 function SlideText({ slide, poster }: { slide: SliderBanner; poster?: boolean }) {
   return (
-    <div className="flex-center container pb-16 sm:pb-0 home-slider__content relative h-full">
+    <div className="flex-center container py-16 sm:py-0 home-slider__content relative h-full">
       <div className="w-4/6 text-center md:w-7/12 lg:w-5/12 text-white">
         {slide.title && (
           <h2
             data-swiper-parallax="-500"
-            className="lg:text-title-size font-bold leading-tight mb-4"
+            className="lg:text-title-size font-bold leading-tight mb-4 last:mb-0"
           >
             {slide.title}
           </h2>
