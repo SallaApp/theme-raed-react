@@ -197,21 +197,45 @@
   }
 }
 
-/* `footer_is_dark` sets `color: white` on `.store-footer` itself
-   (footer.scss) -- the sheet's cards stay light regardless (matching the
-   settings/contacts cards above them), but that white inherits straight into
-   them with nothing of this redesign's own to override it, so text (the
-   description, tax / SBC labels, FooterTrust's own content) turns invisible
-   against their white background. Forced back to the light-card colors. */
+/* The sheet's footer is always light, whatever `footer_is_dark` says: its
+   cards sit in the light sheet next to the settings/contacts cards. With the
+   setting on, `Footer` paints `.store-footer__inner` dark (the band around
+   the cards), sets `color: white` on `.store-footer`, and adds `text-white`
+   to the tax / SBC labels; footer.scss turns the menu links white. All of it
+   is put back to the light footer's colours here. */
 body.footer-is-dark .store-footer--sheet {
+  @apply text-gray-600;
+
+  .store-footer__inner {
+    @apply bg-transparent;
+  }
+
   .store-footer__brand,
   .store-footer__centered,
   .store-footer__apps {
     @apply text-gray-600;
 
+    /* An attribute selector, not `.text-white`: Tailwind folds any `.text-white`
+       rule into that utility, which breaks every `@apply text-white`. */
+    [class~='text-white'] {
+      @apply text-gray-600;
+    }
+
     h3 {
       @apply text-gray-900;
     }
+  }
+
+  .store-footer__menu--stacked .s-menu-footer-item {
+    @apply text-gray-600;
+  }
+
+  .store-footer__menu--inline .s-menu-footer-item {
+    @apply border-gray-300 text-gray-600;
+  }
+
+  .copyright-text {
+    @apply text-gray-700;
   }
 }
 
@@ -283,7 +307,7 @@ body.footer-is-dark .store-footer--sheet {
   @apply py-2;
 }
 
-body:not(.footer-is-dark) .store-footer--sheet .store-footer__bottom {
+.store-footer--sheet .store-footer__bottom {
   @apply bg-white;
 }
 

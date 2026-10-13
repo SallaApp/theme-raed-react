@@ -25,6 +25,14 @@ function rulesFor(root: Root, selector: string): Rule[] {
   return rules;
 }
 
+function rulesMatching(root: Root, pattern: RegExp): Rule[] {
+  const rules: Rule[] = [];
+  root.walkRules((rule) => {
+    if (rule.selectors.some((sel) => pattern.test(sel))) rules.push(rule);
+  });
+  return rules;
+}
+
 function decl(rule: Rule, prop: string): string | undefined {
   let value: string | undefined;
   rule.walkDecls(prop, (d) => {
@@ -53,16 +61,51 @@ describe('page footer on mobile', () => {
 });
 
 describe('account sheet copyright strip', () => {
-  it('is white only inside the sheet, and not under footer_is_dark', async () => {
+  it('is white only inside the sheet, footer_is_dark or not', async () => {
     const root = await compile('mobile-account-sheet.scss');
 
     expect(rulesFor(root, '.store-footer__bottom')).toHaveLength(0);
 
-    const [rule] = rulesFor(
-      root,
-      'body:not(.footer-is-dark) .store-footer--sheet .store-footer__bottom'
+    const backgrounds = rulesFor(root, '.store-footer--sheet .store-footer__bottom').map((rule) =>
+      decl(rule, 'background-color')
     );
-    expect(decl(rule, 'background-color')).toContain('rgb(255 255 255');
+    expect(backgrounds.some((bg) => bg?.includes('rgb(255 255 255'))).toBe(true);
+  });
+});
+
+describe('account sheet footer under footer_is_dark', () => {
+  it("drops the dark band behind the cards and keeps the cards' text dark", async () => {
+    const root = await compile('mobile-account-sheet.scss');
+
+    const [inner] = rulesFor(
+      root,
+      'body.footer-is-dark .store-footer--sheet .store-footer__inner'
+    );
+    expect(decl(inner, 'background-color')).toBe('transparent');
+
+    // Sass may drop the attribute value's quotes, so match the selector loosely.
+    const [white] = rulesMatching(
+      root,
+      /footer-is-dark \.store-footer--sheet \.store-footer__brand \[class~=['"]?text-white/
+    );
+    expect(white).toBeDefined();
+    expect(decl(white, 'color')).not.toMatch(/255 255 255|#fff/i);
+  });
+
+  it('puts the menu links and the copyright back to the light footer colours', async () => {
+    const root = await compile('mobile-account-sheet.scss');
+    const sheet = 'body.footer-is-dark .store-footer--sheet';
+    const gray600 = 'rgb(75 85 99';
+
+    const [stacked] = rulesFor(root, `${sheet} .store-footer__menu--stacked .s-menu-footer-item`);
+    expect(decl(stacked, 'color')).toContain(gray600);
+
+    const [inline] = rulesFor(root, `${sheet} .store-footer__menu--inline .s-menu-footer-item`);
+    expect(decl(inline, 'color')).toContain(gray600);
+    expect(decl(inline, 'border-color')).toContain('rgb(209 213 219'); // gray-300
+
+    const [copyright] = rulesFor(root, `${sheet} .copyright-text`);
+    expect(decl(copyright, 'color')).toContain('rgb(55 65 81'); // gray-700
   });
 });
 
