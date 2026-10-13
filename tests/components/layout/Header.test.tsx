@@ -153,7 +153,7 @@ describe('Header', () => {
     expect(container.querySelector('h1.site-header__intro-title')?.textContent).toBe('Acme');
   });
 
-  it('shows the store info row only on the homepage', () => {
+  it('shows the store info row on the homepage only by default', () => {
     state.routeIds = [HOME_ROUTE_ID];
     const { container, rerender } = render(<Header />);
     expect(container.querySelector('.site-header__intro')).toBeTruthy();
@@ -161,6 +161,29 @@ describe('Header', () => {
     state.routeIds = ['/{-$locale}/$slug/p{$id}'];
     state.isHome = false;
     rerender(<Header />);
+    expect(container.querySelector('.site-header__intro')).toBeNull();
+  });
+
+  it('shows the store info row on every page when home-only is off', () => {
+    state.theme = { settings: { header_store_info_home_only: false } };
+    state.routeIds = ['/{-$locale}/$slug/p{$id}'];
+    state.isHome = false;
+    const { container } = render(<Header />);
+    expect(container.querySelector('.site-header__intro')).toBeTruthy();
+  });
+
+  it('never shows the store info row in the default header layout', () => {
+    vi.stubGlobal(
+      'IntersectionObserver',
+      class {
+        observe() {}
+        unobserve() {}
+        disconnect() {}
+      }
+    );
+    state.theme = { settings: { header_layout: 'default', header_store_info_home_only: false } };
+    state.routeIds = [HOME_ROUTE_ID];
+    const { container } = render(<Header />);
     expect(container.querySelector('.site-header__intro')).toBeNull();
   });
 
