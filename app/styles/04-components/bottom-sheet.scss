@@ -22,7 +22,7 @@
 }
 
 .bottom-sheet {
-  @apply absolute inset-x-0 bottom-0 flex max-h-[85vh] flex-col rounded-t-2xl bg-white shadow-2xl;
+  @apply absolute inset-x-0 bottom-0 flex max-h-[85vh] flex-col rounded-t bg-white shadow-2xl;
   padding-bottom: var(--safe-bottom);
   transform: translateY(100%);
   transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);

@@ -68,5 +68,5 @@ salla-list-tile.s-gifting-widget .s-list-tile-item-content::before{
 /* Coupon field — match the 16px button roundness (`.s-button-btn`), not the
    6px `.form-input` default. */
 #coupon-input {
-  @apply rounded-2xl;
+  @apply rounded;
 }
