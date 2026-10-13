@@ -4,8 +4,7 @@ import { SallaContacts } from '@salla.sa/twilight-components-react/contacts';
 import { useTwilight } from '@salla.sa/twilight-theme-engine/providers';
 import { useTranslation } from '@salla.sa/twilight-theme-engine/i18n';
 import { ChevronDownIcon, LanguagesIcon, MapPinIcon, Money01Icon } from '../icons';
-
-const dispatch = (name: string) => window.salla?.event?.dispatch(name);
+import { openStoreSwitcher, type StoreSwitcher } from '../../lib/storeSwitchers';
 
 /** One topnav trigger: leading icon, current-selection label, caret. */
 function TopnavAction({
@@ -35,9 +34,9 @@ function TopnavAction({
  * Top bar for the "default" header layout — the footer menu on the start side
  * and the language / branch / currency switchers on the end side. Desktop only
  * (`lg+`); on smaller screens the header collapses to the shared mobile bar.
- * Language + currency open the shared `<SallaLocalizationModal>` via
- * `localization::open`; the branch button opens `<SallaScopes>` via
- * `scopes::open` (both mounted in `ThemeLayout`). Styling: `header.scss`
+ * Each opens through `openStoreSwitcher` (`lib/storeSwitchers.ts`): the
+ * shared modals on the web, the app's own sheets for language and currency
+ * inside the Salla app. Styling: `header.scss`
  * (`.site-header__topnav`).
  */
 export function HeaderTopnav() {
@@ -47,27 +46,24 @@ export function HeaderTopnav() {
   const currencyLabel = currency?.name || currency?.symbol || currency?.code || 'SAR';
   const scopeLabel = store?.scope?.name || t('blocks.header.branches', 'Branches');
 
-  const actions: { key: string; show: boolean; icon: ReactNode; label: string; event: string }[] = [
+  const actions: { key: StoreSwitcher; show: boolean; icon: ReactNode; label: string }[] = [
     {
       key: 'language',
       show: !!store?.settings?.is_multilingual,
       icon: <LanguagesIcon className="site-header__topnav-icon" aria-hidden="true" />,
       label: languageName,
-      event: 'localization::open',
     },
     {
       key: 'branch',
       show: !!store?.scope,
       icon: <MapPinIcon className="site-header__topnav-icon" aria-hidden="true" />,
       label: scopeLabel,
-      event: 'scopes::open',
     },
     {
       key: 'currency',
       show: !!store?.settings?.currencies_enabled,
       icon: <Money01Icon className="site-header__topnav-icon" aria-hidden="true" />,
       label: currencyLabel,
-      event: 'localization::open',
     },
   ];
 
@@ -90,7 +86,7 @@ export function HeaderTopnav() {
                 key={action.key}
                 icon={action.icon}
                 label={action.label}
-                onClick={() => dispatch(action.event)}
+                onClick={() => openStoreSwitcher(action.key)}
               />
             ))}
           <SallaContacts

@@ -8,6 +8,7 @@ import { BottomSheet } from '../common/BottomSheet';
 import { useCloseOnDesktop } from '../../hooks/useCloseOnDesktop';
 import { ROWS_IN_DELAY_MS } from '../../hooks/useStaggeredRows';
 import { ArrowLeftIcon, LanguagesIcon, MapPinIcon, Money01Icon, UserIcon } from '../icons';
+import { openStoreSwitcher, type StoreSwitcher } from '../../lib/storeSwitchers';
 
 interface MobileAccountSheetProps {
   open: boolean;
@@ -38,10 +39,10 @@ function whatsappHref(value: string): string {
   return isUrl(value) ? value : `https://wa.me/${value.replace(/[\s+-]/g, '')}`;
 }
 
-/** Close the sheet, then dispatch one of the shared modal-open events (ThemeLayout mounts both). */
-function openModal(event: string, onClose: () => void) {
+/** Close the sheet, then open the switcher (the web modal, or the app's own sheet). */
+function openSwitcher(switcher: StoreSwitcher, onClose: () => void) {
   onClose();
-  window.salla?.event?.dispatch(event);
+  openStoreSwitcher(switcher);
 }
 
 interface ListRowProps {
@@ -99,12 +100,11 @@ function SettingsList({
   // Same shape, same three conditions, as HeaderNav's own NavFooter -- the two
   // never disagree about what the store supports.
   const rows: {
-    key: string;
+    key: StoreSwitcher;
     show: boolean;
     icon: ReactNode;
     label: string;
     value?: string;
-    event: string;
   }[] = [
     {
       key: 'language',
@@ -112,7 +112,6 @@ function SettingsList({
       icon: <LanguagesIcon aria-hidden="true" />,
       label: t('blocks.header.change_language', 'Change language'),
       value: languageName,
-      event: 'localization::open',
     },
     {
       key: 'currency',
@@ -120,7 +119,6 @@ function SettingsList({
       icon: <Money01Icon aria-hidden="true" />,
       label: t('blocks.header.change_currency', 'Change currency'),
       value: currencyLabel,
-      event: 'localization::open',
     },
     {
       key: 'branch',
@@ -128,7 +126,6 @@ function SettingsList({
       icon: <MapPinIcon aria-hidden="true" />,
       label: t('blocks.header.branches', 'Branch'),
       value: store?.scope?.name,
-      event: 'scopes::open',
     },
   ];
 
@@ -157,7 +154,7 @@ function SettingsList({
             icon={row.icon}
             label={row.label}
             value={row.value}
-            onClick={() => openModal(row.event, onClose)}
+            onClick={() => openSwitcher(row.key, onClose)}
           />
         ))}
 

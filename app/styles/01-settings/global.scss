@@ -27,4 +27,17 @@ $main-text-color: var(--main-text-color);
   
   /* plugins */
   --mm-ocd-width: calc(100% - 51px);
+
+  /* The device's unsafe edges (notch / status bar, home indicator). In the Salla
+     app the engine writes the app's own insets (`mobile::ui.safearea`) to
+     `--app-safe-area-*`; in a browser they are unset and env() answers. Taking
+     the larger keeps one inset from being counted twice. */
+  --safe-top: max(env(safe-area-inset-top, 0px), var(--app-safe-area-top, 0px));
+  --safe-bottom: max(env(safe-area-inset-bottom, 0px), var(--app-safe-area-bottom, 0px));
+  /* What is left for an element in the page flow: `body` is already padded by
+     the app's insets (02-generic/common.scss), so only the part env() asks for
+     beyond them. env() in a browser; normally 0 in the app. Fixed elements,
+     which body padding doesn't move, use `--safe-*`. */
+  --flow-safe-top: max(0px, env(safe-area-inset-top, 0px) - var(--app-safe-area-top, 0px));
+  --flow-safe-bottom: max(0px, env(safe-area-inset-bottom, 0px) - var(--app-safe-area-bottom, 0px));
 }

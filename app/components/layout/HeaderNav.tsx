@@ -29,6 +29,7 @@ import {
 import { useDialogFocus } from '../../hooks/useDialogFocus';
 import { useScrollLock } from '../../hooks/useScrollLock';
 import { afterNextPaint } from '../../lib/afterNextPaint';
+import { openStoreSwitcher, type StoreSwitcher } from '../../lib/storeSwitchers';
 
 interface HeaderNavProps {
   open: boolean;
@@ -279,9 +280,8 @@ function LocButton({
 /**
  * Sticky footer bar — language, branch and currency triggers. Each closes the
  * drawer first (so the modal isn't stuck behind the drawer's backdrop), then opens
- * the shared `<SallaLocalizationModal>` via `localization::open` (language,
- * currency) or `<SallaScopes>` via `scopes::open` (branch) — both mounted in
- * `ThemeLayout`. This bar only reflects the current selection; each trigger shows
+ * it through `openStoreSwitcher` (`lib/storeSwitchers.ts`): the shared modals on
+ * the web, the app's own sheets for language and currency inside the Salla app. This bar only reflects the current selection; each trigger shows
  * only when the store has that feature (more than one language / currency, or a
  * scope).
  */
@@ -289,33 +289,30 @@ function NavFooter({ onClose, entered }: { onClose: () => void; entered: boolean
   const { t, languageName } = useTranslation();
   const { store, currency } = useTwilight();
 
-  const openModal = (event: string) => () => {
+  const open = (switcher: StoreSwitcher) => () => {
     onClose();
-    window.salla?.event?.dispatch(event);
+    openStoreSwitcher(switcher);
   };
 
   const currencyLabel = currency?.name || currency?.symbol || currency?.code || 'SAR';
-  const items: { key: string; show: boolean; icon: ReactNode; label: string; event: string }[] = [
+  const items: { key: StoreSwitcher; show: boolean; icon: ReactNode; label: string }[] = [
     {
       key: 'language',
       show: !!store?.settings?.is_multilingual,
       icon: <LanguagesIcon className="site-nav-drawer__loc-icon" aria-hidden="true" />,
       label: languageName,
-      event: 'localization::open',
     },
     {
       key: 'branch',
       show: !!store?.scope,
       icon: <MapPinIcon className="site-nav-drawer__loc-icon" aria-hidden="true" />,
       label: store?.scope?.name || t('blocks.header.branches', 'Branches'),
-      event: 'scopes::open',
     },
     {
       key: 'currency',
       show: !!store?.settings?.currencies_enabled,
       icon: <Money01Icon className="site-nav-drawer__loc-icon" aria-hidden="true" />,
       label: currencyLabel,
-      event: 'localization::open',
     },
   ];
   const visible = items.filter((item) => item.show);
@@ -326,7 +323,7 @@ function NavFooter({ onClose, entered }: { onClose: () => void; entered: boolean
       {visible.map((item, index) => (
         <Fragment key={item.key}>
           {index > 0 && <span className="site-nav-drawer__foot-sep" aria-hidden="true" />}
-          <LocButton icon={item.icon} label={item.label} onClick={openModal(item.event)} />
+          <LocButton icon={item.icon} label={item.label} onClick={open(item.key)} />
         </Fragment>
       ))}
     </div>
