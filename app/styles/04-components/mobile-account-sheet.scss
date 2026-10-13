@@ -172,6 +172,12 @@
     @apply mx-auto mb-0;
   }
 
+  /* The sheet lists the store's contacts as rows of its own (ContactsList in
+     MobileAccountSheet.tsx), so the footer's phone / email row would repeat them. */
+  .store-footer__contacts {
+    @apply hidden;
+  }
+
   .store-footer__desc {
     @apply mx-auto my-0 text-center;
   }

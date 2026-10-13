@@ -119,3 +119,14 @@ describe('footer description in the account sheet', () => {
     expect(decl(rule, 'margin-top')).toBe('0px');
   });
 });
+
+describe('footer contacts in the account sheet', () => {
+  it('hides the footer contacts row only inside the sheet', async () => {
+    const root = await compile('mobile-account-sheet.scss');
+
+    expect(rulesFor(root, '.store-footer__contacts')).toHaveLength(0);
+
+    const [rule] = rulesFor(root, '.store-footer--sheet .store-footer__contacts');
+    expect(decl(rule, 'display')).toBe('none');
+  });
+});

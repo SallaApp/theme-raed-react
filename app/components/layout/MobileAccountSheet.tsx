@@ -172,7 +172,7 @@ function SettingsList({
  * Contacts card: one row per {@link StoreContacts} field the merchant actually
  * set -- an empty/missing field drops its row, not just its value, and the
  * whole card renders nothing when none are set (same "section only if it has
- * something to show" rule {@link Footer}'s `hasHeaderContacts` already applies).
+ * something to show" rule the footer's own contacts row applies).
  */
 function ContactsList() {
   const { store } = useTwilight();
