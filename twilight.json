@@ -27,63 +27,81 @@
   ],
   "settings": [
     {
-      "id": "squar_photo_bg_image_size",
+      "type": "static",
+      "format": "title",
+      "id": "static-label2",
+      "value": "<div class='rounded-lg' style='background-color: #21636d; display: flex; justify-content: center; align-items: center;padding: 15px;margin-bottom: 20px !important; flex-direction: column;gap: 15px;'><h6 style='color: #ffffff;font-size: 15px; font-weight: bold;'> خيارات الهيدر</h6></div>",
+      "variant": "h6"
+    },
+    {
+      "id": "header_layout",
       "type": "items",
       "format": "dropdown-list",
-      "label": "طريقة عرض الصور في قسم قائمة عناصر ",
-      "description": null,
-      "labelHTML": null,
-      "icon": "sicon-list",
+      "icon": "sicon-layout-01",
+      "label": "تخطيط الهيدر",
+      "description": "الافتراضي: شريط علوي (روابط + اللغة والعملة والفروع) وقائمة رئيسية أفقية. المبسّط: لوجو في المنتصف وزر قائمة منسدلة.",
+      "source": "Manual",
+      "required": true,
       "selected": [
         {
-          "label": "اظهار الصورة كاملةً في المنتصف (Contain)",
-          "value": "contain",
-          "key": "f4adec13-6e4c-654b-b978-b2807935ced9"
+          "label": "المبسّط (Lite)",
+          "value": "lite",
+          "key": "header-layout-lite"
         }
       ],
       "options": [
         {
-          "label": "تغطية الصورة كامل المساحة مع المحافظة على أبعاد الصورة (Cover)",
-          "value": "cover",
-          "key": "e9c8ea8f-c5c6-234e-935-3bce269afde4"
+          "label": "المبسّط (Lite)",
+          "value": "lite",
+          "key": "header-layout-lite"
         },
         {
-          "label": "اظهار الصورة كاملةً في المنتصف (Contain)",
-          "value": "contain",
-          "key": "f4adec13-6e4c-654b-b978-b2807935ced9"
+          "label": "الافتراضي (Default)",
+          "value": "default",
+          "key": "header-layout-default"
         }
-      ],
-      "source": "Manual",
-      "required": true
+      ]
+    },
+        {
+      "type": "boolean",
+      "icon": "sicon-toggle-off",
+      "label": "عرض معلومات المتجر أسفل الشريط الرئيسي",
+      "description": "اسم المتجر ووصفه وروابط التواصل الاجتماعي وبيانات التواصل أسفل اللوجو (في الهيدر المبسّط فقط)",
+      "id": "header_show_store_info",
+      "format": "switch",
+      "required": false,
+      "value": true,
+      "selected": true,
+      "conditions": [
+        {
+          "id": "header_layout",
+          "operation": "=",
+          "value": "lite"
+        }
+      ]
     },
     {
       "type": "boolean",
       "icon": "sicon-toggle-off",
-      "label": "وضع عمودي للمنتجات في مربع المنتجات الثابتة في الصفحة الرئيسية",
-      "description": null,
-      "id": "vertical_fixed_products",
+      "label": "عرض معلومات المتجر في الصفحة الرئيسية فقط",
+      "description": "عند إلغاء التفعيل تظهر معلومات المتجر في جميع الصفحات",
+      "id": "header_store_info_home_only",
       "format": "switch",
       "required": false,
-      "value": false,
-      "selected": false
-    },
-    {
-      "type": "boolean",
-      "id": "is_more_button_enabled",
-      "label": "عرض (زر الكل) في الصفحة الرئيسية",
-      "format": "switch"
-    },
-    {
-      "type": "static",
-      "id": "static-line1",
-      "format": "line"
-    },
-    {
-      "type": "static",
-      "format": "title",
-      "id": "static-label2",
-      "value": "<div class='rounded-lg' style='background-color: #21636d; display: flex; justify-content: center; align-items: center;padding: 15px;margin-bottom: 20px !important; flex-direction: column;gap: 15px;'><h6 style='color: #ffffff;font-size: 15px; font-weight: bold;'> خيارات أعلى الصفحة</h6></div>",
-      "variant": "h6"
+      "value": true,
+      "selected": true,
+      "conditions": [
+        {
+          "id": "header_layout",
+          "operation": "=",
+          "value": "lite"
+        },
+        {
+          "id": "header_show_store_info",
+          "operation": "=",
+          "value": true
+        }
+      ]
     },
     {
       "id": "header_is_sticky",
@@ -130,15 +148,56 @@
       "selected": true
     },
     {
+      "type": "static",
+      "id": "static-line1",
+      "format": "line"
+    },
+    {
+      "id": "squar_photo_bg_image_size",
+      "type": "items",
+      "format": "dropdown-list",
+      "label": "طريقة عرض الصور في قسم قائمة عناصر ",
+      "description": null,
+      "labelHTML": null,
+      "icon": "sicon-list",
+      "selected": [
+        {
+          "label": "اظهار الصورة كاملةً في المنتصف (Contain)",
+          "value": "contain",
+          "key": "f4adec13-6e4c-654b-b978-b2807935ced9"
+        }
+      ],
+      "options": [
+        {
+          "label": "تغطية الصورة كامل المساحة مع المحافظة على أبعاد الصورة (Cover)",
+          "value": "cover",
+          "key": "e9c8ea8f-c5c6-234e-935-3bce269afde4"
+        },
+        {
+          "label": "اظهار الصورة كاملةً في المنتصف (Contain)",
+          "value": "contain",
+          "key": "f4adec13-6e4c-654b-b978-b2807935ced9"
+        }
+      ],
+      "source": "Manual",
+      "required": true
+    },
+    {
       "type": "boolean",
       "icon": "sicon-toggle-off",
-      "label": "عرض معلومات المتجر أسفل الشريط الرئيسي",
-      "description": "اسم المتجر ووصفه وروابط التواصل الاجتماعي وبيانات التواصل",
-      "id": "header_show_store_info",
+      "label": "وضع عمودي للمنتجات في مربع المنتجات الثابتة في الصفحة الرئيسية",
+      "description": null,
+      "id": "vertical_fixed_products",
       "format": "switch",
       "required": false,
-      "value": true,
-      "selected": true
+      "value": false,
+      "selected": false
+    },
+    {
+      "type": "boolean",
+      "id": "is_more_button_enabled",
+      "label": "عرض (زر الكل) في الصفحة الرئيسية",
+      "format": "switch"
     },
     {
       "type": "static",

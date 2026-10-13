@@ -711,6 +711,10 @@
   a {
     @apply whitespace-nowrap text-gray-500 transition-colors hover:text-primary;
   }
+
+  .s-menu-topnav-item{
+    @apply px-1.5;
+  }
 }
 
 .site-header__topnav-actions {
