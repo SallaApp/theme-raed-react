@@ -143,7 +143,7 @@ export function ProductGallery({ product }: ProductGalleryProps) {
 
       <SallaSlider
         id={sliderId}
-        className="details-slider rounded-md image-slider"
+        className="details-slider rounded image-slider"
         type="thumbs"
         pagination
         loop={false}
@@ -344,7 +344,7 @@ function ThumbSlide({ image, index }: { image: ProductImage; index: number }) {
       <Image
         src={image.url}
         alt={image.alt || ''}
-        className="object-cover w-full h-full bg-gray-100 rounded-md overflow-hidden"
+        className="object-cover w-full h-full bg-gray-100 rounded overflow-hidden"
         title={image.alt}
         priority={index < 5}
         noWrapper

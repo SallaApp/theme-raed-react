@@ -13,11 +13,11 @@ salla-slider{
     }
 
     .s-slider-container{
-      @apply bg-white border-[1px] rounded-md;
+      @apply bg-white border-[1px] rounded;
     }
 
     .swiper-slide{
-      @apply relative rounded-md bg-white ring-1 ring-inset ring-gray-100;
+      @apply relative rounded bg-white ring-1 ring-inset ring-gray-100;
     }
 
     /* Fixed 80×80 thumbnails. The theme `ProductGallery` fork runs the thumbs
@@ -110,7 +110,7 @@ salla-slider{
 }
 
 .promotion-title{
-  @apply absolute z-10 top-4 rtl:right-0 ltr:left-0 font-bold text-sm bg-red-800 text-white rtl:rounded-l-md ltr:rounded-r-md;
+  @apply absolute z-10 top-4 rtl:right-0 ltr:left-0 font-bold text-sm bg-red-800 text-white rtl:rounded-l ltr:rounded-r;
   @apply w-auto m-0 px-3 py-2 #{!important};
 }
 
@@ -175,7 +175,7 @@ salla-slider{
 salla-slider{
   .swiper-pagination-bullet {
     width: 20px;
-    border-radius: 5px;
+    @apply rounded;
     background: #fff;
     opacity: 0.3;
 

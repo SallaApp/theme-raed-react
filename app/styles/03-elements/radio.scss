@@ -16,7 +16,7 @@
         // margin: -1px 4px 0 0;
         vertical-align: middle;
         cursor: pointer;
-        border-radius: 6px;
+        @apply rounded;
         border: 2px solid #ffffff;
         background-repeat: no-repeat;
         background-position: center;

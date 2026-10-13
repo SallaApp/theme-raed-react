@@ -112,14 +112,14 @@ function BrandHeader({ source }: { source: ProductListLoaderData['source'] }) {
       <Image
         width={1200}
         height={300}
-        className="w-full max-h-[300px] object-cover rounded-md bg-gray-100"
+        className="w-full max-h-[300px] object-cover rounded bg-gray-100"
         src={brand.banner || undefined}
         alt={brand.name}
         priority
       />
       <header className="flex flex-col md:flex-row items-center md:items-start text-center rtl:md:text-right ltr:md:text-left mt-2 mb-8">
         <Image
-          className="rounded-md w-40 h-24 object-contain shadow-md p-4 bg-white shrink-0"
+          className="rounded w-40 h-24 object-contain shadow-md p-4 bg-white shrink-0"
           src={brand.logo || undefined}
           alt={brand.name}
           aspectRatio="5/3"

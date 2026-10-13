@@ -61,7 +61,7 @@ function ScopeButton({ label }: { label: string }) {
 /** Store name, description and social links, under the main bar. The store's
  *  phone and email are in the footer, under its description. */
 function HeaderIntro() {
-  const { store, theme } = useTwilight();
+  const { store } = useTwilight();
   const isHome = useIsHome();
   const hydrated = useHydrated();
   // `useIsHome()` can resolve differently on the server (e.g. on a 404), and an
@@ -69,9 +69,6 @@ function HeaderIntro() {
   // through SSR + first paint, then upgrade to `<h1>` on the home page.
   const Title = hydrated && isHome ? 'h1' : 'p';
   const hasSocial = hasSocialLinks(store?.social);
-
-  const settings = theme?.settings as { header_show_store_info?: boolean } | undefined;
-  if (settings?.header_show_store_info === false) return null;
 
   return (
     <div className="site-header__intro">
@@ -145,6 +142,16 @@ export function Header({ navOpen: navOpenProp, onNavOpenChange }: HeaderProps = 
   const isHomePage = useRouterState({
     select: (state) => state.matches.some((match) => match.routeId === HOME_ROUTE_ID),
   });
+  // Store name, description, social and contacts under the logo: lite layout only,
+  // when `header_show_store_info` is on, and on the home page alone unless
+  // `header_store_info_home_only` is turned off.
+  const introSettings = theme?.settings as
+    | { header_show_store_info?: boolean; header_store_info_home_only?: boolean }
+    | undefined;
+  const showIntro =
+    !isDefaultLayout &&
+    introSettings?.header_show_store_info !== false &&
+    (introSettings?.header_store_info_home_only === false || isHomePage);
   // Marker in the flow, right where the main bar sits. The bar pins once this
   // scrolls out the top of the viewport (see below).
   const stickySentinelRef = useRef<HTMLDivElement>(null);
@@ -273,7 +280,7 @@ export function Header({ navOpen: navOpenProp, onNavOpenChange }: HeaderProps = 
         </div>
       </div>
 
-      <HeaderIntro />
+      {showIntro && <HeaderIntro />}
 
       <HeaderNav open={navOpen} onClose={() => setNavOpen(false)} />
 

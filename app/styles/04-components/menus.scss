@@ -64,7 +64,7 @@
     }
 
     .sub-menu {
-      @apply z-20 transition opacity-0 invisible pointer-events-none absolute bg-white -translate-y-3 shadow-default rounded-b-md border-t border-gray-300/30 max-h-[400px] overflow-y-auto;
+      @apply z-20 transition opacity-0 invisible pointer-events-none absolute bg-white -translate-y-3 shadow-default rounded-b border-t border-gray-300/30 max-h-[400px] overflow-y-auto;
 
       .sub-menu {
         top: -1px;

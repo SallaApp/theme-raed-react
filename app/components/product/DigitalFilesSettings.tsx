@@ -28,7 +28,7 @@ export function DigitalFilesSettings({
   const formatsDisplay = Array.isArray(formats) ? formats.join(', ') : formats || '-';
 
   return (
-    <section className="bg-white p-5 rounded-md mb-5 last:mb-0">
+    <section className="bg-white p-5 rounded mb-5 last:mb-0">
       <ul className="space-y-4">
         <li className="flex items-center justify-between">
           <div className="flex items-center gap-3">

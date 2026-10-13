@@ -15,14 +15,14 @@
 }
 
 .account-sheet__login {
-  @apply flex w-full items-center justify-center rounded-xl bg-primary px-4 py-3 text-sm font-bold text-primary-reverse transition-opacity hover:opacity-90;
+  @apply flex w-full items-center justify-center rounded bg-primary px-4 py-3 text-sm font-bold text-primary-reverse transition-opacity hover:opacity-90;
 }
 
 /* Settings card: profile / language / currency / branch / important links.
    Each row is a button or link sharing one shape -- icon, label (+ optional
    muted current-value), a trailing disclosure chevron. */
 .account-sheet__list {
-  @apply mb-4 overflow-hidden rounded-2xl;
+  @apply mb-4 overflow-hidden rounded;
 
   & + .account-sheet__list {
     @apply mb-0 mt-4;
@@ -50,11 +50,11 @@
     background-color 0.15s ease;
 
   &:first-child {
-    @apply rounded-t-2xl border-t;
+    @apply rounded-t border-t;
   }
 
   &:last-child {
-    @apply rounded-b-2xl;
+    @apply rounded-b;
   }
 }
 
@@ -109,7 +109,7 @@
     background-color 0.15s ease;
 
   &:first-child {
-    @apply rounded-t-2xl border-y;
+    @apply rounded-t border-y;
   }
 
   &:not(:first-child) {
@@ -117,7 +117,7 @@
   }
 
   &:last-child {
-    @apply rounded-b-2xl;
+    @apply rounded-b;
   }
 }
 
@@ -142,7 +142,7 @@
 /* The footer widgets under the menu: bleed to the sheet edges (the sheet body
    pads `px-4`) and drop the page footer's top margin. Redesigned for the
    sheet specifically -- two cards (brand, apps) matching the settings/
-   contacts cards' own rounded-2xl border language above, then copyright and
+   contacts cards' own rounded border language above, then copyright and
    payment icons standalone underneath with no card, everything centered.
    None of this touches `inSheet={false}` (the real page footer), which keeps
    its own left-aligned / column layout untouched -- `FooterTrust`'s own
@@ -165,7 +165,7 @@
 
   .store-footer__brand,
   .store-footer__centered {
-    @apply flex flex-col items-center gap-5 rounded-2xl border border-gray-100 bg-white px-5 py-6 text-center;
+    @apply flex flex-col items-center gap-5 rounded border border-gray-100 bg-white px-5 py-6 text-center;
   }
 
   .store-footer__logo {
@@ -191,7 +191,7 @@
   }
 
   .store-footer__apps {
-    @apply flex flex-col items-center gap-3 rounded-2xl border border-gray-100 bg-white px-5 py-6 text-center;
+    @apply flex flex-col items-center gap-3 rounded border border-gray-100 bg-white px-5 py-6 text-center;
   }
 
   .store-footer__bottom {
@@ -355,7 +355,7 @@ body.footer-is-dark .store-footer--sheet {
    rendered elements, no element to put the `account-sheet__list-item` class
    on). */
 .user-menu-sheet__menu .s-user-menu-inline {
-  @apply block overflow-hidden rounded-2xl border border-gray-100;
+  @apply block overflow-hidden rounded border border-gray-100;
 }
 
 .user-menu-sheet__menu .s-user-menu-dropdown-item {
