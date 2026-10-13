@@ -202,8 +202,10 @@
     @apply relative;
   }
 
+  /* `rounded` like the theme's other panels; `overflow-hidden` keeps the
+     items' hover backgrounds inside the corners. */
   .site-header__actions .s-user-menu-dropdown {
-    @apply absolute top-full inset-x-auto;
+    @apply absolute top-full inset-x-auto rounded overflow-hidden;
     inset-inline-end: 0;
   }
 }
