@@ -82,7 +82,11 @@
 
 .s-block--enhanced-slider .s-skeleton-slider-image {
   height: auto !important;
-  aspect-ratio: 12 / 5; /* EnhancedSlider's slide ratio */
+  aspect-ratio: 4 / 3; /* EnhancedSlider's slide ratio, below */
+
+  @media (min-width: 640px) {
+    aspect-ratio: 12 / 5;
+  }
 }
 
 /* Boxed variant: the loaded slider is `.container`-capped, so the skeleton
@@ -651,6 +655,16 @@
     position: relative;
   }
 
+  /* Slides (and the SSR poster): 12:5 is too short on a phone for the title,
+     the description and the arrows, so phones get 4:3. */
+  .swiper-slide {
+    aspect-ratio: 4 / 3;
+
+    @media (min-width: 640px) {
+      aspect-ratio: 12 / 5;
+    }
+  }
+
   /* Optional "in container" layout (twilight.json `in_container` toggle on
      the home.enhanced-slider block) — boxed width matching `.container`,
      with rounded corners on the slider as a whole (not per-slide, so the
@@ -720,8 +734,10 @@
     mask-image: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2024%2024'%20fill='none'%20stroke='black'%20stroke-width='1.5'%20stroke-linecap='round'%20stroke-linejoin='round'%3E%3Cpath%20d='M15%206C15%206%209.00001%2010.4189%209%2012C8.99999%2013.5812%2015%2018%2015%2018'/%3E%3C/svg%3E");
   }
 
+  /* Centred on the arrows' line (the nav row above sits at bottom-6 / sm:bottom-8),
+     so the dots and the arrows share one baseline. */
   .swiper-pagination-bullets.swiper-pagination-horizontal.swiper-pagination {
-    @apply absolute inset-x-0 bottom-7 z-[2] m-0 flex items-center justify-center gap-1.5;
+    @apply absolute inset-x-0 bottom-6 sm:bottom-8 z-[2] m-0 flex h-1.5 translate-y-1/2 items-center justify-center gap-1.5;
   }
 
   .swiper-pagination-bullet {
