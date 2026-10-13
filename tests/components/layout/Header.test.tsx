@@ -131,13 +131,12 @@ describe('Header', () => {
     expect(container.querySelector('.site-header__intro')).toBeTruthy();
   });
 
-  it("labels the header phone with Twig's contact title, not a placeholder", () => {
+  it('leaves the store contacts to the footer, out of the intro row', () => {
     state.routeIds = [HOME_ROUTE_ID];
-    state.store = { ...state.store, contacts: { phone: '+971500000000' } };
+    state.store = { ...state.store, contacts: { phone: '+971500000000', email: 'hi@acme.test' } };
     const { container } = render(<Header />);
-    expect(container.querySelector('salla-contacts')?.getAttribute('data-contacts-title')).toBe(
-      'Contact us'
-    );
+    expect(container.querySelector('.site-header__intro')).toBeTruthy();
+    expect(container.querySelector('salla-contacts')).toBeNull();
   });
 
   it('omits the description block when the store has none', () => {
@@ -288,21 +287,6 @@ describe('Header', () => {
     state.store = { ...state.store, social: { whatsapp: '966500000000' } };
     const { container } = render(<Header />);
     expect(container.querySelector('.site-header__social-slot.has-links')).toBeNull();
-  });
-
-  it('reserves the contacts row only when the store has contacts', () => {
-    state.routeIds = [HOME_ROUTE_ID];
-    const { container, rerender } = render(<Header />);
-    expect(container.querySelector('.site-header__contacts-slot.has-contacts')).toBeNull();
-    state.store = { ...state.store, contacts: { email: 'hi@acme.test' } };
-    rerender(<Header />);
-    expect(container.querySelector('.site-header__contacts-slot.has-contacts')).toBeTruthy();
-  });
-
-  it('does not reserve the contacts row for types the header contacts do not show', () => {
-    state.store = { ...state.store, contacts: { whatsapp: '966500000000', telegram: 'acme' } };
-    const { container } = render(<Header />);
-    expect(container.querySelector('.site-header__contacts-slot.has-contacts')).toBeNull();
   });
 
   it("renders the engine's ad bar in the header's ad slot", () => {

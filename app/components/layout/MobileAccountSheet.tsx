@@ -172,7 +172,7 @@ function SettingsList({
  * Contacts card: one row per {@link StoreContacts} field the merchant actually
  * set -- an empty/missing field drops its row, not just its value, and the
  * whole card renders nothing when none are set (same "section only if it has
- * something to show" rule {@link Footer}'s `hasHeaderContacts` already applies).
+ * something to show" rule the footer's own contacts row applies).
  */
 function ContactsList() {
   const { store } = useTwilight();
@@ -205,6 +205,17 @@ function ContactsList() {
           label: t('blocks.footer.mobile', 'Mobile'),
           value: contacts.mobile,
           href: `tel:${contacts.mobile}`,
+        }
+      : null,
+    // The landline, when the store has one apart from its mobile. The footer's
+    // phone / email row is hidden in this sheet, so the number is listed here.
+    contacts?.phone && contacts.phone !== contacts.mobile
+      ? {
+          key: 'phone',
+          icon: 'sicon-phone',
+          label: t('blocks.footer.phone', 'Phone'),
+          value: contacts.phone,
+          href: `tel:${contacts.phone}`,
         }
       : null,
     contacts?.whatsapp
@@ -247,7 +258,7 @@ function ContactsList() {
 /**
  * Full-height sheet the mobile bottom bar's More tab opens. Two card groups --
  * settings (account, language, currency, branch, important links) then
- * contacts (telegram, email, mobile, WhatsApp, each conditional on the
+ * contacts (telegram, email, mobile, phone, WhatsApp, each conditional on the
  * merchant actually having set it) -- followed by the same footer widgets
  * (logo, description, social, tax / SBC / trust badges, footer menu, app
  * buttons, copyright, payments) the page footer itself hides on mobile.

@@ -41,6 +41,7 @@
   "blocks.footer.telegram": "Telegram",
   "blocks.footer.email": "Email",
   "blocks.footer.mobile": "Mobile",
+  "blocks.footer.phone": "Phone",
   "blocks.footer.whatsapp": "WhatsApp",
   "blocks.footer.sbc_trusted_by": "Trusted by",
   "blocks.footer.sbc_platform": "Business Platform",

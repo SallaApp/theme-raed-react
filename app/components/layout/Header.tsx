@@ -5,7 +5,6 @@ import { SallaSocial } from '@salla.sa/twilight-components-react/social';
 import { SallaMenu } from '@salla.sa/twilight-components-react/menu';
 import { SallaUserMenu } from '@salla.sa/twilight-components-react/user-menu';
 import { SallaCartSummary } from '@salla.sa/twilight-components-react/cart-summary';
-import { SallaContacts } from '@salla.sa/twilight-components-react/contacts';
 import { useTwilight, useIsHome } from '@salla.sa/twilight-theme-engine/providers';
 import { useTranslation } from '@salla.sa/twilight-theme-engine/i18n';
 import { HookSlot } from '@salla.sa/twilight-theme-engine/hooks';
@@ -23,12 +22,9 @@ const openSearch = () => window.salla?.event?.dispatch('search::open');
 
 const openScopes = () => window.salla?.event?.dispatch('scopes::open');
 
-// What the components will render: <salla-social> skips WhatsApp, and the
-// header <salla-contacts> shows only phone and email.
+// What the component will render: <salla-social> skips WhatsApp.
 const hasSocialLinks = (social?: object) =>
   Object.entries(social ?? {}).some(([key, value]) => Boolean(value) && key !== 'whatsapp');
-const hasHeaderContacts = (contacts?: { phone?: unknown; email?: unknown }) =>
-  Boolean(contacts?.phone || contacts?.email);
 
 /** Search trigger — opens the Salla search modal via the `search::open` event. */
 function SearchButton({ label }: { label: string }) {
@@ -62,10 +58,10 @@ function ScopeButton({ label }: { label: string }) {
   );
 }
 
-/** Store name, description, social links and header contacts, under the main bar. */
+/** Store name, description and social links, under the main bar. The store's
+ *  phone and email are in the footer, under its description. */
 function HeaderIntro() {
   const { store } = useTwilight();
-  const { t } = useTranslation();
   const isHome = useIsHome();
   const hydrated = useHydrated();
   // `useIsHome()` can resolve differently on the server (e.g. on a 404), and an
@@ -73,7 +69,6 @@ function HeaderIntro() {
   // through SSR + first paint, then upgrade to `<h1>` on the home page.
   const Title = hydrated && isHome ? 'h1' : 'p';
   const hasSocial = hasSocialLinks(store?.social);
-  const hasContacts = hasHeaderContacts(store?.contacts);
 
   return (
     <div className="site-header__intro">
@@ -86,17 +81,9 @@ function HeaderIntro() {
             dangerouslySetInnerHTML={{ __html: store.description }}
           />
         )}
-        {/* Slots reserve the loaded rows' space in the SSR HTML (header.scss). */}
+        {/* The slot reserves the loaded row's space in the SSR HTML (header.scss). */}
         <div className={`site-header__social-slot${hasSocial ? ' has-links' : ''}`}>
           <SallaSocial className="site-header__social" />
-        </div>
-        <div className={`site-header__contacts-slot${hasContacts ? ' has-contacts' : ''}`}>
-          <SallaContacts
-            data-testid="store-header-contacts"
-            contacts={store?.contacts}
-            contactsTitle={t('blocks.footer.social', 'Contact us')}
-            isHeader
-          />
         </div>
       </div>
     </div>

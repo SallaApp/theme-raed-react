@@ -307,26 +307,14 @@
   @apply max-w-xl text-base leading-6 text-gray-500;
 }
 
-/* Loaded heights, reserved from SSR: the social skeleton is 40px and the element is
-   empty until hydrated; contacts mirror `.s-contacts-header` (hidden below 1024px). */
+/* Loaded height, reserved from SSR: the social skeleton is 40px and the element is
+   empty until hydrated. */
 .site-header__social-slot.has-links {
   min-height: 48px;
 }
 
 .site-header__social-slot:not(.has-links) .s-skeleton-wrapper {
   display: none;
-}
-
-.site-header__contacts-slot {
-  display: none;
-
-  @media (min-width: 1024px) {
-    display: block;
-
-    &.has-contacts {
-      min-height: 16px;
-    }
-  }
 }
 
 .site-header__social .s-social-list {
