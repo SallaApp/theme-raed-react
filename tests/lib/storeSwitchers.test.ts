@@ -1,9 +1,11 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
 import { openStoreSwitcher } from '../../app/lib/storeSwitchers';
 
-function installSalla(inApp: boolean) {
+function installSalla(inApp: boolean, { withSheetMethods = true } = {}) {
   const dispatch = vi.fn();
-  const mobile = { isEnabled: () => inApp, openLanguages: vi.fn(), openCurrencies: vi.fn() };
+  const mobile = withSheetMethods
+    ? { isEnabled: () => inApp, openLanguages: vi.fn(), openCurrencies: vi.fn() }
+    : { isEnabled: () => inApp };
   (window as unknown as { salla: unknown }).salla = { mobile, event: { dispatch } };
   return { dispatch, mobile };
 }
@@ -19,6 +21,16 @@ describe('openStoreSwitcher', () => {
     openStoreSwitcher('currency');
     expect(mobile.openLanguages).toHaveBeenCalledTimes(1);
     expect(mobile.openCurrencies).toHaveBeenCalledTimes(1);
+    expect(dispatch).not.toHaveBeenCalledWith('localization::open');
+  });
+
+  it('emits the sheet events inside the app when the SDK lacks the sheet methods', () => {
+    const { dispatch } = installSalla(true, { withSheetMethods: false });
+    openStoreSwitcher('language');
+    openStoreSwitcher('currency');
+    expect(dispatch).toHaveBeenCalledTimes(2);
+    expect(dispatch).toHaveBeenCalledWith('mobile::language.open', {});
+    expect(dispatch).toHaveBeenCalledWith('mobile::currency.open', {});
     expect(dispatch).not.toHaveBeenCalledWith('localization::open');
   });
 

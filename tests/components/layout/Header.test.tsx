@@ -86,6 +86,11 @@ beforeEach(() => {
   state.routeIds = [];
 });
 
+afterEach(() => {
+  document.documentElement.style.removeProperty('--app-safe-area-top');
+  vi.unstubAllGlobals();
+});
+
 describe('Header', () => {
   it('renders the shell: logo, actions, search modal, cart, and the hook slots', () => {
     const { container, getAllByLabelText } = render(<Header />);
@@ -193,9 +198,6 @@ describe('Header', () => {
       document.documentElement.style.setProperty('--app-safe-area-top', '47px');
     });
     expect(pinMargins().at(-1)).toBe('-47px 0px 0px 0px');
-
-    document.documentElement.style.removeProperty('--app-safe-area-top');
-    vi.unstubAllGlobals();
   });
 
   it('never pins the bar when header_is_sticky is disabled', () => {
