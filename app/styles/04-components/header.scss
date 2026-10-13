@@ -569,11 +569,15 @@
   @apply block h-10 w-10 max-w-none shrink-0 rounded-full object-cover;
 }
 
-/* Same box as `.site-nav-drawer__link-img`, with nothing drawn: holds an
-   image-less root row's title at the same start position as its siblings
-   that do have one. See NavLabel in HeaderNav.tsx. */
+/* Same box as `.site-nav-drawer__link-img`, for an image-less root row: a grey
+   circle with the page's icon, so the row still has a thumbnail and its title
+   lines up with its siblings that have an image. See NavLabel in HeaderNav.tsx. */
 .site-nav-drawer__link-img-placeholder {
-  @apply block h-10 w-10 max-w-none shrink-0;
+  @apply flex h-10 w-10 max-w-none shrink-0 items-center justify-center rounded-full bg-gray-100 text-gray-500;
+}
+
+.site-nav-drawer__link-img-icon {
+  @apply h-5 w-5;
 }
 
 .site-nav-drawer__chevron {

@@ -22,13 +22,18 @@ import {
   ArrowRightIcon,
   ChevronDownIcon,
   CloseIcon,
+  CrownIcon,
+  DashboardSquare01Icon,
+  DiscountTagIcon,
   LanguagesIcon,
   MapPinIcon,
   Money01Icon,
+  NoteIcon,
 } from '../icons';
 import { useDialogFocus } from '../../hooks/useDialogFocus';
 import { useScrollLock } from '../../hooks/useScrollLock';
 import { afterNextPaint } from '../../lib/afterNextPaint';
+import { builtInMenuKind, type BuiltInMenuKind } from '../../lib/menuItemKind';
 import { openStoreSwitcher, type StoreSwitcher } from '../../lib/storeSwitchers';
 
 interface HeaderNavProps {
@@ -58,6 +63,30 @@ const pruneUntitled = (items: MenuItem[]): MenuItem[] =>
 const hasChildren = (item: MenuItem): boolean =>
   Array.isArray(item.children) && item.children.length > 0;
 
+const PLACEHOLDER_ICONS: Record<BuiltInMenuKind, typeof DashboardSquare01Icon> = {
+  offers: DiscountTagIcon,
+  blog: NoteIcon,
+  brands: CrownIcon,
+};
+
+/**
+ * Stands in for a missing menu image: a grey circle with the page's icon
+ * (offers, blog, brands) or a general one for anything else.
+ */
+function NavImagePlaceholder({ item }: { item: MenuItem }) {
+  const kind = builtInMenuKind(item);
+  const Icon = kind ? PLACEHOLDER_ICONS[kind] : DashboardSquare01Icon;
+  return (
+    <span
+      className="site-nav-drawer__link-img-placeholder"
+      data-kind={kind ?? 'general'}
+      aria-hidden="true"
+    >
+      <Icon className="site-nav-drawer__link-img-icon" />
+    </span>
+  );
+}
+
 /** A real destination — the API uses `#` / empty for "group only" items. */
 const isLinkable = (url?: string): url is string => !!url && url !== '#';
 
@@ -70,8 +99,8 @@ const isLinkable = (url?: string): url is string => !!url && url !== '#';
  * against the row edge instead of lined up with an image row's text (image
  * width + gap to the right of it) — fine when *no* root row has an image
  * (every row is flush, consistently), wrong the moment even one does. So the
- * placeholder spacer is reserved only when the root level actually mixes
- * image and image-less rows (`withImage`, computed once from whether any
+ * placeholder (`NavImagePlaceholder`) is reserved only when the root level
+ * actually mixes image and image-less rows (`withImage`, computed once from whether any
  * root item has one — see `NavColumns`), not unconditionally for every
  * root-level row regardless of whether the menu has images at all.
  */
@@ -92,7 +121,7 @@ function NavLabel({ item, withImage }: { item: MenuItem; withImage: boolean }) {
           className="site-nav-drawer__link-img"
         />
       ) : (
-        <span className="site-nav-drawer__link-img-placeholder" aria-hidden="true" />
+        <NavImagePlaceholder item={item} />
       )}
       <span>{item.title}</span>
     </span>

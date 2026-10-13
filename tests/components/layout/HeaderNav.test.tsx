@@ -1,7 +1,14 @@
 import React from 'react';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, fireEvent, cleanup, act } from '@testing-library/react';
+import { renderToStaticMarkup } from 'react-dom/server';
 import { HeaderNav } from '../../../app/components/layout/HeaderNav';
+import {
+  CrownIcon,
+  DashboardSquare01Icon,
+  DiscountTagIcon,
+  NoteIcon,
+} from '../../../app/components/icons';
 
 const query: { data: unknown[] } = { data: [] };
 
@@ -148,6 +155,39 @@ describe('HeaderNav', () => {
     expect(offersLabel.querySelector('.site-nav-drawer__link-img')).toBeNull();
     expect(accessoriesLabel.querySelector('.site-nav-drawer__link-img')).toBeTruthy();
     expect(accessoriesLabel.querySelector('.site-nav-drawer__link-img-placeholder')).toBeNull();
+  });
+
+  it('fills an image-less root row with a grey circle and the icon for its page', () => {
+    query.data = [
+      { id: 'offers', title: 'Offers', url: '/offers' },
+      { id: 'blog', title: 'Blog', url: '/blog' },
+      { id: 3, title: 'Brands', url: '/ar/brands' },
+      { id: 4, title: 'Dresses', url: '/dresses' },
+      { id: 5, title: 'Accessories', url: '/accessories', image: 'https://cdn.example.com/a.png' },
+    ];
+    const { container } = render(<HeaderNav open onClose={() => {}} />);
+
+    const placeholders = Array.from(
+      container.querySelectorAll('.site-nav-drawer__link-img-placeholder')
+    );
+    expect(placeholders.map((el) => el.getAttribute('data-kind'))).toEqual([
+      'offers',
+      'blog',
+      'brands',
+      'general',
+    ]);
+
+    // Each circle draws its own page's icon: compare the drawn paths with the icon's.
+    const paths = (markup: string) => {
+      const host = document.createElement('div');
+      host.innerHTML = markup;
+      return host.querySelector('svg')?.innerHTML;
+    };
+    const expected = [DiscountTagIcon, NoteIcon, CrownIcon, DashboardSquare01Icon].map((Icon) =>
+      paths(renderToStaticMarkup(<Icon />))
+    );
+    expect(new Set(expected).size).toBe(4);
+    expect(placeholders.map((el) => paths(el.innerHTML))).toEqual(expected);
   });
 
   // When *no* root item has an image, reserving a same-size empty spacer on
