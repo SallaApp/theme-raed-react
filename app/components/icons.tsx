@@ -273,3 +273,31 @@ export const UserIcon = (props: SVGProps<SVGSVGElement>) => (
     />
   </svg>
 );
+
+export const DiscountTagIcon = (props: SVGProps<SVGSVGElement>) => (
+  <svg {...base} {...props}>
+    <path
+      d="M2.5 12.1V5.5C2.5 3.84 3.84 2.5 5.5 2.5H12.1C12.9 2.5 13.66 2.82 14.22 3.38L20.62 9.78C21.79 10.95 21.79 12.85 20.62 14.02L14.02 20.62C12.85 21.79 10.95 21.79 9.78 20.62L3.38 14.22C2.82 13.66 2.5 12.9 2.5 12.1Z"
+      {...stroke}
+    />
+    <path d="M9.5 14.5L14.5 9.5" {...stroke} />
+    <path d="M10 10H10.01M14 14H14.01" {...stroke} strokeWidth={2.5} />
+  </svg>
+);
+
+export const NoteIcon = (props: SVGProps<SVGSVGElement>) => (
+  <svg {...base} {...props}>
+    <path
+      d="M19 15V9C19 6.17 19 4.76 18.12 3.88C17.24 3 15.83 3 13 3H11C8.17 3 6.76 3 5.88 3.88C5 4.76 5 6.17 5 9V15C5 17.83 5 19.24 5.88 20.12C6.76 21 8.17 21 11 21H13C15.83 21 17.24 21 18.12 20.12C19 19.24 19 17.83 19 15Z"
+      {...stroke}
+    />
+    <path d="M9 8H15M9 12H15M9 16H12.5" {...stroke} />
+  </svg>
+);
+
+export const CrownIcon = (props: SVGProps<SVGSVGElement>) => (
+  <svg {...base} {...props}>
+    <path d="M3 7.5L7 11.5L12 5L17 11.5L21 7.5L19.5 17.5H4.5L3 7.5Z" {...stroke} />
+    <path d="M5 21H19" {...stroke} />
+  </svg>
+);

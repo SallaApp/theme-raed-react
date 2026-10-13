@@ -150,6 +150,25 @@ describe('HeaderNav', () => {
     expect(accessoriesLabel.querySelector('.site-nav-drawer__link-img-placeholder')).toBeNull();
   });
 
+  it('fills an image-less root row with a grey circle and the icon for its page', () => {
+    query.data = [
+      { id: 'offers', title: 'Offers', url: '/offers' },
+      { id: 'blog', title: 'Blog', url: '/blog' },
+      { id: 3, title: 'Brands', url: '/ar/brands' },
+      { id: 4, title: 'Dresses', url: '/dresses' },
+      { id: 5, title: 'Accessories', url: '/accessories', image: 'https://cdn.example.com/a.png' },
+    ];
+    const { container } = render(<HeaderNav open onClose={() => {}} />);
+
+    const kinds = Array.from(
+      container.querySelectorAll('.site-nav-drawer__link-img-placeholder')
+    ).map((el) => el.getAttribute('data-kind'));
+    expect(kinds).toEqual(['offers', 'blog', 'brands', 'general']);
+    container.querySelectorAll('.site-nav-drawer__link-img-placeholder').forEach((el) => {
+      expect(el.querySelector('svg.site-nav-drawer__link-img-icon')).toBeTruthy();
+    });
+  });
+
   // When *no* root item has an image, reserving a same-size empty spacer on
   // every row is just wasted space -- nothing to line titles up against.
   it('reserves no placeholder at all when no root item has an image', () => {
