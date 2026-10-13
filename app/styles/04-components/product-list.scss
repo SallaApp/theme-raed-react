@@ -27,7 +27,7 @@
     @apply flex items-center gap-1 px-3;
 
     button {
-      @apply inline-flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 transition-colors hover:text-gray-700;
+      @apply inline-flex h-8 w-8 items-center justify-center rounded text-gray-400 transition-colors hover:text-gray-700;
 
       svg {
         @apply h-[18px] w-[18px];

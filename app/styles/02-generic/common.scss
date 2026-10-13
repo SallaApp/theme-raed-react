@@ -306,7 +306,7 @@ salla-localization-modal {
 
 // grid trigger
 .grid-trigger {
-  @apply cursor-pointer mx-1 text-xl w-10 h-10 rounded-md flex items-center justify-center text-gray-400;
+  @apply cursor-pointer mx-1 text-xl w-10 h-10 rounded flex items-center justify-center text-gray-400;
 }
 
 // center classes
@@ -426,7 +426,7 @@ salla-localization-modal {
 
 // salla app install banner
 .s-app-install-banner {
-  @apply hidden flex-row items-center fixed left-0 right-0 w-[95%] my-4 mx-auto z-[999] rounded-md p-3 gap-2 drop-shadow-md;
+  @apply hidden flex-row items-center fixed left-0 right-0 w-[95%] my-4 mx-auto z-[999] rounded p-3 gap-2 drop-shadow-md;
   background-color: color-mix(in srgb, var(--color-primary) 15%, white);
   &[open='false'] {
     @apply hidden;

@@ -1,12 +1,12 @@
 // Wishlist Product entry
 .product-entry {
-  @apply h-full transition-shadow duration-300 bg-white hover:shadow-default rounded-lg justify-between flex relative;
+  @apply h-full transition-shadow duration-300 bg-white hover:shadow-default rounded justify-between flex relative;
 
   &--wishlist {
     @apply justify-between p-4 flex-col sm:flex-row;
 
     .product-entry__image {
-      @apply overflow-hidden w-16 h-12 md:w-20 md:h-16 rounded-md;
+      @apply overflow-hidden w-16 h-12 md:w-20 md:h-16 rounded;
     }
 
     salla-button {
@@ -31,7 +31,7 @@
 
 // share list
 .share-btns-list {
-  @apply absolute z-10 overflow-hidden opacity-0 top-12 bg-white flex items-center flex-col shadow-huge rounded-3xl;
+  @apply absolute z-10 overflow-hidden opacity-0 top-12 bg-white flex items-center flex-col shadow-huge rounded;
 
   a {
     @apply block p-3 hover:text-primary;
@@ -370,7 +370,7 @@ salla-gifting {
       left: 16px;
       right: 16px;
       width: auto;
-      border-radius: 1.5rem;
+      @apply rounded;
       /* nav (52 content + 12 own gap) + 10 breathing room above it */
       bottom: calc(70px + var(--safe-bottom));
 
@@ -475,7 +475,7 @@ salla-gifting {
     }
     .filepond--drop-label {
       min-height: 120px !important;
-      @apply bg-white cursor-pointer border-dashed rounded-md border border-gray-200;
+      @apply bg-white cursor-pointer border-dashed rounded border border-gray-200;
     }
     .product-option-uploader-placholder {
       @apply flex flex-col justify-center items-center;
@@ -679,7 +679,7 @@ salla-gifting {
   }
 
   .product-gallery__bar-btn {
-    @apply relative inline-flex h-10 w-10 items-center justify-center rounded-xl text-gray-800;
+    @apply relative inline-flex h-10 w-10 items-center justify-center rounded text-gray-800;
     pointer-events: auto;
     /* `!important` — the store's Twig CSS otherwise strips the background off
        `<salla-social-share>` */
@@ -843,7 +843,7 @@ salla-gifting {
 
 // cart options
 .cart-options {
-  @apply bg-white border-dashed border border-gray-400 rounded-md;
+  @apply bg-white border-dashed border border-gray-400 rounded;
   salla-product-options {
     @apply mb-0 pt-0;
 
@@ -855,11 +855,11 @@ salla-gifting {
     }
 
     .s-form-control {
-      @apply rounded-md border-gray-200;
+      @apply rounded border-gray-200;
     }
 
     .s-datetime-picker-input {
-      @apply rounded-md border-gray-200;
+      @apply rounded border-gray-200;
     }
 
     .s-product-options-multiple-options-wrapper {

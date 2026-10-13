@@ -139,14 +139,14 @@
 
   &--fixed {
     img {
-      @apply w-full object-cover rounded-md border-none block bg-gray-100;
+      @apply w-full object-cover rounded border-none block bg-gray-100;
     }
   }
 }
 
 /* Square Banner Block */
 .banner-entry {
-  @apply h-[200px] min-h-[200px] bg-gray-100 text-white text-center p-3 xs:p-4 rounded-md overflow-hidden relative !bg-cover !bg-no-repeat !bg-center;
+  @apply h-[200px] min-h-[200px] bg-gray-100 text-white text-center p-3 xs:p-4 rounded overflow-hidden relative !bg-cover !bg-no-repeat !bg-center;
 
   article {
     @apply flex flex-col items-center justify-center h-full p-2.5
@@ -160,7 +160,7 @@
     @apply flex flex-col justify-center xs:px-1;
 
     &.text-with-border {
-      @apply xs:border border-dashed border-gray-200 rounded-md;
+      @apply xs:border border-dashed border-gray-200 rounded;
 
       span {
         @apply line-clamp-2;
@@ -411,7 +411,7 @@
   Main Links Block
 */
 .slide--cat-entry {
-  @apply bg-white rounded-md h-36 p-3 text-center flex flex-col items-center justify-center transition duration-500 hover:shadow-default hover:text-gray-500 border border-gray-100;
+  @apply bg-white rounded h-36 p-3 text-center flex flex-col items-center justify-center transition duration-500 hover:shadow-default hover:text-gray-500 border border-gray-100;
 
   i {
     @apply inline-block text-primary text-icon-lg mb-4;
@@ -426,7 +426,7 @@
   offers slider
 */
 .slide--offer-entry {
-  @apply bg-white rounded-md h-36 text-center flex flex-col items-center justify-between text-gray-600 transition duration-500 hover:shadow-default border border-gray-200;
+  @apply bg-white rounded h-36 text-center flex flex-col items-center justify-between text-gray-600 transition duration-500 hover:shadow-default border border-gray-200;
 }
 
 /*
@@ -435,7 +435,7 @@
   products sliders). Markup: app/components/home/PhotosSlider.tsx
 */
 .s-photos-slider__slide {
-  @apply block shrink-0 rounded-2xl overflow-hidden bg-gray-100;
+  @apply block shrink-0 rounded overflow-hidden bg-gray-100;
   flex: 0 0 88%;
   aspect-ratio: 3 / 2;
   scroll-snap-align: start;
@@ -520,7 +520,7 @@
 
   &--features {
     &__item {
-      @apply cursor-pointer bg-white transition-shadow duration-500 shadow-[5px_10px_30px_rgba(43,45,52,0.12)] hover:shadow-[5px_10px_30px_rgba(43,45,52,0.2)] rounded-2xl flex-grow flex flex-col items-center px-4 py-8 md:px-8 text-center;
+      @apply cursor-pointer bg-white transition-shadow duration-500 shadow-[5px_10px_30px_rgba(43,45,52,0.12)] hover:shadow-[5px_10px_30px_rgba(43,45,52,0.2)] rounded flex-grow flex flex-col items-center px-4 py-8 md:px-8 text-center;
 
       &:first-child {
         @apply col-span-2 md:col-span-1;
@@ -674,7 +674,7 @@
     @apply container;
 
     .s-slider-container {
-      @apply rounded-2xl overflow-hidden;
+      @apply rounded overflow-hidden;
     }
   }
 
@@ -825,7 +825,7 @@ salla-reviews:not(:has(.s-reviews-swiper-slide)) {
 }
 
 .testimonial-card {
-  @apply flex-shrink-0 flex flex-col bg-white rounded-2xl p-5 lg:p-6;
+  @apply flex-shrink-0 flex flex-col bg-white rounded p-5 lg:p-6;
   flex-basis: clamp(260px, 30%, 340px);
   scroll-snap-align: start;
 
@@ -1023,7 +1023,7 @@ salla-reviews:not(:has(.s-reviews-swiper-slide)) {
 }
 
 .enhanced-square-banner {
-  @apply relative flex items-center justify-center overflow-hidden rounded-2xl text-center text-white transition-opacity hover:opacity-95;
+  @apply relative flex items-center justify-center overflow-hidden rounded text-center text-white transition-opacity hover:opacity-95;
 
   &:nth-child(1) {
     grid-area: tl;

@@ -13,7 +13,7 @@
   }
 
   @media (min-width: 768px) {
-    @apply w-[400px] rounded-lg;
+    @apply w-[400px] rounded;
     top: 1rem;
     left: auto;
     right: auto;
@@ -83,7 +83,7 @@
   }
 
   &__image {
-    @apply flex-shrink-0 w-20 h-20 rounded-lg object-contain overflow-hidden bg-gray-50 border border-gray-100;
+    @apply flex-shrink-0 w-20 h-20 rounded object-contain overflow-hidden bg-gray-50 border border-gray-100;
 
     img {
       @apply w-full h-full object-contain;

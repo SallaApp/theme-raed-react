@@ -377,7 +377,7 @@ function StickyProductBar({
  *
  * Differs from the engine version: the form is a `flex flex-col gap-8` column and its
  * section blocks (weight / size-guide, attachments, price, quantity) render flat:
- * no `bg-white` card padding, no `rounded-md`, no per-block `mb`. The sticky
+ * no `bg-white` card padding, no `rounded`, no per-block `mb`. The sticky
  * add-to-cart bar keeps `bg-white` for its mobile fixed-position backdrop.
  * Upgrade notes: `FORKS.md`.
  */
