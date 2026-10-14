@@ -41,8 +41,12 @@ export function parseSlideVideo(value: unknown): SlideVideo | null {
   return { kind: 'file', src: url.href };
 }
 
-/** A muted, looping, chrome-less embed, so the video plays as a background. */
-export function youtubeEmbedUrl(id: string): string {
+/**
+ * A muted, looping, chrome-less embed, so the video plays as a background. It
+ * posts its state to `origin`'s page (`enablejsapi`), so the page can show it
+ * only once it plays.
+ */
+export function youtubeEmbedUrl(id: string, origin?: string): string {
   const params = new URLSearchParams({
     autoplay: '1',
     mute: '1',
@@ -53,6 +57,8 @@ export function youtubeEmbedUrl(id: string): string {
     rel: '0',
     disablekb: '1',
     iv_load_policy: '3',
+    enablejsapi: '1',
+    ...(origin && { origin }),
   });
   return `https://www.youtube-nocookie.com/embed/${id}?${params}`;
 }

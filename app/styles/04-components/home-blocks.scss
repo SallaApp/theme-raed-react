@@ -660,6 +660,7 @@
      never takes taps, so swipes and the CTA still work. */
   .bg-cover:has(> .enhanced-slider__video) {
     container-type: size;
+    overflow: hidden; /* the embed is wider than a 4:3 slide; keep it off the next one */
   }
 
   .enhanced-slider__video {
@@ -673,6 +674,12 @@
     height: max(100cqh, 56.25cqw);
     border: 0;
     translate: -50% -50%;
+    transition: opacity 0.4s;
+
+    /* Hidden until YouTube says it plays, so the image shows meanwhile. */
+    &:not([data-state='playing']) {
+      opacity: 0;
+    }
   }
 
   /* Slides (and the SSR poster): 12:5 is too short on a phone for the title,

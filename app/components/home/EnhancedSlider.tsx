@@ -37,11 +37,16 @@ export interface EnhancedSliderProps {
   };
 }
 
-/** Whether the visitor asked for reduced motion; false on the server and before hydration. */
+/** Whether motion is allowed (no reduced-motion request); false on the server and before hydration. */
 function useMotionAllowed() {
   const [allowed, setAllowed] = useState(false);
   useEffect(() => {
-    setAllowed(!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches);
+    const query = window.matchMedia?.('(prefers-reduced-motion: reduce)');
+    // Follows the setting live: switching it on mid-visit removes the videos.
+    const sync = () => setAllowed(!query?.matches);
+    sync();
+    query?.addEventListener?.('change', sync);
+    return () => query?.removeEventListener?.('change', sync);
   }, []);
   return allowed;
 }
@@ -89,39 +94,101 @@ function useSlideVideos(root: RefObject<HTMLElement | null>, enabled: boolean) {
   }, [root, enabled]);
 }
 
+/** How often, and how many times, the page asks a YouTube frame to start sending events. */
+const YOUTUBE_LISTEN_INTERVAL_MS = 500;
+const YOUTUBE_LISTEN_TRIES = 20;
+
+/** YouTube's player state for "playing". */
+const YOUTUBE_PLAYING = 1;
+
 /**
- * A slide's background video, over its image (which stays as the poster and the
- * fallback) and under its overlay. Not rendered for visitors who ask for reduced
- * motion. A video file waits for {@link useSlideVideos} to play it; a YouTube
- * embed loads lazily and plays muted on its own.
+ * A YouTube background, hidden until YouTube reports it is playing, so the slide
+ * image shows while it loads, and removed if YouTube reports an error (embedding
+ * disabled, video removed). Uses the embed's postMessage events (`enablejsapi`):
+ * the page says it is listening, and the frame answers with its state.
  */
-function SlideVideo({ url, poster }: { url?: string; poster?: string }) {
-  const video = parseSlideVideo(url);
-  if (!video) return null;
-  if (video.kind === 'file') {
-    return (
-      <video
-        className="enhanced-slider__video"
-        src={video.src}
-        poster={poster}
-        muted
-        loop
-        playsInline
-        preload="none"
-        disablePictureInPicture
-        aria-hidden="true"
-        tabIndex={-1}
-      />
-    );
-  }
+function YouTubeBackground({ id }: { id: string }) {
+  const ref = useRef<HTMLIFrameElement>(null);
+  const [state, setState] = useState<'loading' | 'playing' | 'failed'>('loading');
+
+  useEffect(() => {
+    const frame = ref.current;
+    if (!frame) return;
+    let heard = false;
+    let tries = 0;
+    const onMessage = (event: MessageEvent) => {
+      if (event.source !== frame.contentWindow) return;
+      let data: { event?: string; info?: unknown } | null = null;
+      try {
+        data = typeof event.data === 'string' ? JSON.parse(event.data) : event.data;
+      } catch {
+        return;
+      }
+      if (!data || typeof data !== 'object') return;
+      heard = true;
+      if (data.event === 'onError') return setState('failed');
+      const playerState =
+        data.event === 'onStateChange'
+          ? data.info
+          : (data.info as { playerState?: unknown } | null)?.playerState;
+      if (playerState === YOUTUBE_PLAYING) setState('playing');
+    };
+    const listen = () => {
+      if (heard || tries >= YOUTUBE_LISTEN_TRIES) return window.clearInterval(timer);
+      tries += 1;
+      frame.contentWindow?.postMessage(
+        JSON.stringify({ event: 'listening', id, channel: 'widget' }),
+        'https://www.youtube-nocookie.com'
+      );
+    };
+    const timer = window.setInterval(listen, YOUTUBE_LISTEN_INTERVAL_MS);
+    window.addEventListener('message', onMessage);
+    frame.addEventListener('load', listen);
+    return () => {
+      window.clearInterval(timer);
+      window.removeEventListener('message', onMessage);
+      frame.removeEventListener('load', listen);
+    };
+  }, [id]);
+
+  if (state === 'failed') return null;
   return (
     <iframe
+      ref={ref}
       className="enhanced-slider__video enhanced-slider__video--embed"
-      src={youtubeEmbedUrl(video.id)}
+      data-state={state}
+      src={youtubeEmbedUrl(id, window.location.origin)}
       title=""
       loading="lazy"
       allow="autoplay; encrypted-media"
       referrerPolicy="strict-origin-when-cross-origin"
+      aria-hidden="true"
+      tabIndex={-1}
+    />
+  );
+}
+
+/**
+ * A slide's background video, over its image (which stays as the poster and the
+ * fallback) and under its overlay. Rendered on the client only, and not for
+ * visitors who ask for reduced motion. A video file waits for
+ * {@link useSlideVideos} to play it; a YouTube embed loads lazily and plays
+ * muted on its own.
+ */
+function SlideVideo({ url, poster }: { url?: string; poster?: string }) {
+  const video = parseSlideVideo(url);
+  if (!video) return null;
+  if (video.kind === 'youtube') return <YouTubeBackground id={video.id} />;
+  return (
+    <video
+      className="enhanced-slider__video"
+      src={video.src}
+      poster={poster}
+      muted
+      loop
+      playsInline
+      preload="none"
+      disablePictureInPicture
       aria-hidden="true"
       tabIndex={-1}
     />
