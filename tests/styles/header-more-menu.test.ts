@@ -134,6 +134,8 @@ describe('default layout dropdown panels', () => {
     const [first] = rulesMatching(css, new RegExp(`__mainmenu ${rootItem} > ${sub}$`));
     expect(decl(first, 'border-top-left-radius')).toBe('0px');
     expect(decl(first, 'border-top-right-radius')).toBe('0px');
+    // Moved back inside the window by HeaderMainMenu.tsx when it would cross the edge.
+    expect(decl(first, 'translate')).toBe('var(--panel-shift, 0) 0');
 
     // Nested panels keep the base panel's full radius.
     const [nested] = rulesMatching(css, new RegExp(`__mainmenu ${sub} ${sub}$`));

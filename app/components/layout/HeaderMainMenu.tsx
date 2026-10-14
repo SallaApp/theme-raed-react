@@ -188,6 +188,7 @@ function MenuEntry({ item, root }: { item: MenuItem; root: boolean }) {
   const isMore = item.id === MORE_MENU_ID;
   const [opened, setOpened] = useState(false);
   const [opensStart, setOpensStart] = useState(false);
+  const [shift, setShift] = useState(0);
   const panelRef = useRef<HTMLDivElement>(null);
   // A long first-level list grows sideways rather than past the bottom of the
   // screen, where a fixed header leaves no way to scroll to it.
@@ -199,6 +200,12 @@ function MenuEntry({ item, root }: { item: MenuItem; root: boolean }) {
     // fits there, and toward the row's start when it would run off screen.
     if (!root && panelRef.current) {
       setOpensStart(!fitsTowardEnd(event.currentTarget, panelRef.current));
+    }
+    // A first-level panel (a wide one with columns, or "More") is moved back
+    // inside the window when it would cross its edge. A mega panel already
+    // spans the header row.
+    if (root && !isMega && panelRef.current) {
+      setShift(shiftIntoView(panelRef.current, shift));
     }
   };
 
@@ -232,7 +239,11 @@ function MenuEntry({ item, root }: { item: MenuItem; root: boolean }) {
         </Link>
       )}
       {hasChildren && (
-        <div ref={panelRef} className="s-menu-sub-menu">
+        <div
+          ref={panelRef}
+          className="s-menu-sub-menu"
+          {...(shift ? { style: { '--panel-shift': `${shift}px` } as CSSProperties } : {})}
+        >
           <ul
             {...(columns > 1
               ? {
@@ -259,6 +270,24 @@ function fitsTowardEnd(row: HTMLElement, panel: HTMLElement): boolean {
   const rtl = getComputedStyle(row).direction === 'rtl';
   const room = rtl ? rect.left : window.innerWidth - rect.right;
   return room >= panel.offsetWidth;
+}
+
+/** Space kept between a panel and the window's edge. */
+const VIEWPORT_MARGIN = 8;
+
+/**
+ * How far (in px, positive to the right) to move a panel so it stays inside the
+ * window. `current` is the shift already applied, which its position includes.
+ */
+function shiftIntoView(panel: HTMLElement, current: number): number {
+  const rect = panel.getBoundingClientRect();
+  const left = rect.left - current;
+  const right = left + rect.width;
+  const max = window.innerWidth - VIEWPORT_MARGIN;
+  let next = 0;
+  if (right > max) next = max - right;
+  if (left + next < VIEWPORT_MARGIN) next = VIEWPORT_MARGIN - left;
+  return Math.round(next);
 }
 
 /** A mega panel's featured products, as the theme's product cards in its product grid. */

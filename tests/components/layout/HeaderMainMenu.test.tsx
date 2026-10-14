@@ -21,6 +21,8 @@ const state = {
   available: 1000,
   /** Where a nested row's end edge sits (its `right`, in a left-to-right page). */
   rowRight: 300,
+  /** Where a first-level panel's left edge sits; it is 400px wide. */
+  panelLeft: 100,
 };
 
 vi.mock('@tanstack/react-query', () => ({
@@ -70,10 +72,15 @@ beforeEach(() => {
   state.productParams = [];
   state.available = 1000;
   state.rowRight = 300;
+  state.panelLeft = 100;
   // Every root item (the "More" probe included) is 100px wide.
   vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockImplementation(function (
     this: HTMLElement
   ) {
+    if (this.classList.contains('s-menu-sub-menu')) {
+      const left = state.panelLeft;
+      return { width: 400, height: 200, top: 0, left, right: left + 400, bottom: 200 } as DOMRect;
+    }
     if (this.classList.contains('s-menu-non-root-level')) {
       const right = state.rowRight;
       return { width: 200, height: 40, top: 0, left: right - 200, right, bottom: 40 } as DOMRect;
@@ -162,6 +169,37 @@ describe('HeaderMainMenu', () => {
     const list = container.querySelector('[data-more-menu] > .s-menu-sub-menu > ul')!;
     expect(list.classList.contains('s-menu-columns')).toBe(true);
     expect((list as HTMLElement).style.getPropertyValue('--menu-columns')).toBe('3');
+  });
+
+  describe('first-level panel position', () => {
+    beforeEach(() => {
+      state.items = [
+        {
+          id: 1,
+          title: 'Home',
+          url: '/home',
+          children: [{ id: 2, title: 'Rooms', url: '/rooms' }],
+        },
+      ];
+    });
+
+    const openPanel = (container: HTMLElement) => {
+      const item = container.querySelector('.s-menu-root-level.s-menu-has-children')!;
+      fireEvent.mouseEnter(item);
+      return item.querySelector<HTMLElement>(':scope > .s-menu-sub-menu')!;
+    };
+
+    it('stays where it opens when it fits in the window', () => {
+      const { container } = render(<HeaderMainMenu />);
+      expect(openPanel(container).style.getPropertyValue('--panel-shift')).toBe('');
+    });
+
+    it('moves back inside the window when it would cross its edge', () => {
+      state.panelLeft = 900; // ends at 1300 in a 1024px window
+      const { container } = render(<HeaderMainMenu />);
+      // 1024 - 8 (margin) - 1300 = -284
+      expect(openPanel(container).style.getPropertyValue('--panel-shift')).toBe('-284px');
+    });
   });
 
   describe('nested panel direction', () => {

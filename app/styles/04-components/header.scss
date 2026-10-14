@@ -867,9 +867,13 @@ body.topnav-is-dark .site-header--lite .site-header__bar {
     }
 
     /* A first-level panel opens flush under the header row, so its top
-       corners are square; nested panels keep all four rounded (above). */
+       corners are square; nested panels keep all four rounded (above). When
+       it would cross the window's edge, HeaderMainMenu.tsx sets
+       `--panel-shift` to move it back inside (`translate`, so it doesn't fight
+       the open animation's `transform`). */
     .s-menu-root-level > .s-menu-sub-menu {
       @apply rounded-t-none;
+      translate: var(--panel-shift, 0) 0;
     }
 
     /* A long first-level list is laid out in columns (`--menu-columns`, set by
