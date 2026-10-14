@@ -347,6 +347,14 @@ describe('HeaderMainMenu', () => {
       expect(panel.classList.contains('is-stacked')).toBe(true);
     });
 
+    // jsdom's window is 768px tall; the products' top is at 0 here.
+    it('caps its products to the room left in the window, so every card is reachable', () => {
+      const { container } = render(<HeaderMainMenu />);
+      fireEvent.mouseEnter(container.querySelector('.s-menu-mega-menu')!);
+      const products = container.querySelector<HTMLElement>('.s-menu-products-wrapper')!;
+      expect(products.style.maxHeight).toBe('736px'); // 768 - 0 - 32
+    });
+
     it('keeps its products beside a short list of links', () => {
       const { container } = render(<HeaderMainMenu />);
       const panel = container.querySelector('.s-menu-mega-menu > .s-menu-sub-menu')!;

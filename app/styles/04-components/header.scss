@@ -948,8 +948,11 @@ body.topnav-is-dark .site-header--lite .site-header__bar {
       }
     }
 
+    /* Scrolls within the room left in the window (its max-height is set by
+       HeaderMainMenu.tsx). It holds no nested menus, so it can scroll without
+       clipping any. */
     .s-menu-products-wrapper {
-      @apply min-w-0 flex-1;
+      @apply min-w-0 flex-1 overflow-y-auto overscroll-contain;
     }
 
     /* Links in columns take the panel's width; the products go below them. */

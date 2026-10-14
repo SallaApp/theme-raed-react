@@ -185,4 +185,11 @@ describe('default layout dropdown panels', () => {
     const [stacked] = rulesMatching(css, new RegExp(`${mega} > ${sub}\\.is-stacked$`));
     expect(decl(stacked, 'flex-direction')).toBe('column');
   });
+
+  // Only the products scroll: they hold no nested menus to clip.
+  it("scrolls a mega panel's products, not the panel", async () => {
+    const css = await compileHeader();
+    const [products] = rulesMatching(css, /__mainmenu \.s-menu-products-wrapper$/);
+    expect(decl(products, 'overflow-y')).toBe('auto');
+  });
 });

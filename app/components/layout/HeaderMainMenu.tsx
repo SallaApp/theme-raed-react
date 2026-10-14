@@ -326,15 +326,47 @@ function shiftIntoView(panel: HTMLElement, current: number): number {
   return Math.round(next);
 }
 
-/** A mega panel's featured products, as the theme's product cards in its product grid. */
+/** Space left under a mega panel's products, and the least height they keep. */
+const PRODUCTS_BOTTOM_GAP = 32;
+const PRODUCTS_MIN_HEIGHT = 160;
+
+/**
+ * A mega panel's featured products, as the theme's product cards in its product
+ * grid. Capped to the room left in the window below them, and scrollable within
+ * it: a fixed header leaves no other way to reach a card that falls below the
+ * window. Only this area scrolls, never the panel, whose links' nested menus
+ * would be clipped by a scrolling box.
+ */
 function MegaProducts({ ids }: { ids: number[] }) {
   const { data } = useQuery(
     product.queries.list({ source: 'selected', sourceValue: ids, perPage: ids.length })
   );
   const products = data?.items ?? [];
+  const ref = useRef<HTMLDivElement>(null);
+  const [maxHeight, setMaxHeight] = useState<number>();
+
+  useIsomorphicLayoutEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const update = () =>
+      setMaxHeight(
+        Math.max(
+          PRODUCTS_MIN_HEIGHT,
+          Math.floor(window.innerHeight - el.getBoundingClientRect().top - PRODUCTS_BOTTOM_GAP)
+        )
+      );
+    update();
+    window.addEventListener('resize', update);
+    return () => window.removeEventListener('resize', update);
+  }, [products.length]);
+
   if (!products.length) return null;
   return (
-    <div className="s-menu-products-wrapper">
+    <div
+      ref={ref}
+      className="s-menu-products-wrapper"
+      {...(maxHeight ? { style: { maxHeight } } : {})}
+    >
       <div className="s-products-list-wrapper s-products-list-vertical-cards">
         {products.map((item) => (
           <ProductCard key={item.id} product={item} />
