@@ -374,6 +374,17 @@
           "value": "<div >هذا العنصر غير مناسب لعرض البنرات، يمكنك استخدام عنصر <strong>صور متحركة</strong> بدلاً منه لتظهر صورة البنر بشكل كامل</div>"
         },
         {
+          "type": "boolean",
+          "icon": "sicon-play",
+          "label": "التنقل التلقائي بين الصور",
+          "description": "ينتقل المعرض إلى الصورة التالية تلقائياً كل بضع ثوانٍ. عند إيقافه يتنقل الزائر بالأسهم أو بالسحب.",
+          "id": "auto_play",
+          "format": "switch",
+          "required": false,
+          "value": true,
+          "selected": true
+        },
+        {
           "id": "slides",
           "type": "collection",
           "format": "collection",

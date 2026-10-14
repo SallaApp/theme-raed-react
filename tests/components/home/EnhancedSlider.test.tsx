@@ -52,6 +52,22 @@ describe('EnhancedSlider', () => {
     expect(slider?.hasAttribute('pagination')).toBe(false);
   });
 
+  it('skips autoplay when the merchant switches auto_play off', () => {
+    const { container } = render(
+      <EnhancedSlider data={{ slider_banner: mockSlides, auto_play: false }} />
+    );
+    const slider = container.querySelector('salla-slider');
+    expect(slider?.getAttribute('auto-play')).not.toBe('true');
+    expect(slider?.getAttribute('show-controls')).toBe('true');
+  });
+
+  it('autoplays when auto_play is on', () => {
+    const { container } = render(
+      <EnhancedSlider data={{ slider_banner: mockSlides, auto_play: true }} />
+    );
+    expect(container.querySelector('salla-slider')?.getAttribute('auto-play')).toBe('true');
+  });
+
   it('enables pagination dots alongside the arrows when there are multiple slides', () => {
     const { container } = render(<EnhancedSlider data={{ slider_banner: mockSlides }} />);
     const slider = container.querySelector('salla-slider');

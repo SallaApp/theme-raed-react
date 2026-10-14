@@ -28,6 +28,8 @@ export interface EnhancedSliderProps {
     slider_animation_time?: number;
     slider_aniamtion_time?: number;
     slider_animation_enabled?: boolean;
+    /** twilight.json `auto_play`: move to the next slide on a timer. On unless switched off. */
+    auto_play?: boolean;
     position?: number;
     in_container?: boolean;
     priority?: boolean;
@@ -194,7 +196,7 @@ export const EnhancedSlider = memo(function EnhancedSlider({ data }: EnhancedSli
       <SallaSlider
         id={`main-slider-${position}`}
         // Swiper's autoplay redraws every frame for its countdown, so a single slide skips it.
-        autoPlay={hasMultipleSlides}
+        autoPlay={hasMultipleSlides && data.auto_play !== false}
         sliderConfig={{ lazy: false, watchOverflow: true }}
         showControls={hasMultipleSlides}
         pagination={hasMultipleSlides}
