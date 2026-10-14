@@ -141,4 +141,13 @@ describe('default layout dropdown panels', () => {
     const panels = rulesMatching(css, new RegExp(`__mainmenu ${sub}$`));
     expect(panels.some((rule) => decl(rule, 'border-radius') === '16px')).toBe(true);
   });
+
+  it('lays a mega panel out as four product columns', async () => {
+    const css = await compileHeader();
+    const selector = [
+      '.site-header--default .site-header__mainmenu',
+      '.s-menu-products-wrapper .s-products-list-vertical-cards',
+    ].join(' ');
+    expect(declFor(css, selector, 'grid-template-columns')).toBe('repeat(4, minmax(0, 1fr))');
+  });
 });

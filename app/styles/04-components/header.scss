@@ -918,6 +918,12 @@ body.topnav-is-dark .site-header--lite .site-header__bar {
       @apply min-w-0 flex-1;
     }
 
+    /* The product grid is five columns everywhere else; a mega panel shows
+       four products, in four columns. */
+    .s-menu-products-wrapper .s-products-list-vertical-cards {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+
     .s-menu-root-level.s-menu-mega-menu > .s-menu-sub-menu {
       @apply gap-6 p-6;
     }
