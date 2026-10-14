@@ -17,11 +17,28 @@ export interface ProductGalleryProps {
 }
 
 type GalleryMedia = { url: string; type: 'image' | 'video' | '3d-image' };
+// The engine's `SallaMobile` type lists `openGallery` only from twilight-platform #439.
+type NativeGalleryBridge = {
+  openGallery?: (images: ProductImage[], selected?: ProductImage) => boolean;
+};
+
+/**
+ * The engine's own `mobile::gallery.open` payload from before `salla.mobile.openGallery`: a video's
+ * link and a 3D model's file go in `url`, with no ids. Sent when the SDK has no `openGallery`
+ * (Twilight before 2.14.569) or declines inside the app, so those stores keep the gallery they had.
+ */
+function legacyGalleryMedia(images: ProductImage[]): GalleryMedia[] {
+  return images.flatMap<GalleryMedia>((image) => {
+    if (image.three_d_image_url) return [{ url: image.three_d_image_url, type: '3d-image' }];
+    if (image.video_url) return [{ url: image.video_url, type: 'video' }];
+    return image.url ? [{ url: image.url, type: 'image' }] : [];
+  });
+}
 
 /**
  * Theme fork of the engine `ProductGallery`.
  *
- * Differs from upstream in two ways:
+ * Differs from upstream in three ways:
  *  - the thumbnails slider runs `slidesPerView: 'auto'` (`thumbsConfig`). The
  *    theme sizes thumbs to a fixed 80px in `slider.scss`; with the engine
  *    default (`slidesPerView: 4`) Swiper lays the track out for quarter-width
@@ -30,6 +47,9 @@ type GalleryMedia = { url: string; type: 'image' | 'video' | '3d-image' };
  *  - `<SallaMetadata>` (specs table) renders here, below the slider, instead of
  *    in the buy-box column — so the column drops its `md:sticky` when a product
  *    has metadata.
+ *  - the Salla app's gallery opens through `salla.mobile.openGallery` on the
+ *    tapped item, as the engine does from twilight-platform #439 (not in an
+ *    engine release yet).
  *
  * Upgrade notes: `FORKS.md`.
  */
@@ -86,14 +106,13 @@ export function ProductGallery({ product }: ProductGalleryProps) {
   const { posterUrl, hidePoster } = useSliderPoster(images[0]);
 
   const hasManyImages = images.length > 1;
-  const nativeGallery = images.flatMap<GalleryMedia>((image) => {
-    if (image.three_d_image_url) return [{ url: image.three_d_image_url, type: '3d-image' }];
-    if (image.video_url) return [{ url: image.video_url, type: 'video' }];
-    return image.url ? [{ url: image.url, type: 'image' }] : [];
-  });
-  const openNativeGallery = () => {
+  const openNativeGallery = (selected: ProductImage) => {
     if (!isNativeApp()) return false;
-    window.salla?.event.dispatch('mobile::gallery.open', { images: nativeGallery });
+    const mobile = window.salla?.mobile as
+      | (NonNullable<typeof window.salla>['mobile'] & NativeGalleryBridge)
+      | undefined;
+    if (mobile?.openGallery?.(images, selected)) return true;
+    window.salla?.event.dispatch('mobile::gallery.open', { images: legacyGalleryMedia(images) });
     return true;
   };
 
@@ -273,7 +292,7 @@ function ImageSlide({
   index: number;
   objectFit: 'cover' | 'contain';
   lightboxReady: RefObject<boolean>;
-  onNativeOpen: () => boolean;
+  onNativeOpen: (image: ProductImage) => boolean;
 }) {
   const [loaded, setLoaded] = useState(false);
 
@@ -291,7 +310,7 @@ function ImageSlide({
         src={image.three_d_image_url}
         shadow-intensity="1"
         alt={image.alt}
-        onClick={onNativeOpen}
+        onClick={() => onNativeOpen(image)}
       ></model-viewer>
     );
   }
@@ -308,7 +327,7 @@ function ImageSlide({
       href={image.video_url || image.url}
       // Capture runs before fsLightbox's own `onclick`, so the native app's gallery wins.
       onClickCapture={(event) => {
-        if (!onNativeOpen()) return;
+        if (!onNativeOpen(image)) return;
         event.preventDefault();
         event.stopPropagation();
       }}

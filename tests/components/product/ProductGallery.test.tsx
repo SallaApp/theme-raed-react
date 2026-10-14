@@ -116,3 +116,59 @@ describe('ProductGallery first image', () => {
     expect(html).toContain('product-gallery--model');
   });
 });
+
+describe('ProductGallery in the Salla app', () => {
+  // legacyGalleryMedia: sent when the SDK has no openGallery or it declines; the video link in `url`.
+  const legacyMedia = [
+    { url: 'https://cdn.test/a.webp', type: 'image' },
+    { url: 'https://youtu.be/Breu1_lrOaY', type: 'video' },
+    { url: 'https://cdn.test/clip.mp4', type: 'video' },
+  ];
+  const dispatch = vi.fn();
+
+  const inApp = (mobile: Record<string, unknown> = {}) => {
+    const sdk = (window as unknown as { salla: Record<string, unknown> }).salla;
+    sdk.event = { on: vi.fn(), off: vi.fn(), dispatch };
+    sdk.mobile = { isEnabled: () => true, openBrowser: vi.fn(), ...mobile };
+  };
+
+  beforeEach(() => dispatch.mockClear());
+
+  it('opens the native gallery through salla.mobile.openGallery on the tapped item', () => {
+    const openGallery = vi.fn(() => true);
+    inApp({ openGallery });
+    const model = {
+      ...product,
+      images: [
+        ...product.images,
+        { id: 4, url: 'https://cdn.test/poster.jpg', three_d_image_url: 'https://cdn.test/a.glb' },
+      ],
+    } as unknown as Product;
+    const { container } = render(<ProductGallery product={model} />);
+
+    expect(fireEvent.click(slides(container)[1])).toBe(false);
+    expect(openGallery).toHaveBeenLastCalledWith(model.images, model.images[1]);
+
+    fireEvent.click(container.querySelector('model-viewer')!);
+    expect(openGallery).toHaveBeenLastCalledWith(model.images, model.images[3]);
+    expect(dispatch).not.toHaveBeenCalledWith('mobile::gallery.open', expect.anything());
+  });
+
+  it('sends the legacy payload when openGallery declines inside the app', () => {
+    const openGallery = vi.fn(() => false);
+    inApp({ openGallery });
+    const { container } = render(<ProductGallery product={product} />);
+
+    expect(fireEvent.click(slides(container)[1])).toBe(false);
+    expect(openGallery).toHaveBeenCalledWith(product.images, product.images[1]);
+    expect(dispatch).toHaveBeenCalledWith('mobile::gallery.open', { images: legacyMedia });
+  });
+
+  it('sends the legacy payload when the SDK has no openGallery', () => {
+    inApp();
+    const { container } = render(<ProductGallery product={product} />);
+
+    expect(fireEvent.click(slides(container)[1])).toBe(false);
+    expect(dispatch).toHaveBeenCalledWith('mobile::gallery.open', { images: legacyMedia });
+  });
+});
