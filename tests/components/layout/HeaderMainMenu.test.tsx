@@ -23,6 +23,8 @@ const state = {
   rowRight: 300,
   /** Where a first-level panel's left edge sits; it is 400px wide. */
   panelLeft: 100,
+  /** A nested panel's own width. */
+  nestedWidth: 224,
 };
 
 vi.mock('@tanstack/react-query', () => ({
@@ -73,6 +75,7 @@ beforeEach(() => {
   state.available = 1000;
   state.rowRight = 300;
   state.panelLeft = 100;
+  state.nestedWidth = 224;
   // Every root item (the "More" probe included) is 100px wide.
   vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockImplementation(function (
     this: HTMLElement
@@ -85,14 +88,17 @@ beforeEach(() => {
       const right = state.rowRight;
       return { width: 200, height: 40, top: 0, left: right - 200, right, bottom: 40 } as DOMRect;
     }
-    const width = this.classList.contains('s-menu-root-level') ? 100 : 0;
+    // A root item is 100px, 20px more with a caret (when it has children).
+    const width = this.classList.contains('s-menu-root-level')
+      ? 100 + (this.classList.contains('s-menu-has-children') ? 20 : 0)
+      : 0;
     return { width, height: 40, top: 0, left: 0, right: width, bottom: 40, x: 0, y: 0 } as DOMRect;
   });
   // A nested panel is 224px wide; the window (jsdom) is 1024px.
   vi.spyOn(HTMLElement.prototype, 'offsetWidth', 'get').mockImplementation(function (
     this: HTMLElement
   ) {
-    return this.classList.contains('s-menu-sub-menu') ? 224 : 0;
+    return this.classList.contains('s-menu-sub-menu') ? state.nestedWidth : 0;
   });
   vi.spyOn(HTMLElement.prototype, 'clientWidth', 'get').mockImplementation(() => state.available);
   vi.stubGlobal(
@@ -156,6 +162,45 @@ describe('HeaderMainMenu', () => {
     state.available = 350;
     act(() => resize());
     expect(rootTitles(container)).toEqual(['Item 1', 'Item 2', 'More']);
+  });
+
+  it('lays a long nested list out in columns too', () => {
+    state.items = [
+      {
+        id: 1,
+        title: 'Home',
+        url: '/home',
+        children: [
+          {
+            id: 2,
+            title: 'Rooms',
+            url: '/rooms',
+            children: Array.from({ length: 12 }, (_, i) => ({
+              id: 100 + i,
+              title: `Room ${i}`,
+              url: `/room-${i}`,
+            })),
+          },
+        ],
+      },
+    ];
+    const { container } = render(<HeaderMainMenu />);
+    const list = container.querySelector('.s-menu-non-root-level > .s-menu-sub-menu > ul')!;
+    expect(list.classList.contains('s-menu-columns')).toBe(true);
+    expect((list as HTMLElement).style.getPropertyValue('--menu-columns')).toBe('2');
+  });
+
+  // A root item that gains children gets a caret and grows: measured again.
+  it('measures again when a root item gains children', () => {
+    state.available = 500; // five 100px items fit exactly
+    const { container, rerender } = render(<HeaderMainMenu />);
+    expect(container.querySelector('[data-more-menu]')).toBeNull();
+
+    state.items = state.items.map((item, i) =>
+      i === 0 ? { ...item, children: [{ id: 10, title: 'Sub', url: '/sub' }] } : item
+    );
+    rerender(<HeaderMainMenu />);
+    expect(rootTitles(container)).toEqual(['Item 1', 'Item 2', 'Item 3', 'More']);
   });
 
   it('lays a long first-level list out in columns', () => {
@@ -227,6 +272,18 @@ describe('HeaderMainMenu', () => {
       const row = container.querySelector('.s-menu-non-root-level.s-menu-has-children')!;
       fireEvent.mouseEnter(row);
       expect(row.classList.contains('s-menu-opens-start')).toBe(false);
+    });
+
+    it('caps it to the roomier side when it fits on neither', () => {
+      state.rowRight = 724; // 292px past its end edge, 516px past its start edge
+      state.nestedWidth = 800;
+      const { container } = render(<HeaderMainMenu />);
+      const row = container.querySelector('.s-menu-non-root-level.s-menu-has-children')!;
+      fireEvent.mouseEnter(row);
+      expect(row.classList.contains('s-menu-opens-start')).toBe(true);
+      const panel = row.querySelector<HTMLElement>(':scope > .s-menu-sub-menu')!;
+      expect(panel.getAttribute('data-capped')).toBe('true');
+      expect(panel.style.getPropertyValue('--panel-max')).toBe('516px');
     });
 
     it('opens toward the row start when it would run off screen', () => {

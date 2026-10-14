@@ -155,9 +155,9 @@ describe('default layout dropdown panels', () => {
 
   // A fixed header leaves no way to scroll to a panel taller than the screen,
   // and a scrolling panel would clip its nested panels: a long list gets columns.
-  it('lays a long first-level list out in columns, without scrolling', async () => {
+  it('lays a long list out in columns, in any panel, without scrolling', async () => {
     const css = await compileHeader();
-    const [list] = rulesMatching(css, new RegExp(`${rootItem} > ${sub} > ul\\.s-menu-columns$`));
+    const [list] = rulesMatching(css, new RegExp(`__mainmenu ${sub} > ul\\.s-menu-columns$`));
     expect(decl(list, 'display')).toBe('grid');
     expect(decl(list, 'grid-template-columns')).toContain('var(--menu-columns)');
   });
@@ -166,5 +166,17 @@ describe('default layout dropdown panels', () => {
     const css = await compileHeader();
     const [flipped] = rulesMatching(css, new RegExp(`\\.s-menu-opens-start > ${sub}$`));
     expect(decl(flipped, 'inset-inline')).toBe('auto 100%');
+  });
+
+  // With room on neither side, a nested panel is capped to the roomier one;
+  // the cap has to beat a nested mega panel's 48rem min-width.
+  it('caps a nested panel that fits on neither side', async () => {
+    const css = await compileHeader();
+    const [capped] = rulesMatching(
+      css,
+      new RegExp(`\\.s-menu-has-children > ${sub}\\[data-capped\\]$`)
+    );
+    expect(decl(capped, 'max-width')).toBe('var(--panel-max)');
+    expect(decl(capped, 'min-width')).toBe('0');
   });
 });

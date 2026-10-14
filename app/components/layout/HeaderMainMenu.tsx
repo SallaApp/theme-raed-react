@@ -39,9 +39,14 @@ interface Measured {
   gap: number;
 }
 
-/** A short, stable key for a menu: its items' ids and titles, top level only. */
+/**
+ * A short, stable key for what decides the root items' widths: each one's id,
+ * title, and whether it has children (which adds a caret).
+ */
 function menuKey(items: MenuItem[]): string {
-  const text = items.map((item) => `${String(item.id)}:${item.title ?? ''}`).join('|');
+  const text = items
+    .map((item) => `${String(item.id)}:${item.title ?? ''}:${item.children?.length ? 1 : 0}`)
+    .join('|');
   let hash = 0;
   for (let i = 0; i < text.length; i += 1) hash = (hash * 31 + text.charCodeAt(i)) | 0;
   return `${items.length}-${(hash >>> 0).toString(36)}`;
@@ -187,19 +192,23 @@ function MenuEntry({ item, root }: { item: MenuItem; root: boolean }) {
   const isMega = productIds.length > 0;
   const isMore = item.id === MORE_MENU_ID;
   const [opened, setOpened] = useState(false);
-  const [opensStart, setOpensStart] = useState(false);
+  const [placement, setPlacement] = useState<NestedPlacement>(END_PLACEMENT);
   const [shift, setShift] = useState(0);
   const panelRef = useRef<HTMLDivElement>(null);
-  // A long first-level list grows sideways rather than past the bottom of the
-  // screen, where a fixed header leaves no way to scroll to it.
-  const columns = root && !isMega ? panelColumns(children.length) : 1;
+  /** The panel's own width, read while it isn't capped to the room beside it. */
+  const naturalWidth = useRef(0);
+  // A long list grows sideways rather than past the bottom of the screen, where
+  // a fixed header leaves no way to scroll to it. Every panel, at every level.
+  const columns = panelColumns(children.length);
 
   const onOpen = (event: { currentTarget: HTMLLIElement }) => {
     if (isMega) setOpened(true);
-    // A nested panel opens past its row's end edge (left in Arabic) when it
-    // fits there, and toward the row's start when it would run off screen.
+    // A nested panel opens past its row's end edge (left in Arabic) when it fits
+    // there, else on the other side if it fits there; with room on neither, on
+    // the roomier side, narrowed to fit.
     if (!root && panelRef.current) {
-      setOpensStart(!fitsTowardEnd(event.currentTarget, panelRef.current));
+      if (placement.maxWidth === undefined) naturalWidth.current = panelRef.current.offsetWidth;
+      setPlacement(placeNested(event.currentTarget, naturalWidth.current));
     }
     // A first-level panel (a wide one with columns, or "More") is moved back
     // inside the window when it would cross its edge. A mega panel already
@@ -213,7 +222,7 @@ function MenuEntry({ item, root }: { item: MenuItem; root: boolean }) {
     root ? 's-menu-root-level' : 's-menu-non-root-level',
     hasChildren && 's-menu-has-children',
     isMega && 's-menu-mega-menu',
-    opensStart && 's-menu-opens-start',
+    placement.start && 's-menu-opens-start',
   ]
     .filter(Boolean)
     .join(' ');
@@ -242,7 +251,17 @@ function MenuEntry({ item, root }: { item: MenuItem; root: boolean }) {
         <div
           ref={panelRef}
           className="s-menu-sub-menu"
-          {...(shift ? { style: { '--panel-shift': `${shift}px` } as CSSProperties } : {})}
+          {...(shift || placement.maxWidth !== undefined
+            ? {
+                style: {
+                  ...(shift ? { '--panel-shift': `${shift}px` } : {}),
+                  ...(placement.maxWidth !== undefined
+                    ? { '--panel-max': `${placement.maxWidth}px` }
+                    : {}),
+                } as CSSProperties,
+                ...(placement.maxWidth !== undefined ? { 'data-capped': 'true' } : {}),
+              }
+            : {})}
         >
           <ul
             {...(columns > 1
@@ -261,19 +280,34 @@ function MenuEntry({ item, root }: { item: MenuItem; root: boolean }) {
   );
 }
 
-/**
- * Whether a nested panel fits past its row's end edge: to the left of the row
- * in a right-to-left page, to the right in a left-to-right one.
- */
-function fitsTowardEnd(row: HTMLElement, panel: HTMLElement): boolean {
-  const rect = row.getBoundingClientRect();
-  const rtl = getComputedStyle(row).direction === 'rtl';
-  const room = rtl ? rect.left : window.innerWidth - rect.right;
-  return room >= panel.offsetWidth;
-}
-
 /** Space kept between a panel and the window's edge. */
 const VIEWPORT_MARGIN = 8;
+
+/** Where a nested panel opens: toward its row's start or end, and capped to a width or not. */
+interface NestedPlacement {
+  start: boolean;
+  maxWidth?: number;
+}
+
+const END_PLACEMENT: NestedPlacement = { start: false };
+
+/**
+ * Where a nested panel `width` px wide opens beside its row. Past the row's end
+ * edge (left of it in a right-to-left page) when it fits there; else past its
+ * start edge when it fits there; else on the roomier side, capped to that room.
+ */
+function placeNested(row: HTMLElement, width: number): NestedPlacement {
+  const rect = row.getBoundingClientRect();
+  const rtl = getComputedStyle(row).direction === 'rtl';
+  const left = rect.left - VIEWPORT_MARGIN;
+  const right = window.innerWidth - rect.right - VIEWPORT_MARGIN;
+  const roomEnd = rtl ? left : right;
+  const roomStart = rtl ? right : left;
+  if (roomEnd >= width) return END_PLACEMENT;
+  if (roomStart >= width) return { start: true };
+  const start = roomStart > roomEnd;
+  return { start, maxWidth: Math.max(0, Math.floor(start ? roomStart : roomEnd)) };
+}
 
 /**
  * How far (in px, positive to the right) to move a panel so it stays inside the

@@ -876,12 +876,12 @@ body.topnav-is-dark .site-header--lite .site-header__bar {
       translate: var(--panel-shift, 0) 0;
     }
 
-    /* A long first-level list is laid out in columns (`--menu-columns`, set by
-       HeaderMainMenu.tsx: up to 4 columns of about 8 rows), so it grows
+    /* A long list, in any panel, is laid out in columns (`--menu-columns`, set
+       by HeaderMainMenu.tsx: up to 4 columns of about 8 rows), so it grows
        sideways rather than past the bottom of the screen, where a fixed header
        leaves no way to scroll to it. Not a scrolling box: that would clip the
        panels flying out of its rows. */
-    .s-menu-root-level > .s-menu-sub-menu > ul.s-menu-columns {
+    .s-menu-sub-menu > ul.s-menu-columns {
       display: grid;
       grid-template-columns: repeat(var(--menu-columns), minmax(12rem, 1fr));
       column-gap: 0.25rem;
@@ -898,6 +898,14 @@ body.topnav-is-dark .site-header--lite .site-header__bar {
        it opens toward the row's start instead. */
     .s-menu-opens-start > .s-menu-sub-menu {
       inset-inline: auto 100%;
+    }
+
+    /* Room on neither side: capped to the roomier one (`--panel-max`), so its
+       content narrows rather than leaving the window. The extra class outranks
+       a nested mega panel's `min-width` (below). */
+    .s-menu-has-children > .s-menu-sub-menu[data-capped] {
+      min-width: 0;
+      max-width: var(--panel-max);
     }
 
     .s-menu-has-children:hover > .s-menu-sub-menu,
@@ -933,6 +941,11 @@ body.topnav-is-dark .site-header--lite .site-header__bar {
        list (`.s-products-list-vertical-cards`). */
     .s-menu-mega-menu > .s-menu-sub-menu > ul {
       @apply w-56 shrink-0;
+
+      /* in columns, as wide as they need */
+      &.s-menu-columns {
+        @apply w-auto;
+      }
     }
 
     .s-menu-products-wrapper {
