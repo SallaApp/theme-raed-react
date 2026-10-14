@@ -47,6 +47,9 @@ vi.mock('@salla.sa/twilight-theme-engine/common', () => ({
   ),
 }));
 
+vi.mock('../../../app/components/layout/HeaderMainMenu', () => ({
+  HeaderMainMenu: () => <div data-testid="header-main-menu" />,
+}));
 vi.mock('../../../app/components/layout/HeaderNav', () => ({
   HeaderNav: ({ open }: { open: boolean }) => <nav data-testid="header-nav" data-open={open} />,
 }));

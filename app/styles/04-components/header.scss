@@ -886,6 +886,37 @@ body.topnav-is-dark .site-header--lite .site-header__bar {
       @apply min-w-0 flex-1;
     }
 
+    /* One-line menu (`enable_more_menu`, HeaderMainMenu.tsx): items that don't
+       fit move into a last "More" item. Clipped only while the full menu is
+       being measured — clipping it after would cut the dropdown panels off. */
+    .site-header__oneline-menu {
+      @apply relative flex w-full min-w-0 justify-center;
+
+      .main-menu {
+        flex-wrap: nowrap;
+      }
+
+      &.is-measuring {
+        overflow: hidden;
+      }
+    }
+
+    /* Sizes the "More" item before it exists; never seen or reached. */
+    .site-header__more-probe {
+      @apply pointer-events-none invisible absolute top-0;
+      inset-inline-start: 0;
+    }
+
+    /* "More" is the row's last item: its panel opens toward the row's start so
+       it stays on screen, and so do the panels nested in it. */
+    [data-more-menu] > .s-menu-sub-menu {
+      inset-inline: auto 0;
+    }
+
+    [data-more-menu] .s-menu-sub-menu .s-menu-sub-menu {
+      inset-inline: auto 100%;
+    }
+
     /* caret — sallaicons chevron, flips on an open top-level item */
     .s-menu-has-children > a::after {
       font-family: 'sallaicons';
