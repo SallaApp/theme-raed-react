@@ -943,8 +943,9 @@ salla-reviews:not(:has(.s-reviews-swiper-slide)) {
       @apply flex shrink-0 items-center justify-center w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-gray-100 overflow-hidden transition-colors duration-300;
     }
 
+    /* An item's image (a link's own, or a category's) fills the circle. */
     img {
-      @apply w-full h-full object-cover;
+      @apply w-full h-full rounded-full object-cover;
     }
 
     i {

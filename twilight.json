@@ -612,13 +612,24 @@
             {
               "type": "string",
               "icon": "sicon-format-text-alt",
-              "label": "عنوان الرابط",
+              "label": "أيقونة الرابط",
               "id": "links.icon",
               "value": "sicon-store2",
               "required": false,
               "format": "icon",
               "class": "form--inline",
-              "description": null
+              "description": "تظهر عند عدم إضافة صورة للرابط"
+            },
+            {
+              "type": "string",
+              "icon": "sicon-image",
+              "label": "صورة الرابط",
+              "id": "links.image",
+              "value": null,
+              "required": false,
+              "format": "image",
+              "placeholder": null,
+              "description": "تظهر بدل الأيقونة وتملأ الدائرة. المقاس المناسب 200×200 بكسل (صورة مربعة)"
             },
             {
               "type": "string",
