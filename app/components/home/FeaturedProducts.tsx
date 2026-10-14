@@ -1,52 +1,52 @@
 import { Suspense, useCallback, useMemo, useState } from 'react';
 import type { Product } from '@salla.sa/twilight-theme-engine/types';
 import { useTranslation } from '@salla.sa/twilight-theme-engine/i18n';
-import { product } from '@salla.sa/twilight-theme-engine/api/product';
+import { product, type ProductsListSource } from '@salla.sa/twilight-theme-engine/api/product';
 import { ProductCard } from '../product/ProductCard';
 import { SallaProductsList, ProductsListSkeleton } from '@salla.sa/twilight-components-react';
 
 /**
- * `featured-products` home block — products grid with category tabs, and an
- * optional highlighted "special" product.
+ * `featured-products` home block — a theme-owned custom component (declared in
+ * `twilight.json` as `home.featured-products`), replacing the engine's native
+ * `component-featured-products` feature. Each tab names its own source
+ * (`items[].type` + category / tag / chosen products) and loads its products
+ * lazily through `product.list`, so no server-side hydration is needed.
  *
- * Why the theme owns the render instead of delegating to the engine:
- *  - the engine only pre-registers `featured-products:style1|style2|style3` and
- *    only recognises those literal `view_style` values, so the semantic values
- *    the API now sends (`products_without_special_product`, …) hit the bare
- *    `home:featured-products` key unhandled → dev "Unknown component" box;
- *  - the engine's `FeaturedProductsStyle1` / `Style3` render each product as a
- *    raw `<custom-salla-product-card>` web component, which nothing defines in a
- *    React theme — the markup mounts but shows nothing (the "empty block").
- *
- * This component keeps the engine/Twig class names (`s-block__title`, `tabs`,
- * `tabs-wrapper`, `tabs__item`, `tab-trigger`) so `04-components/home-blocks.scss`
- * styles it, and renders through the real React `ProductCard`.
- *
- * `items[].products` from `component/list` are summary stubs (`id`, `name`,
- * `price` only) — no stock / status / image — so rendering them directly shows
- * every card as "out of stock". Each tab therefore re-fetches its products in
- * full by id (`product.list({ source: 'selected', … })`).
- *
+ * Keeps the engine/Twig class names (`s-block__title`, `tabs`, `tabs-wrapper`,
+ * `tabs__item`, `tab-trigger`) so `04-components/home-blocks.scss` styles it.
  * {@link featuredProductsConfig} supplies the wrapper `<section>` classes.
  */
 
+const TYPE_TO_SOURCE: Record<string, ProductsListSource> = {
+  category: 'categories',
+  most_sales: 'sales',
+  latest_products: 'latest',
+  chosen_products: 'selected',
+  random_products: 'latest',
+  top_rated_products: 'top-rated',
+  tag: 'tags',
+};
+
+/** A dropdown-list value as the backend may send it: scalar, `{value|key|id}`, or an array of those. */
+type PickerValue = string | number | { id?: unknown; value?: unknown; key?: unknown } | null | undefined;
+
 export interface FeaturedProductsSection {
-  id?: string | number;
-  /** Tab name from the store API (`component/list`) — the real field is `label`. */
-  label?: string;
-  title?: string;
   name?: string;
-  type?: string;
-  products?: Array<Pick<Product, 'id'> & Record<string, unknown>>;
+  type?: PickerValue | PickerValue[];
+  category?: PickerValue | PickerValue[];
+  tag?: PickerValue | PickerValue[];
+  chosen_products?: PickerValue | PickerValue[] | { source_value?: PickerValue[] } | null;
+  special_product?: Product | { source_value?: PickerValue[] } | PickerValue | PickerValue[] | null;
   [key: string]: unknown;
 }
 
 export interface FeaturedProductsData {
   view_style?: string | null;
-  title?: string;
+  show_method?: PickerValue | PickerValue[];
   is_slider?: boolean;
   position?: number;
-  main_product?: { title?: string; product?: Product | null } | null;
+  main_product_title?: string;
+  main_product?: Product | { source_value?: PickerValue[] } | PickerValue | PickerValue[] | null;
   items?: FeaturedProductsSection[];
   [key: string]: unknown;
 }
@@ -56,39 +56,49 @@ type Translate = ReturnType<typeof useTranslation>['t'];
 interface Tab {
   key: string;
   label: string;
-  productIds: number[];
+  source?: ProductsListSource;
+  sourceValue?: number[];
 }
 
-/** Stable key for a tab section — the API sometimes omits `id`. */
-const sectionKey = (section: FeaturedProductsSection | undefined, index: number) =>
-  section?.id !== undefined && section.id !== '' ? String(section.id) : `section-${index}`;
+const scalar = (v: unknown): string => {
+  if (Array.isArray(v)) return scalar(v[0]);
+  if (v && typeof v === 'object') {
+    const o = v as { value?: unknown; key?: unknown; id?: unknown };
+    return scalar(o.value ?? o.key ?? o.id);
+  }
+  return v === null || v === undefined ? '' : String(v);
+};
 
-const sectionProductIds = (section: FeaturedProductsSection): number[] =>
-  (Array.isArray(section.products) ? section.products : [])
-    .map((p) => Number(p?.id))
-    .filter((id) => Number.isFinite(id));
+const toIds = (v: unknown): number[] => {
+  if (v && typeof v === 'object' && !Array.isArray(v) && 'source_value' in v) {
+    return toIds((v as { source_value?: unknown }).source_value);
+  }
+  return (Array.isArray(v) ? v : v === null || v === undefined || v === '' ? [] : [v])
+    .map((x) => Number(scalar(x)))
+    .filter((id) => Number.isFinite(id) && id > 0);
+};
 
-/**
- * Visible tab label. The store API (`component/list`) sends the merchant-set tab
- * name in `label` (older/Twig payloads used `title` / `name`). If none are set,
- * fall back to a humanised `type`, then to a numbered placeholder, so the tab bar
- * never collapses to zero-width empty buttons.
- */
+/** Maps one merchant-configured tab to the `product.list` source it should load. */
+function resolveTab(section: FeaturedProductsSection): Pick<Tab, 'source' | 'sourceValue'> {
+  const source = TYPE_TO_SOURCE[scalar(section.type)];
+  if (!source) return {};
+  if (source === 'selected') return { source, sourceValue: toIds(section.chosen_products) };
+  if (source === 'categories') return { source, sourceValue: toIds(section.category) };
+  if (source === 'tags') return { source, sourceValue: toIds(section.tag) };
+  return { source };
+}
+
+const needsValue = (source: ProductsListSource) =>
+  source === 'selected' || source === 'categories' || source === 'tags';
+
+const isFullProduct = (v: unknown): v is Product =>
+  !!v && typeof v === 'object' && !Array.isArray(v) && 'name' in v && 'id' in v;
+
 function tabLabel(section: FeaturedProductsSection, index: number, t: Translate): string {
-  const explicit = (section.label || section.title || section.name || '').trim();
-  if (explicit) return explicit;
-
-  const type = typeof section.type === 'string' ? section.type.trim() : '';
-  if (type) return type.replace(/[_-]+/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
-
-  return `${t('blocks.home.featured_products_tab', 'Products')} ${index + 1}`;
+  const explicit = (section.name || '').trim();
+  return explicit || `${t('blocks.home.featured_products_tab', 'Products')} ${index + 1}`;
 }
 
-/**
- * Full-bleed pill tab bar. One row for every breakpoint — it scrolls
- * horizontally when the tabs overflow. Styling lives in `home-blocks.scss`
- * under `.s-block--featured-products .tabs` / `.tab-trigger`.
- */
 function TabTriggers({
   tabs,
   active,
@@ -114,18 +124,20 @@ function TabTriggers({
   );
 }
 
-/**
- * One tab's product grid. Re-fetches the tab's products in full by id, so the
- * cards get real stock / price / images instead of the "out of stock" summary
- * stubs the home API sends in `items[].products`.
- */
-function TabProductGrid({ ids, limit }: { ids: number[]; limit: number }) {
+/** One tab's product grid, loaded lazily from the tab's configured source. */
+function TabProductGrid({
+  source,
+  sourceValue,
+  limit,
+}: {
+  source: ProductsListSource;
+  sourceValue?: number[];
+  limit: number;
+}) {
   const loader = useCallback(
-    () => product.list({ source: 'selected', sourceValue: ids, perPage: ids.length || limit }),
-    [ids, limit]
+    () => product.list({ source, sourceValue, perPage: limit }),
+    [source, sourceValue, limit]
   );
-
-  if (!ids.length) return null;
 
   return (
     <Suspense fallback={<ProductsListSkeleton />}>
@@ -138,26 +150,56 @@ function TabProductGrid({ ids, limit }: { ids: number[]; limit: number }) {
   );
 }
 
+/** Highlighted product: used as-is when hydrated, otherwise fetched by id. */
+function SpecialProduct({ value }: { value: FeaturedProductsData['main_product'] }) {
+  const ids = isFullProduct(value) ? [] : toIds(value);
+  const loader = useCallback(() => product.list({ source: 'selected', sourceValue: ids, perPage: 1 }), [ids.join(',')]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  if (isFullProduct(value)) return <ProductCard product={value} layout="special" withShadow />;
+  if (!ids.length) return null;
+
+  return (
+    <Suspense fallback={<ProductsListSkeleton />}>
+      <SallaProductsList loader={loader}>
+        {(items: Product[]) =>
+          items
+            .slice(0, 1)
+            .map((item) => <ProductCard key={item.id} product={item} layout="special" withShadow />)
+        }
+      </SallaProductsList>
+    </Suspense>
+  );
+}
+
 export function FeaturedProducts({ data }: { data: FeaturedProductsData }) {
   const { t } = useTranslation();
   const sections = useMemo(() => (Array.isArray(data.items) ? data.items : []), [data.items]);
-  const [active, setActive] = useState(() => sectionKey(sections[0], 0));
+  const [active, setActive] = useState('0');
 
-  // Stable per-tab id lists so `TabProductGrid`'s loader isn't rebuilt each render.
-  const tabIds = useMemo(() => sections.map(sectionProductIds), [sections]);
+  const tabs: Tab[] = useMemo(
+    () =>
+      sections.map((section, index) => ({
+        key: String(index),
+        label: tabLabel(section, index, t),
+        ...resolveTab(section),
+      })),
+    [sections, t]
+  );
 
   if (!sections.length) return null;
 
-  const tabs: Tab[] = sections.map((section, index) => ({
-    key: sectionKey(section, index),
-    label: tabLabel(section, index, t),
-    productIds: tabIds[index] ?? [],
-  }));
-
-  const specialProduct = data.main_product?.product ?? null;
+  const showMethod = scalar(data.show_method);
+  const activeIndex = Math.max(0, tabs.findIndex((tab) => tab.key === active));
+  const specialValue =
+    showMethod === 'special_offer_with_products'
+      ? data.main_product
+      : showMethod === 'products_with_special_product'
+        ? sections[activeIndex]?.special_product
+        : null;
+  const hasSpecial = isFullProduct(specialValue) || toIds(specialValue).length > 0;
   const hasTabs = tabs.length > 1;
-  const heading = data.main_product?.title || data.title || '';
-  const perTab = specialProduct ? 4 : 8;
+  const heading = showMethod === 'special_offer_with_products' ? data.main_product_title : '';
+  const perTab = hasSpecial ? 4 : 8;
 
   return (
     <>
@@ -165,21 +207,33 @@ export function FeaturedProducts({ data }: { data: FeaturedProductsData }) {
         <h2 className="s-block__title text-center text-lg font-semibold mb-4">{heading}</h2>
       )}
 
-      {hasTabs && <TabTriggers tabs={tabs} active={active} onSelect={setActive} />}
+      {hasTabs && <TabTriggers tabs={tabs} active={String(activeIndex)} onSelect={setActive} />}
 
-      <div className={`grid grid-cols-1 gap-8 ${specialProduct ? 'lg:grid-cols-2' : ''}`}>
-        {specialProduct && (
+      <div className={`grid grid-cols-1 gap-8 ${hasSpecial ? 'lg:grid-cols-2' : ''}`}>
+        {hasSpecial && (
           <div className="flex flex-col">
-            <ProductCard product={specialProduct} layout="special" withShadow />
+            <SpecialProduct value={specialValue} />
           </div>
         )}
 
         <div className="tabs-wrapper flex flex-1 flex-col">
-          {tabs.map((tab) => (
-            <div key={tab.key} className={`tabs__item ${active === tab.key ? 'is-active' : ''}`}>
-              <TabProductGrid ids={tab.productIds} limit={perTab} />
-            </div>
-          ))}
+          {tabs.map((tab, index) => {
+            const valid = tab.source && (!needsValue(tab.source) || tab.sourceValue?.length);
+            return (
+              <div
+                key={tab.key}
+                className={`tabs__item ${activeIndex === index ? 'is-active' : ''}`}
+              >
+                {valid && (
+                  <TabProductGrid
+                    source={tab.source as ProductsListSource}
+                    sourceValue={tab.sourceValue}
+                    limit={perTab}
+                  />
+                )}
+              </div>
+            );
+          })}
         </div>
       </div>
     </>
