@@ -6,11 +6,14 @@ import { Link } from '@salla.sa/twilight-theme-engine/common';
 import { ProductsListSkeleton } from '@salla.sa/twilight-components-react';
 import { ScrollCarousel } from '../common/ScrollCarousel';
 import { ProductCard } from '../product/ProductCard';
+import { blockLimit } from '../../lib/blockLimit';
 
 export interface ProductsSliderProps {
   data: {
     products?: { source?: ProductsListSource; source_value?: number | number[] | null };
     title?: string;
+    /** How many products the merchant chose to show; all the API returns when unset. */
+    limit?: number | string;
     display_all_url?: string;
     position?: number;
     [key: string]: unknown;
@@ -35,6 +38,7 @@ export function ProductsSlider({ data, onResolve }: ProductsSliderProps) {
   const { t } = useTranslation();
   const source = data.products?.source;
   const sourceValue = data.products?.source_value ?? undefined;
+  const limit = blockLimit(data.limit);
 
   // `product.queries.list` over a manual fetch: scope-aware cache key, request
   // dedup, an AbortSignal wired to the query lifecycle instead of a hand-rolled
@@ -46,10 +50,11 @@ export function ProductsSlider({ data, onResolve }: ProductsSliderProps) {
     isSuccess,
     isError,
   } = useQuery({
-    ...product.queries.list({ source: source as ProductsListSource, sourceValue }),
+    ...product.queries.list({ source: source as ProductsListSource, sourceValue, perPage: limit }),
     enabled: !!source,
   });
-  const items = result?.items;
+  // Some sources return a full page whatever `perPage` asks for.
+  const items = result?.items?.slice(0, limit);
 
   // Keep `onResolve` out of this effect's deps — an inline callback would
   // otherwise re-fire on every parent render.

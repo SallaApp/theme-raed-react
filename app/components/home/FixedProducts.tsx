@@ -5,6 +5,7 @@ import { Link } from '@salla.sa/twilight-theme-engine/common';
 import { useTranslation } from '@salla.sa/twilight-theme-engine/i18n';
 import { product, type ProductsListSource } from '@salla.sa/twilight-theme-engine/api/product';
 import { ProductCard } from '../product/ProductCard';
+import { blockLimit } from '../../lib/blockLimit';
 
 export interface FixedProductsProps {
   data: {
@@ -28,13 +29,16 @@ export interface FixedProductsProps {
  * moved to the footer, `is-theme-card`; see `04-components/product.scss`).
  * Registered in `app/router.tsx`.
  *
+ * Unlike the engine block, it shows as many products as the merchant's `limit`,
+ * not always the first 4.
+ *
  * Upgrade notes: `FORKS.md`.
  */
 export function FixedProducts({ data }: FixedProductsProps) {
   const { t } = useTranslation();
 
   const title = data.title;
-  const limit = data.limit ? Number(data.limit) : undefined;
+  const limit = blockLimit(data.limit);
   const isVertical = data.isVertical ?? true;
 
   const { data: result, isLoading } = useQuery(
@@ -74,7 +78,7 @@ export function FixedProducts({ data }: FixedProductsProps) {
           (isVertical ? 's-products-list-vertical-cards' : 's-products-list-horizontal-cards')
         }
       >
-        {products.slice(0, 4).map((product) => (
+        {products.slice(0, limit).map((product) => (
           <ProductCard key={product.id} product={product} />
         ))}
       </div>
