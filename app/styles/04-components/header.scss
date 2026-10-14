@@ -885,6 +885,12 @@ body.topnav-is-dark .site-header--lite .site-header__bar {
         visibility 0.18s;
     }
 
+    /* A first-level panel opens flush under the header row, so its top
+       corners are square; nested panels keep all four rounded. */
+    #{$menu-root} > #{$menu-sub} {
+      @apply rounded-t-none;
+    }
+
     /* nested panel flies out to the inline-end side, level with its row */
     #{$menu-sub} #{$menu-sub} {
       top: -0.375rem;

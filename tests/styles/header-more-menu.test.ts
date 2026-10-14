@@ -129,4 +129,14 @@ describe('default layout dropdown panels', () => {
     expect(decl(nested, 'inset-inline')).toBe('100% auto');
     expect(rulesMatching(css, new RegExp(`\\[data-more-menu\\] ${sub} ${sub}`))).toHaveLength(0);
   });
+
+  it('squares the top corners of first-level panels only', async () => {
+    const css = await compileHeader();
+    const [first] = rulesMatching(css, new RegExp(`__mainmenu ${rootItem} > ${sub}$`));
+    expect(decl(first, 'border-top-left-radius')).toBe('0px');
+    expect(decl(first, 'border-top-right-radius')).toBe('0px');
+
+    const [nested] = rulesMatching(css, new RegExp(`__mainmenu ${sub} ${sub}$`));
+    expect(decl(nested, 'border-top-left-radius')).toBeUndefined();
+  });
 });
