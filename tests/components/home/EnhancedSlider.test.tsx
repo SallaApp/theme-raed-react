@@ -370,6 +370,26 @@ describe('EnhancedSlider', () => {
       expect(container.querySelector('.overlay-bg')?.getAttribute('style')).toContain('slide1.jpg');
     });
 
+    it('starts asking a late-loading YouTube frame for its state once it loads', async () => {
+      const { iframe } = await renderYouTube();
+      const post = vi.spyOn(iframe.contentWindow!, 'postMessage');
+      vi.useFakeTimers();
+      try {
+        // Long past the retry window, counted from mounting.
+        vi.advanceTimersByTime(60_000);
+        expect(post).not.toHaveBeenCalled();
+        iframe.dispatchEvent(new Event('load'));
+        expect(post).toHaveBeenCalledTimes(1);
+        expect(JSON.parse(post.mock.calls[0][0] as string)).toMatchObject({ event: 'listening' });
+        vi.advanceTimersByTime(1_000);
+        expect(post).toHaveBeenCalledTimes(3);
+        vi.advanceTimersByTime(60_000);
+        expect(post).toHaveBeenCalledTimes(20);
+      } finally {
+        vi.useRealTimers();
+      }
+    });
+
     it('ignores messages from other frames', async () => {
       const { iframe } = await renderYouTube();
       act(() => {

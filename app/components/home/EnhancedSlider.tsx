@@ -133,7 +133,8 @@ function YouTubeBackground({ id }: { id: string }) {
           : (data.info as { playerState?: unknown } | null)?.playerState;
       if (playerState === YOUTUBE_PLAYING) setState('playing');
     };
-    const listen = () => {
+    let timer: number | undefined;
+    const send = () => {
       if (heard || tries >= YOUTUBE_LISTEN_TRIES) return window.clearInterval(timer);
       tries += 1;
       frame.contentWindow?.postMessage(
@@ -141,7 +142,13 @@ function YouTubeBackground({ id }: { id: string }) {
         'https://www.youtube-nocookie.com'
       );
     };
-    const timer = window.setInterval(listen, YOUTUBE_LISTEN_INTERVAL_MS);
+    // The frame is lazy, so it may load long after mounting: the tries start then.
+    const listen = () => {
+      window.clearInterval(timer);
+      tries = 0;
+      send();
+      timer = window.setInterval(send, YOUTUBE_LISTEN_INTERVAL_MS);
+    };
     window.addEventListener('message', onMessage);
     frame.addEventListener('load', listen);
     return () => {
