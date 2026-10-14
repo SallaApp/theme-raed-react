@@ -25,6 +25,15 @@ function ruleFor(root: Root, selector: string): Rule | undefined {
   return found;
 }
 
+/** Every rule with a selector matching `pattern`. */
+function rulesMatching(root: Root, pattern: RegExp): Rule[] {
+  const rules: Rule[] = [];
+  root.walkRules((rule) => {
+    if (rule.selectors.some((selector) => pattern.test(selector))) rules.push(rule);
+  });
+  return rules;
+}
+
 function decl(rule: Rule | undefined, prop: string): string | undefined {
   let value: string | undefined;
   rule?.walkDecls(prop, (d) => {
@@ -52,5 +61,32 @@ describe('one-line main menu (enable_more_menu)', () => {
   it('lays the row out on one line', async () => {
     const root = await compileHeader();
     expect(decl(ruleFor(root, `${scope} .main-menu`), 'flex-wrap')).toBe('nowrap');
+  });
+});
+
+describe('default layout dropdown panels', () => {
+  const sub = String.raw`:is\(\.s-menu-sub-menu, \.sub-menu\)`;
+  const rootItem = String.raw`:is\(\.s-menu-root-level, \.root-level\)`;
+  const mega = String.raw`:is\(\.s-menu-mega-menu, \.mega-menu\)`;
+
+  // A panel that scrolls clips the panel flying out of one of its rows.
+  it('never clips a nested panel', async () => {
+    const css = await compileHeader();
+    const panels = rulesMatching(css, new RegExp(`__mainmenu ${sub}$`));
+    expect(panels.length).toBeGreaterThan(0);
+    for (const rule of panels) {
+      expect(decl(rule, 'overflow-y')).toBeUndefined();
+      expect(decl(rule, 'overflow')).toBeUndefined();
+    }
+  });
+
+  it('spans a top-level mega panel across the header row', async () => {
+    const css = await compileHeader();
+    const [item] = rulesMatching(css, new RegExp(`__mainmenu ${rootItem}${mega}$`));
+    expect(decl(item, 'position')).toBe('static');
+
+    const [panel] = rulesMatching(css, new RegExp(`__mainmenu ${rootItem}${mega} > ${sub}$`));
+    expect(decl(panel, 'inset-inline')).toBe('0');
+    expect(decl(panel, 'width')).toBe('auto');
   });
 });
