@@ -56,7 +56,7 @@ describe('MainLinks', () => {
     expect(icon?.className).toBe('sicon-cat1');
   });
 
-  it("shows a link's image instead of its icon, whole inside the circle", () => {
+  it("shows a link's image instead of its icon", () => {
     const { container } = render(
       <MainLinks
         data={{
@@ -71,20 +71,10 @@ describe('MainLinks', () => {
     const img = withImage.querySelector('img');
     expect(img?.getAttribute('src')).toBe('perfume.png');
     expect(img?.getAttribute('alt')).toBe('Perfume');
-    expect(img?.classList.contains('is-contained')).toBe(true);
     expect(withImage.querySelector('i')).toBeNull();
     // No image: the icon, as before.
     expect(withIcon.querySelector('img')).toBeNull();
     expect(withIcon.querySelector('i')?.className).toBe('sicon-gift');
-  });
-
-  it("lets a category's photo fill the circle", () => {
-    const { container } = render(
-      <MainLinks data={{ categories: mockCategories, show_cats: true }} />
-    );
-    const img = container.querySelector('.slide--cat-entry img');
-    expect(img?.getAttribute('src')).toBe('cat2.jpg');
-    expect(img?.classList.contains('is-contained')).toBe(false);
   });
 
   it('renders links with title', () => {

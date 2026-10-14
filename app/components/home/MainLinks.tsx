@@ -87,9 +87,8 @@ export const MainLinks = memo(function MainLinks({ data }: MainLinksProps) {
                   className="swiper-slide slide--one-eighth"
                 >
                   <Link to={itemUrl} className="slide--cat-entry">
-                    {/* The item's image when it has one, its icon otherwise. A link's
-                        image is shown whole (a product shot, often on a transparent
-                        background); a category's photo fills the circle. */}
+                    {/* The item's image when it has one, filling the circle; its icon
+                        otherwise. */}
                     <span className="slide--cat-entry__media">
                       {itemImage ? (
                         <img
@@ -99,7 +98,6 @@ export const MainLinks = memo(function MainLinks({ data }: MainLinksProps) {
                           alt={itemTitle || ''}
                           loading="lazy"
                           decoding="async"
-                          {...(showCats ? {} : { className: 'is-contained' })}
                         />
                       ) : itemIcon ? (
                         <i className={itemIcon} />

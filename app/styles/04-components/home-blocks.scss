@@ -943,14 +943,9 @@ salla-reviews:not(:has(.s-reviews-swiper-slide)) {
       @apply flex shrink-0 items-center justify-center w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-gray-100 overflow-hidden transition-colors duration-300;
     }
 
+    /* An item's image (a link's own, or a category's) fills the circle. */
     img {
-      @apply w-full h-full object-cover;
-    }
-
-    /* A link's own image (MainLinks.tsx): shown whole inside the circle, with
-       room around it, rather than cropped to fill it like a category photo. */
-    img.is-contained {
-      @apply object-contain p-3 sm:p-4;
+      @apply w-full h-full rounded-full object-cover;
     }
 
     i {
