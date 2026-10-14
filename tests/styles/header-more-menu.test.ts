@@ -86,9 +86,11 @@ describe('default layout dropdown panels', () => {
     const css = await compileHeader();
     const panels = rulesMatching(css, new RegExp(`__mainmenu ${sub}$`));
     expect(panels.length).toBeGreaterThan(0);
+    // Explicit, to beat menus.scss, which makes every 2.14 `.sub-menu` scroll.
+    expect(panels.some((rule) => decl(rule, 'overflow') === 'visible')).toBe(true);
+    expect(panels.some((rule) => decl(rule, 'max-height') === 'none')).toBe(true);
     for (const rule of panels) {
       expect(decl(rule, 'overflow-y')).toBeUndefined();
-      expect(decl(rule, 'overflow')).toBeUndefined();
     }
   });
 
