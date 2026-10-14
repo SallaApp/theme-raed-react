@@ -40,7 +40,9 @@ describe('one-line main menu (enable_more_menu)', () => {
   // measure as fitting, wrap their text, and nothing would ever move into "More".
   it('keeps each root item at its natural width, on one line', async () => {
     const root = await compileHeader();
-    for (const selector of [`${scope} .s-menu-root-level`, `${scope} .s-menu-root-level > a`]) {
+    // Matches Twilight 3.x's `.s-menu-root-level` and 2.14's `.root-level`.
+    const item = ':is(.s-menu-root-level, .root-level)';
+    for (const selector of [`${scope} ${item}`, `${scope} ${item} > a`]) {
       const rule = ruleFor(root, selector);
       expect(decl(rule, 'flex-shrink'), selector).toBe('0');
       expect(decl(rule, 'white-space'), selector).toBe('nowrap');

@@ -795,6 +795,18 @@ body.topnav-is-dark .site-header--lite .site-header__bar {
     @apply hidden;
   }
 
+  /* `<salla-menu>` names its classes differently by Twilight version: 3.x
+     prefixes them (`.s-menu-root-level`); 2.14, which a store pinned to it
+     loads from the CDN, does not (`.root-level`, `.has-children`, `.sub-menu`,
+     `.mega-menu`, and no class at all on a panel's rows or on the
+     drawer-only items). Every rule below matches both. */
+  $menu-root: ':is(.s-menu-root-level, .root-level)';
+  $menu-children: ':is(.s-menu-has-children, .has-children)';
+  $menu-sub: ':is(.s-menu-sub-menu, .sub-menu)';
+  $menu-mega: ':is(.s-menu-mega-menu, .mega-menu)';
+  $menu-non-root: ':is(.s-menu-non-root-level, .sub-menu li)';
+  $menu-mobile-item: ':is(.s-menu-mobile-item, .main-menu > li:not(.root-level, .s-menu-root-level))';
+
   /* `<salla-menu source="header">` ships **no** desktop styling of its own
      (`:host{display:block}` only) — just class hooks. So the whole mega-menu is
      theme-owned here: a centred row of `.s-menu-root-level` items, each with an
@@ -822,36 +834,36 @@ body.topnav-is-dark .site-header--lite .site-header__bar {
     }
 
     /* drawer-only bits the component also renders into this nav */
-    .s-menu-mobile-item,
+    #{$menu-mobile-item},
     .close-mobile-menu {
       display: none #{!important};
     }
 
     /* top-level item — centred in the row, positioning context for its panel */
-    .s-menu-root-level {
+    #{$menu-root} {
       display: flex #{!important};
       @apply relative my-0 items-center;
     }
 
-    .s-menu-root-level > a {
+    #{$menu-root} > a {
       @apply inline-flex items-center gap-1 whitespace-nowrap rounded px-3 py-2 text-sm font-medium text-gray-700 transition-colors hover:text-primary;
     }
 
     /* rows inside a panel — stacked */
-    .s-menu-non-root-level {
+    #{$menu-non-root} {
       @apply relative my-0 block;
     }
 
-    .s-menu-sub-menu ul {
+    #{$menu-sub} ul {
       @apply m-0 list-none p-0;
     }
 
-    .s-menu-sub-menu a {
+    #{$menu-sub} a {
       @apply flex items-center justify-between gap-2 whitespace-nowrap rounded px-3 py-2 text-sm text-gray-700 transition-colors hover:bg-gray-50 hover:text-primary;
     }
 
     /* the panel — hidden until the parent item is hovered / focused */
-    .s-menu-sub-menu {
+    #{$menu-sub} {
       @apply invisible absolute z-40 max-h-[70vh] max-w-[90vw] overflow-y-auto rounded border border-gray-100 bg-white p-1.5 opacity-0 shadow-xl;
       top: calc(100% + 0.25rem);
       inset-inline-start: 0;
@@ -864,20 +876,20 @@ body.topnav-is-dark .site-header--lite .site-header__bar {
     }
 
     /* nested panel flies out to the inline-end side, level with its row */
-    .s-menu-sub-menu .s-menu-sub-menu {
+    #{$menu-sub} #{$menu-sub} {
       top: -0.375rem;
       inset-inline: 100% auto;
       transform: translateY(0);
     }
 
-    .s-menu-has-children:hover > .s-menu-sub-menu,
-    .s-menu-has-children:focus-within > .s-menu-sub-menu {
+    #{$menu-children}:hover > #{$menu-sub},
+    #{$menu-children}:focus-within > #{$menu-sub} {
       @apply visible opacity-100;
       transform: translateY(0);
     }
 
     /* mega panel (category with featured products) — wider, laid out as a row */
-    .s-menu-mega-menu > .s-menu-sub-menu {
+    #{$menu-mega} > #{$menu-sub} {
       @apply flex gap-4;
       min-width: min(48rem, 90vw);
     }
@@ -899,8 +911,8 @@ body.topnav-is-dark .site-header--lite .site-header__bar {
       /* Each root item keeps its natural width on one line. Without this a
          no-wrap row squeezes them instead (their text breaks onto 2-3 lines),
          so they measure as fitting and nothing ever moves into "More". */
-      .s-menu-root-level,
-      .s-menu-root-level > a {
+      #{$menu-root},
+      #{$menu-root} > a {
         flex-shrink: 0;
         white-space: nowrap;
       }
@@ -918,26 +930,26 @@ body.topnav-is-dark .site-header--lite .site-header__bar {
 
     /* "More" is the row's last item: its panel opens toward the row's start so
        it stays on screen, and so do the panels nested in it. */
-    [data-more-menu] > .s-menu-sub-menu {
+    [data-more-menu] > #{$menu-sub} {
       inset-inline: auto 0;
     }
 
-    [data-more-menu] .s-menu-sub-menu .s-menu-sub-menu {
+    [data-more-menu] #{$menu-sub} #{$menu-sub} {
       inset-inline: auto 100%;
     }
 
     /* caret — sallaicons chevron, flips on an open top-level item */
-    .s-menu-has-children > a::after {
+    #{$menu-children} > a::after {
       font-family: 'sallaicons';
       content: '\e970';
       @apply ms-1 inline-block text-base leading-none opacity-50 transition-transform;
     }
 
-    .s-menu-root-level.s-menu-has-children > a::after {
+    #{$menu-root}#{$menu-children} > a::after {
       content: '\e96e';
     }
 
-    .s-menu-root-level.s-menu-has-children:hover > a::after {
+    #{$menu-root}#{$menu-children}:hover > a::after {
       @apply opacity-100;
       transform: scaleY(-1);
     }

@@ -1,10 +1,16 @@
 import { useEffect, useMemo, useRef, useState, type MouseEvent } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { SallaMenu } from '@salla.sa/twilight-components-react/menu';
+import { SallaMenu, SallaMenuCore } from '@salla.sa/twilight-components-react/menu';
 import { useTranslation } from '@salla.sa/twilight-theme-engine/i18n';
 import { useTwilight } from '@salla.sa/twilight-theme-engine/providers';
 import { menu } from '@salla.sa/twilight-theme-engine/api/menu';
 import { MORE_MENU_ATTR, fitCount, splitMenu, withSafeAttrs } from '../../lib/menuOverflow';
+
+/**
+ * A root item of `<salla-menu>`. Twilight 3.x calls it `.s-menu-root-level`; 2.14,
+ * which a store pinned to it loads from the CDN, calls it `.root-level`.
+ */
+const ROOT_ITEM = ':is(.s-menu-root-level, .root-level)';
 
 /** What one measurement of the full, one-line menu found. */
 interface Measured {
@@ -93,7 +99,7 @@ function OneLineMenu({ moreTitle }: { moreTitle: string }) {
 
     const measure = (): boolean => {
       const list = root.querySelector<HTMLElement>('salla-menu .main-menu');
-      const lis = root.querySelectorAll<HTMLElement>('salla-menu .main-menu > .s-menu-root-level');
+      const lis = root.querySelectorAll<HTMLElement>(`salla-menu .main-menu > ${ROOT_ITEM}`);
       if (!list || lis.length !== items.length) return false;
       const gap = parseFloat(getComputedStyle(list).columnGap) || 0;
       setMeasured({
@@ -133,7 +139,10 @@ function OneLineMenu({ moreTitle }: { moreTitle: string }) {
       className={`site-header__oneline-menu${current ? '' : ' is-measuring'}`}
       onClickCapture={preventMoreJump}
     >
-      <SallaMenu
+      {/* Core, not the lazy `SallaMenu`: that one shows a skeleton until it scrolls
+          into view, and again after every remount below, so there would be
+          nothing to measure until it did. */}
+      <SallaMenuCore
         key={current ? `${key}-${fit}` : `${key}-measure`}
         source="json"
         sourceValue={JSON.stringify(shown)}
@@ -141,7 +150,10 @@ function OneLineMenu({ moreTitle }: { moreTitle: string }) {
       />
       {/* Sizes the "More" item before it exists, styled like a root item. */}
       <ul className="main-menu site-header__more-probe" aria-hidden="true">
-        <li ref={probeRef} className="s-menu-root-level s-menu-has-children">
+        <li
+          ref={probeRef}
+          className="s-menu-root-level root-level s-menu-has-children has-children"
+        >
           <a tabIndex={-1}>
             <span>{moreTitle}</span>
           </a>

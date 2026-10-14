@@ -15,6 +15,8 @@ const state = {
   items: [] as JsonItem[],
   /** The row's width, as `clientWidth` reports it. */
   available: 1000,
+  /** Render Twilight 2.14's class names (`root-level`) instead of 3.x's (`s-menu-root-level`). */
+  legacy: false,
 };
 
 vi.mock('@tanstack/react-query', () => ({
@@ -30,8 +32,8 @@ vi.mock('@salla.sa/twilight-theme-engine/i18n', () => ({
   useTranslation: () => ({ t: (_k: string, fb?: string) => fb ?? _k }),
 }));
 // Renders root items the way <salla-menu> does, so the component can measure them.
-vi.mock('@salla.sa/twilight-components-react/menu', () => ({
-  SallaMenu: ({ source, sourceValue }: { source: string; sourceValue?: string }) => {
+vi.mock('@salla.sa/twilight-components-react/menu', () => {
+  const Menu = ({ source, sourceValue }: { source: string; sourceValue?: string }) => {
     const items: JsonItem[] = source === 'json' && sourceValue ? JSON.parse(sourceValue) : [];
     return (
       <salla-menu data-source={source}>
@@ -39,7 +41,7 @@ vi.mock('@salla.sa/twilight-components-react/menu', () => ({
           {items.map((entry) => (
             <li
               key={String(entry.id)}
-              className="s-menu-root-level"
+              className={state.legacy ? 'root-level' : 's-menu-root-level'}
               // <salla-menu> spreads `attrs` onto the <li>; only the marker matters here.
               {...(entry.attrs?.includes('data-more-menu') ? { 'data-more-menu': 'true' } : {})}
               data-children={entry.children?.map((child) => child.title).join(',')}
@@ -50,8 +52,9 @@ vi.mock('@salla.sa/twilight-components-react/menu', () => ({
         </ul>
       </salla-menu>
     );
-  },
-}));
+  };
+  return { SallaMenu: Menu, SallaMenuCore: Menu };
+});
 
 let resize: () => void = () => {};
 
@@ -59,11 +62,13 @@ beforeEach(() => {
   state.settings = {};
   state.items = [1, 2, 3, 4, 5].map((n) => ({ id: n, title: `Item ${n}`, attrs: `id="i${n}"` }));
   state.available = 1000;
+  state.legacy = false;
   // Every root item (the "More" probe included) is 100px wide.
   vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockImplementation(function (
     this: HTMLElement
   ) {
-    const width = this.classList.contains('s-menu-root-level') ? 100 : 0;
+    const isRoot = this.matches('.s-menu-root-level, .root-level');
+    const width = isRoot ? 100 : 0;
     return { width, height: 40, top: 0, left: 0, right: width, bottom: 40, x: 0, y: 0 } as DOMRect;
   });
   vi.spyOn(HTMLElement.prototype, 'clientWidth', 'get').mockImplementation(() => state.available);
@@ -85,7 +90,9 @@ afterEach(() => {
 });
 
 const rootTitles = (container: HTMLElement) =>
-  Array.from(container.querySelectorAll('salla-menu .s-menu-root-level'), (li) => li.textContent);
+  Array.from(container.querySelectorAll('salla-menu :is(.s-menu-root-level, .root-level)'), (li) =>
+    li.textContent
+  );
 
 describe('HeaderMainMenu', () => {
   it('shows every item, with no "More", when they all fit', () => {
@@ -101,6 +108,15 @@ describe('HeaderMainMenu', () => {
     expect(container.querySelector('[data-more-menu]')?.getAttribute('data-children')).toBe(
       'Item 3,Item 4,Item 5'
     );
+  });
+
+  // A store pinned to Twilight 2.14 loads a <salla-menu> whose root items are
+  // `.root-level`, not `.s-menu-root-level`; measuring has to find them either way.
+  it("splits Twilight 2.14's menu too (root items named .root-level)", () => {
+    state.legacy = true;
+    state.available = 350;
+    const { container } = render(<HeaderMainMenu />);
+    expect(rootTitles(container)).toEqual(['Item 1', 'Item 2', 'More']);
   });
 
   it('re-splits when the row is resized', () => {
