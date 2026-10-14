@@ -25,6 +25,8 @@ const state = {
   panelLeft: 100,
   /** A nested panel's own width. */
   nestedWidth: 224,
+  /** Where a mega panel's products start. */
+  productsTop: 0,
 };
 
 vi.mock('@tanstack/react-query', () => ({
@@ -76,10 +78,15 @@ beforeEach(() => {
   state.rowRight = 300;
   state.panelLeft = 100;
   state.nestedWidth = 224;
+  state.productsTop = 0;
   // Every root item (the "More" probe included) is 100px wide.
   vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockImplementation(function (
     this: HTMLElement
   ) {
+    if (this.classList.contains('s-menu-products-wrapper')) {
+      const top = state.productsTop;
+      return { width: 600, height: 300, top, left: 0, right: 600, bottom: top + 300 } as DOMRect;
+    }
     if (this.classList.contains('s-menu-sub-menu')) {
       const left = state.panelLeft;
       return { width: 400, height: 200, top: 0, left, right: left + 400, bottom: 200 } as DOMRect;
@@ -353,6 +360,20 @@ describe('HeaderMainMenu', () => {
       fireEvent.mouseEnter(container.querySelector('.s-menu-mega-menu')!);
       const products = container.querySelector<HTMLElement>('.s-menu-products-wrapper')!;
       expect(products.style.maxHeight).toBe('736px'); // 768 - 0 - 32
+    });
+
+    // Loaded under a pinned header, then reopened with the header back lower.
+    it('measures its products\' room again each time it opens', () => {
+      const { container } = render(<HeaderMainMenu />);
+      const item = container.querySelector('.s-menu-mega-menu')!;
+      fireEvent.mouseEnter(item);
+      const products = container.querySelector<HTMLElement>('.s-menu-products-wrapper')!;
+      expect(products.style.maxHeight).toBe('736px');
+
+      state.productsTop = 300;
+      fireEvent.mouseLeave(item);
+      fireEvent.mouseEnter(item);
+      expect(products.style.maxHeight).toBe('436px'); // 768 - 300 - 32
     });
 
     it('keeps its products beside a short list of links', () => {

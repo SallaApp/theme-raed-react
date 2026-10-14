@@ -192,6 +192,8 @@ function MenuEntry({ item, root }: { item: MenuItem; root: boolean }) {
   const isMega = productIds.length > 0;
   const isMore = item.id === MORE_MENU_ID;
   const [opened, setOpened] = useState(false);
+  /** Counts the times the panel opened, so its products measure their room again. */
+  const [openings, setOpenings] = useState(0);
   const [placement, setPlacement] = useState<NestedPlacement>(END_PLACEMENT);
   const [shift, setShift] = useState(0);
   const panelRef = useRef<HTMLDivElement>(null);
@@ -202,7 +204,10 @@ function MenuEntry({ item, root }: { item: MenuItem; root: boolean }) {
   const columns = panelColumns(children.length);
 
   const onOpen = (event: { currentTarget: HTMLLIElement }) => {
-    if (isMega) setOpened(true);
+    if (isMega) {
+      setOpened(true);
+      setOpenings((count) => count + 1);
+    }
     // A nested panel opens past its row's end edge (left in Arabic) when it fits
     // there, else on the other side if it fits there; with room on neither, on
     // the roomier side, narrowed to fit.
@@ -275,7 +280,7 @@ function MenuEntry({ item, root }: { item: MenuItem; root: boolean }) {
           >
             <MenuItems items={children} root={false} />
           </ul>
-          {isMega && opened && <MegaProducts ids={productIds} />}
+          {isMega && opened && <MegaProducts ids={productIds} openings={openings} />}
         </div>
       )}
     </li>
@@ -335,9 +340,11 @@ const PRODUCTS_MIN_HEIGHT = 160;
  * grid. Capped to the room left in the window below them, and scrollable within
  * it: a fixed header leaves no other way to reach a card that falls below the
  * window. Only this area scrolls, never the panel, whose links' nested menus
- * would be clipped by a scrolling box.
+ * would be clipped by a scrolling box. Measured again on every opening
+ * (`openings`): the products stay mounted once loaded, and the header may sit
+ * elsewhere by then (pinned, or back at the top of the page).
  */
-function MegaProducts({ ids }: { ids: number[] }) {
+function MegaProducts({ ids, openings }: { ids: number[]; openings: number }) {
   const { data } = useQuery(
     product.queries.list({ source: 'selected', sourceValue: ids, perPage: ids.length })
   );
@@ -358,7 +365,7 @@ function MegaProducts({ ids }: { ids: number[] }) {
     update();
     window.addEventListener('resize', update);
     return () => window.removeEventListener('resize', update);
-  }, [products.length]);
+  }, [products.length, openings]);
 
   if (!products.length) return null;
   return (
