@@ -75,6 +75,17 @@ describe('ProductsSlider', () => {
     expect(getAllByTestId('product-card')[0].textContent).toBe('P1');
   });
 
+  it('asks for the block limit and never shows more, even when the API sends more', async () => {
+    listMock.mockResolvedValue({
+      items: Array.from({ length: 12 }, (_, index) => ({ id: index + 1, name: `P${index + 1}` })),
+    });
+    const { getAllByTestId } = renderWithClient(
+      <ProductsSlider data={{ products: { source: 'latest' }, limit: 8 }} />
+    );
+    await waitFor(() => expect(getAllByTestId('product-card')).toHaveLength(8));
+    expect(listMock).toHaveBeenCalledWith(expect.objectContaining({ perPage: 8 }));
+  });
+
   it('shows the skeleton until the products resolve', () => {
     listMock.mockReturnValue(new Promise(() => {}));
     const { getByTestId } = renderWithClient(
