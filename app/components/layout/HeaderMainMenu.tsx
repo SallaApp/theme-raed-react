@@ -250,7 +250,9 @@ function MenuEntry({ item, root }: { item: MenuItem; root: boolean }) {
       {hasChildren && (
         <div
           ref={panelRef}
-          className="s-menu-sub-menu"
+          // A mega panel whose links need columns stacks its products below
+          // them: beside them, the cards would be left too little width.
+          className={`s-menu-sub-menu${isMega && columns > 1 ? ' is-stacked' : ''}`}
           {...(shift || placement.maxWidth !== undefined
             ? {
                 style: {

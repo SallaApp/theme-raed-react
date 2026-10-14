@@ -336,6 +336,23 @@ describe('HeaderMainMenu', () => {
       ];
     });
 
+    it('stacks its products below its links when the links need columns', () => {
+      state.items[0].children = Array.from({ length: 12 }, (_, i) => ({
+        id: 100 + i,
+        title: `Room ${i}`,
+        url: `/room-${i}`,
+      }));
+      const { container } = render(<HeaderMainMenu />);
+      const panel = container.querySelector('.s-menu-mega-menu > .s-menu-sub-menu')!;
+      expect(panel.classList.contains('is-stacked')).toBe(true);
+    });
+
+    it('keeps its products beside a short list of links', () => {
+      const { container } = render(<HeaderMainMenu />);
+      const panel = container.querySelector('.s-menu-mega-menu > .s-menu-sub-menu')!;
+      expect(panel.classList.contains('is-stacked')).toBe(false);
+    });
+
     it('shows its featured products as the theme product card, once it opens', () => {
       const { container } = render(<HeaderMainMenu />);
       const item = container.querySelector('.s-menu-mega-menu')!;
