@@ -35,6 +35,7 @@ import { useScrollLock } from '../../hooks/useScrollLock';
 import { afterNextPaint } from '../../lib/afterNextPaint';
 import { builtInMenuKind, type BuiltInMenuKind } from '../../lib/menuItemKind';
 import { openStoreSwitcher, type StoreSwitcher } from '../../lib/storeSwitchers';
+import { pruneUntitled } from '../../lib/menuOverflow';
 
 interface HeaderNavProps {
   open: boolean;
@@ -46,18 +47,6 @@ const TRANSITION_MS = 320;
 
 /** Nothing to subscribe to: `document.body` only ever differs between server and client. */
 const subscribeNothing = () => () => {};
-
-/**
- * Drop items with no title (the API returns e.g. the `brands` link as
- * `title: null`), recursively, so `hasChildren` and the child columns only
- * ever see renderable rows.
- */
-const pruneUntitled = (items: MenuItem[]): MenuItem[] =>
-  items
-    .filter((item) => item.title != null && item.title !== '')
-    .map((item) =>
-      item.children?.length ? { ...item, children: pruneUntitled(item.children) } : item
-    );
 
 /** A menu item opens a sub-column only when its children are actually present. */
 const hasChildren = (item: MenuItem): boolean =>

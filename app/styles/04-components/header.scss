@@ -782,6 +782,7 @@ body.topnav-is-dark .site-header--lite .site-header__bar {
   }
 
   .site-header--default .site-header__bar-inner {
+    @apply relative;
     grid-template-columns: auto minmax(0, 1fr) auto;
     gap: 2rem;
   }
@@ -795,36 +796,32 @@ body.topnav-is-dark .site-header--lite .site-header__bar {
     @apply hidden;
   }
 
-  /* `<salla-menu source="header">` ships **no** desktop styling of its own
-     (`:host{display:block}` only) — just class hooks. So the whole mega-menu is
-     theme-owned here: a centred row of `.s-menu-root-level` items, each with an
-     absolutely-positioned `.s-menu-sub-menu` panel that reveals on hover /
-     focus, and nested panels that fly out to the inline-end side.
-     DOM: `nav.mobile-menu > ul.main-menu > li.s-menu-desktop-item
-          (.s-menu-root-level | .s-menu-non-root-level, +.s-menu-has-children,
-           +.s-menu-mega-menu) > a + div.s-menu-sub-menu > ul > li…`. */
+
+  /* The main menu (HeaderMainMenu.tsx, rendered by the theme): a centred row
+     of `.s-menu-root-level` items, each with an absolutely-positioned
+     `.s-menu-sub-menu` panel that reveals on hover / focus, and nested panels
+     that fly out to the inline-end side.
+     DOM: `ul.main-menu > li(.s-menu-root-level | .s-menu-non-root-level,
+          +.s-menu-has-children, +.s-menu-mega-menu) > a + div.s-menu-sub-menu
+          > ul > li…`, a mega panel adding `.s-menu-products-wrapper` after its
+          `ul`. Class names follow `<salla-menu>`'s 3.x markup; the Twig-era
+          `menus.scss` targets 2.14's (`.sub-menu`, `.has-children`), so its
+          rules don't reach these panels. */
+  /* Every box from the row down to a top-level item stretches to the row's
+     full height, so the item spans it top to bottom and its panel opens right
+     at the row's bottom edge. With the item centred in the row instead, the
+     space under it belonged to neither item nor panel: moving down to the
+     panel left the item, and the panel closed before the pointer reached it. */
   .site-header--default .site-header__mainmenu {
-    @apply flex min-w-0 items-stretch;
+    @apply flex min-w-0 items-stretch self-stretch;
 
-    salla-menu,
-    .mobile-menu {
-      @apply flex w-full min-w-0 items-center justify-center;
-    }
-
-    .mobile-menu,
     .main-menu {
       margin: 0 #{!important};
       padding: 0 #{!important};
     }
 
     .main-menu {
-      @apply flex flex-wrap items-center justify-center gap-x-0.5;
-    }
-
-    /* drawer-only bits the component also renders into this nav */
-    .s-menu-mobile-item,
-    .close-mobile-menu {
-      display: none #{!important};
+      @apply flex w-full min-w-0 flex-wrap items-stretch justify-center gap-x-0.5;
     }
 
     /* top-level item — centred in the row, positioning context for its panel */
@@ -852,8 +849,14 @@ body.topnav-is-dark .site-header--lite .site-header__bar {
 
     /* the panel — hidden until the parent item is hovered / focused */
     .s-menu-sub-menu {
-      @apply invisible absolute z-40 max-h-[70vh] max-w-[90vw] overflow-y-auto rounded border border-gray-100 bg-white p-1.5 opacity-0 shadow-xl;
-      top: calc(100% + 0.25rem);
+      @apply invisible absolute z-40 max-w-[90vw] rounded border border-gray-100 bg-white p-1.5 opacity-0 shadow-xl;
+      /* Never a scroll container: one clips the panel that flies out of its
+         rows, so a sub-sub menu would never show. */
+      overflow: visible;
+      max-height: none;
+      /* Flush with the item: any gap here is space the pointer crosses with
+         neither the item nor the panel under it, which closes the panel. */
+      top: 100%;
       inset-inline-start: 0;
       min-width: 14rem;
       transform: translateY(4px);
@@ -863,11 +866,46 @@ body.topnav-is-dark .site-header--lite .site-header__bar {
         visibility 0.18s;
     }
 
+    /* A first-level panel opens flush under the header row, so its top
+       corners are square; nested panels keep all four rounded (above). When
+       it would cross the window's edge, HeaderMainMenu.tsx sets
+       `--panel-shift` to move it back inside (`translate`, so it doesn't fight
+       the open animation's `transform`). */
+    .s-menu-root-level > .s-menu-sub-menu {
+      @apply rounded-t-none;
+      translate: var(--panel-shift, 0) 0;
+    }
+
+    /* A long list, in any panel, is laid out in columns (`--menu-columns`, set
+       by HeaderMainMenu.tsx: up to 4 columns of about 8 rows), so it grows
+       sideways rather than past the bottom of the screen, where a fixed header
+       leaves no way to scroll to it. Not a scrolling box: that would clip the
+       panels flying out of its rows. */
+    .s-menu-sub-menu > ul.s-menu-columns {
+      display: grid;
+      grid-template-columns: repeat(var(--menu-columns), minmax(12rem, 1fr));
+      column-gap: 0.25rem;
+    }
+
     /* nested panel flies out to the inline-end side, level with its row */
     .s-menu-sub-menu .s-menu-sub-menu {
       top: -0.375rem;
       inset-inline: 100% auto;
       transform: translateY(0);
+    }
+
+    /* No room past the row's end edge (HeaderMainMenu.tsx measures on hover):
+       it opens toward the row's start instead. */
+    .s-menu-opens-start > .s-menu-sub-menu {
+      inset-inline: auto 100%;
+    }
+
+    /* Room on neither side: capped to the roomier one (`--panel-max`), so its
+       content narrows rather than leaving the window. The extra class outranks
+       a nested mega panel's `min-width` (below). */
+    .s-menu-has-children > .s-menu-sub-menu[data-capped] {
+      min-width: 0;
+      max-width: var(--panel-max);
     }
 
     .s-menu-has-children:hover > .s-menu-sub-menu,
@@ -877,13 +915,101 @@ body.topnav-is-dark .site-header--lite .site-header__bar {
     }
 
     /* mega panel (category with featured products) — wider, laid out as a row */
+    /* Mega panel (category with featured products). From a top-level item it
+       spans the whole header row, under it: the item is left unpositioned so
+       the panel is placed against the row (`.site-header__bar-inner`). Moved
+       into "More", it flies out beside its row like any nested panel. */
+    .s-menu-root-level.s-menu-mega-menu {
+      position: static;
+    }
+
     .s-menu-mega-menu > .s-menu-sub-menu {
       @apply flex gap-4;
       min-width: min(48rem, 90vw);
     }
 
+    .s-menu-root-level.s-menu-mega-menu > .s-menu-sub-menu {
+      top: 100%;
+      inset-inline: 0;
+      width: auto;
+      min-width: 0;
+      max-width: none;
+    }
+
+    /* Inside a mega panel: its links in a column, its featured products beside
+       them as the theme's product cards, in the same grid as every product
+       list (`.s-products-list-vertical-cards`). */
+    .s-menu-mega-menu > .s-menu-sub-menu > ul {
+      @apply w-56 shrink-0;
+
+      /* in columns, as wide as they need */
+      &.s-menu-columns {
+        @apply w-auto;
+      }
+    }
+
+    /* Scrolls within the room left in the window (its max-height is set by
+       HeaderMainMenu.tsx). It holds no nested menus, so it can scroll without
+       clipping any. */
     .s-menu-products-wrapper {
-      @apply min-w-0 flex-1;
+      @apply min-w-0 flex-1 overflow-y-auto overscroll-contain;
+    }
+
+    /* Links in columns take the panel's width; the products go below them. */
+    .s-menu-mega-menu > .s-menu-sub-menu.is-stacked {
+      @apply flex-col;
+
+      > ul.s-menu-columns {
+        @apply w-full;
+      }
+    }
+
+    /* The product grid is five columns everywhere else; a mega panel shows
+       four products, in four columns. */
+    .s-menu-products-wrapper .s-products-list-vertical-cards {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+
+    .s-menu-root-level.s-menu-mega-menu > .s-menu-sub-menu {
+      @apply gap-6 p-6;
+    }
+
+    /* One-line menu (`enable_more_menu`, HeaderMainMenu.tsx): items that don't
+       fit move into a last "More" item. Clipped only while the full menu is
+       being measured — clipping it after would cut the dropdown panels off. */
+    .site-header__oneline-menu {
+      /* Not positioned: a mega panel is placed against the header row. */
+      @apply flex w-full min-w-0 items-stretch justify-center;
+
+      .main-menu {
+        flex-wrap: nowrap;
+      }
+
+      /* Each root item keeps its natural width on one line. Without this a
+         no-wrap row squeezes them instead (their text breaks onto 2-3 lines),
+         so they measure as fitting and nothing ever moves into "More". */
+      .s-menu-root-level,
+      .s-menu-root-level > a {
+        flex-shrink: 0;
+        white-space: nowrap;
+      }
+
+      &.is-measuring {
+        overflow: hidden;
+      }
+    }
+
+    /* Sizes the "More" item before it exists; never seen or reached. */
+    .site-header__more-probe {
+      @apply pointer-events-none invisible absolute top-0;
+      inset-inline-start: 0;
+    }
+
+    /* "More" is the row's last item: its panel lines up with its end edge and
+       opens back across the row, so it stays on screen. Panels nested in it fly
+       out the usual way, past that end edge (to the left in Arabic). */
+    [data-more-menu] > .s-menu-sub-menu {
+      inset-inline: auto 0;
     }
 
     /* caret — sallaicons chevron, flips on an open top-level item */

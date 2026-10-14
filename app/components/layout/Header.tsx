@@ -2,7 +2,6 @@ import { useEffect, useRef, useState } from 'react';
 import { useRouterState } from '@tanstack/react-router';
 import { SallaSearch } from '@salla.sa/twilight-components-react/search';
 import { SallaSocial } from '@salla.sa/twilight-components-react/social';
-import { SallaMenu } from '@salla.sa/twilight-components-react/menu';
 import { SallaUserMenu } from '@salla.sa/twilight-components-react/user-menu';
 import { SallaCartSummary } from '@salla.sa/twilight-components-react/cart-summary';
 import { useTwilight, useIsHome } from '@salla.sa/twilight-theme-engine/providers';
@@ -14,6 +13,7 @@ import { MapPinIcon, SearchIcon, ShoppingBagIcon } from '../icons';
 import { useHydrated } from '../../hooks/useHydrated';
 import { useAppSafeAreaTop } from '../../hooks/useAppSafeAreaTop';
 import { HOME_ROUTE_ID, PRODUCT_ROUTE_ID } from '../../lib/routeIds';
+import { HeaderMainMenu } from './HeaderMainMenu';
 import { HeaderNav } from './HeaderNav';
 import { HeaderTopnav } from './HeaderTopnav';
 
@@ -98,7 +98,7 @@ function HeaderIntro() {
  *    drawer, action icons, then a store-name / description / social row.
  *  - **default**: a `lg+` top bar ({@link HeaderTopnav}) with the footer menu +
  *    language / branch / currency switchers, then a row of logo · horizontal
- *    `<SallaMenu>` mega-menu · action icons. Below `lg` it collapses to the
+ *    mega-menu (`HeaderMainMenu`) · action icons. Below `lg` it collapses to the
  *    same mobile bar as lite (burger + drawer + icons).
  *
  * The menu opens a slide-in drawer at every breakpoint ({@link HeaderNav}); the
@@ -262,7 +262,7 @@ export function Header({ navOpen: navOpenProp, onNavOpenChange }: HeaderProps = 
                 className="site-header__mainmenu"
                 aria-label={t('blocks.header.main_menu', 'Menu')}
               >
-                <SallaMenu source="header" suppressHydrationWarning />
+                <HeaderMainMenu />
               </nav>
             )}
 
