@@ -22,7 +22,6 @@ const TYPE_TO_SOURCE: Record<string, ProductsListSource> = {
   most_sales: 'sales',
   latest_products: 'latest',
   chosen_products: 'selected',
-  random_products: 'latest',
   top_rated_products: 'top-rated',
   tag: 'tags',
 };
@@ -32,6 +31,10 @@ type PickerValue = string | number | { id?: unknown; value?: unknown; key?: unkn
 
 export interface FeaturedProductsSection {
   name?: string;
+  /** Legacy (pre-custom-component) payload: tab name and pre-hydrated stubs. */
+  label?: string;
+  title?: string;
+  products?: Array<{ id?: unknown }>;
   type?: PickerValue | PickerValue[];
   category?: PickerValue | PickerValue[];
   tag?: PickerValue | PickerValue[];
@@ -46,6 +49,8 @@ export interface FeaturedProductsData {
   is_slider?: boolean;
   position?: number;
   main_product_title?: string;
+  /** Legacy payload heading. */
+  title?: string;
   main_product?: Product | { source_value?: PickerValue[] } | PickerValue | PickerValue[] | null;
   items?: FeaturedProductsSection[];
   [key: string]: unknown;
@@ -80,6 +85,9 @@ const toIds = (v: unknown): number[] => {
 
 /** Maps one merchant-configured tab to the `product.list` source it should load. */
 function resolveTab(section: FeaturedProductsSection): Pick<Tab, 'source' | 'sourceValue'> {
+  if (Array.isArray(section.products)) {
+    return { source: 'selected', sourceValue: toIds(section.products.map((p) => p?.id)) };
+  }
   const source = TYPE_TO_SOURCE[scalar(section.type)];
   if (!source) return {};
   if (source === 'selected') return { source, sourceValue: toIds(section.chosen_products) };
@@ -95,7 +103,7 @@ const isFullProduct = (v: unknown): v is Product =>
   !!v && typeof v === 'object' && !Array.isArray(v) && 'name' in v && 'id' in v;
 
 function tabLabel(section: FeaturedProductsSection, index: number, t: Translate): string {
-  const explicit = (section.name || '').trim();
+  const explicit = (section.name || section.label || section.title || '').trim();
   return explicit || `${t('blocks.home.featured_products_tab', 'Products')} ${index + 1}`;
 }
 
@@ -190,15 +198,23 @@ export function FeaturedProducts({ data }: { data: FeaturedProductsData }) {
 
   const showMethod = scalar(data.show_method);
   const activeIndex = Math.max(0, tabs.findIndex((tab) => tab.key === active));
+  const legacySpecial =
+    data.main_product && typeof data.main_product === 'object' && 'product' in data.main_product
+      ? (data.main_product as { product?: Product | null }).product
+      : null;
   const specialValue =
-    showMethod === 'special_offer_with_products'
+    legacySpecial ??
+    (showMethod === 'special_offer_with_products'
       ? data.main_product
       : showMethod === 'products_with_special_product'
         ? sections[activeIndex]?.special_product
-        : null;
+        : null);
   const hasSpecial = isFullProduct(specialValue) || toIds(specialValue).length > 0;
   const hasTabs = tabs.length > 1;
-  const heading = showMethod === 'special_offer_with_products' ? data.main_product_title : '';
+  const heading =
+    showMethod === 'special_offer_with_products' || legacySpecial
+      ? ((data.main_product as { title?: string } | null)?.title || data.main_product_title)
+      : data.title;
   const perTab = hasSpecial ? 4 : 8;
 
   return (

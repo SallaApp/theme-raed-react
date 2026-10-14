@@ -89,6 +89,42 @@ describe('FeaturedProducts', () => {
     expect(getAllByTestId('product-card')).toHaveLength(2);
   });
 
+  it('still renders the legacy payload (label, stub products, nested main_product)', () => {
+    listMock.mockClear();
+    const { getAllByTestId, getAllByText, container } = render(
+      <FeaturedProducts
+        data={{
+          title: 'Legacy heading',
+          items: [
+            { label: 'Old A', products: [{ id: 1 }, { id: 2 }] },
+            { label: 'Old B', products: [{ id: 3 }] },
+          ],
+        }}
+      />
+    );
+    expect(getAllByText('Old A').length).toBeGreaterThan(0);
+    expect(container.querySelector('h2.s-block__title')?.textContent).toBe('Legacy heading');
+    expect(listMock).toHaveBeenCalledWith(
+      expect.objectContaining({ source: 'selected', sourceValue: [1, 2] })
+    );
+    expect(getAllByTestId('product-card').length).toBeGreaterThan(0);
+  });
+
+  it('renders a legacy nested main_product as the special product', () => {
+    const { getAllByTestId, container } = render(
+      <FeaturedProducts
+        data={{
+          main_product: { title: 'Old deal', product: { id: 9, name: 'Hero' } },
+          items: [{ label: 'A', products: [{ id: 1 }] }],
+        }}
+      />
+    );
+    expect(
+      getAllByTestId('product-card').some((el) => el.getAttribute('data-layout') === 'special')
+    ).toBe(true);
+    expect(container.querySelector('h2.s-block__title')?.textContent).toBe('Old deal');
+  });
+
   it('skips a tab whose source needs a value that is missing', () => {
     listMock.mockClear();
     const { container } = render(

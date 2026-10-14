@@ -883,21 +883,6 @@
           "description": "في حال إختيار منتج، سيتم عرضه بشكل بارز وبجواره بطاقات لأربعة منتجات"
         },
         {
-          "id": "is_slider",
-          "type": "boolean",
-          "label": "منتجات متحركة",
-          "value": true,
-          "format": "switch",
-          "conditions": [
-            {
-              "id": "show_method",
-              "operation": "=",
-              "value": "products_without_special_product"
-            }
-          ],
-          "description": ""
-        },
-        {
           "id": "items",
           "type": "collection",
           "format": "collection",
@@ -958,11 +943,6 @@
                   "key": "chosen_products",
                   "label": "منتجات مختارة",
                   "value": "chosen_products"
-                },
-                {
-                  "key": "random_products",
-                  "label": "منتجات عشوائية",
-                  "value": "random_products"
                 },
                 {
                   "key": "top_rated_products",
