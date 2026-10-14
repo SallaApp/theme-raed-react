@@ -947,6 +947,12 @@ salla-reviews:not(:has(.s-reviews-swiper-slide)) {
       @apply w-full h-full object-cover;
     }
 
+    /* A link's own image (MainLinks.tsx): shown whole inside the circle, with
+       room around it, rather than cropped to fill it like a category photo. */
+    img.is-contained {
+      @apply object-contain p-3 sm:p-4;
+    }
+
     i {
       @apply m-0 text-primary text-icon-lg;
     }

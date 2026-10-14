@@ -56,6 +56,37 @@ describe('MainLinks', () => {
     expect(icon?.className).toBe('sicon-cat1');
   });
 
+  it("shows a link's image instead of its icon, whole inside the circle", () => {
+    const { container } = render(
+      <MainLinks
+        data={{
+          links: [
+            { url: '/perfume', icon: 'sicon-cat1', image: 'perfume.png', title: 'Perfume' },
+            { url: '/gifts', icon: 'sicon-gift', title: 'Gifts' },
+          ],
+        }}
+      />
+    );
+    const [withImage, withIcon] = Array.from(container.querySelectorAll('.slide--cat-entry'));
+    const img = withImage.querySelector('img');
+    expect(img?.getAttribute('src')).toBe('perfume.png');
+    expect(img?.getAttribute('alt')).toBe('Perfume');
+    expect(img?.classList.contains('is-contained')).toBe(true);
+    expect(withImage.querySelector('i')).toBeNull();
+    // No image: the icon, as before.
+    expect(withIcon.querySelector('img')).toBeNull();
+    expect(withIcon.querySelector('i')?.className).toBe('sicon-gift');
+  });
+
+  it("lets a category's photo fill the circle", () => {
+    const { container } = render(
+      <MainLinks data={{ categories: mockCategories, show_cats: true }} />
+    );
+    const img = container.querySelector('.slide--cat-entry img');
+    expect(img?.getAttribute('src')).toBe('cat2.jpg');
+    expect(img?.classList.contains('is-contained')).toBe(false);
+  });
+
   it('renders links with title', () => {
     const { container } = render(<MainLinks data={{ links: mockLinks }} />);
     const title = container.querySelector('.slide--cat-entry h2');
