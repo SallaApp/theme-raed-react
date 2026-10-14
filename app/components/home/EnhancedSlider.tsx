@@ -1,6 +1,7 @@
-import { memo, useCallback, useState } from 'react';
+import { memo, useCallback, useEffect, useRef, useState, type RefObject } from 'react';
 import { SallaSlider } from '@salla.sa/twilight-components-react/slider';
 import { Link } from '@salla.sa/twilight-theme-engine/common';
+import { parseSlideVideo, youtubeEmbedUrl } from '../../lib/slideVideo';
 
 export interface SliderBanner {
   link?: string;
@@ -32,6 +33,97 @@ export interface EnhancedSliderProps {
     priority?: boolean;
     [key: string]: unknown;
   };
+}
+
+/** Whether the visitor asked for reduced motion; false on the server and before hydration. */
+function useMotionAllowed() {
+  const [allowed, setAllowed] = useState(false);
+  useEffect(() => {
+    setAllowed(!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches);
+  }, []);
+  return allowed;
+}
+
+/**
+ * Plays each slide video while it is on screen and pauses it otherwise, so only
+ * the visible slide's video downloads and plays. Videos are found in the DOM, not
+ * through refs, so the copies Swiper makes of slides for looping play too.
+ */
+function useSlideVideos(root: RefObject<HTMLElement | null>, enabled: boolean) {
+  useEffect(() => {
+    const element = root.current;
+    if (!element || !enabled) return;
+    const playIf = (video: HTMLVideoElement, visible: boolean) => {
+      if (!visible) return video.pause();
+      video.muted = true; // autoplay needs it, and a copied slide only keeps attributes
+      video.play().catch(() => undefined);
+    };
+    const observer =
+      typeof IntersectionObserver === 'undefined'
+        ? null
+        : new IntersectionObserver(
+            (entries) =>
+              entries.forEach((entry) =>
+                playIf(entry.target as HTMLVideoElement, entry.isIntersecting)
+              ),
+            // Slides off screen sit beside the visible one, clipped by the slider.
+            { threshold: 0.5 }
+          );
+    const watched = new WeakSet<HTMLVideoElement>();
+    const watch = () =>
+      element.querySelectorAll<HTMLVideoElement>('video.enhanced-slider__video').forEach((video) => {
+        if (watched.has(video)) return;
+        watched.add(video);
+        if (observer) observer.observe(video);
+        else playIf(video, true);
+      });
+    watch();
+    const mutations = new MutationObserver(watch);
+    mutations.observe(element, { childList: true, subtree: true });
+    return () => {
+      mutations.disconnect();
+      observer?.disconnect();
+    };
+  }, [root, enabled]);
+}
+
+/**
+ * A slide's background video, over its image (which stays as the poster and the
+ * fallback) and under its overlay. Not rendered for visitors who ask for reduced
+ * motion. A video file waits for {@link useSlideVideos} to play it; a YouTube
+ * embed loads lazily and plays muted on its own.
+ */
+function SlideVideo({ url, poster }: { url?: string; poster?: string }) {
+  const video = parseSlideVideo(url);
+  if (!video) return null;
+  if (video.kind === 'file') {
+    return (
+      <video
+        className="enhanced-slider__video"
+        src={video.src}
+        poster={poster}
+        muted
+        loop
+        playsInline
+        preload="none"
+        disablePictureInPicture
+        aria-hidden="true"
+        tabIndex={-1}
+      />
+    );
+  }
+  return (
+    <iframe
+      className="enhanced-slider__video enhanced-slider__video--embed"
+      src={youtubeEmbedUrl(video.id)}
+      title=""
+      loading="lazy"
+      allow="autoplay; encrypted-media"
+      referrerPolicy="strict-origin-when-cross-origin"
+      aria-hidden="true"
+      tabIndex={-1}
+    />
+  );
 }
 
 function SlideText({ slide, poster }: { slide: SliderBanner; poster?: boolean }) {
@@ -88,12 +180,17 @@ export const EnhancedSlider = memo(function EnhancedSlider({ data }: EnhancedSli
       .then(() => setShowPoster(false));
   }, [firstImage]);
 
+  const root = useRef<HTMLDivElement>(null);
+  const motionAllowed = useMotionAllowed();
+  const hasVideo = motionAllowed && slides.some((slide) => parseSlideVideo(slide.video));
+  useSlideVideos(root, hasVideo);
+
   if (!slides.length) return null;
 
   const first = slides[0];
 
   return (
-    <div className="enhanced-slider">
+    <div className="enhanced-slider" ref={root}>
       <SallaSlider
         id={`main-slider-${position}`}
         // Swiper's autoplay redraws every frame for its countdown, so a single slide skips it.
@@ -112,7 +209,9 @@ export const EnhancedSlider = memo(function EnhancedSlider({ data }: EnhancedSli
               <div
                 style={{ backgroundImage: `url(${slide.image})` }}
                 className={`${slide.without_overlay ? '' : 'overlay-bg'} bg-cover bg-center absolute inset-0`}
-              />
+              >
+                {motionAllowed && <SlideVideo url={slide.video} poster={slide.image} />}
+              </div>
               <SlideText slide={slide} />
             </div>
           ))}

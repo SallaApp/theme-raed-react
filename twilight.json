@@ -410,6 +410,17 @@
             },
             {
               "type": "string",
+              "icon": "sicon-video",
+              "label": "فيديو الخلفية (اختياري)",
+              "id": "slides.video",
+              "value": null,
+              "format": "url",
+              "required": false,
+              "placeholder": "https://www.youtube.com/watch?v=...",
+              "description": "رابط يوتيوب أو رابط ملف فيديو (MP4 أو WebM) يُعرض بدلاً من الصورة كخلفية متحركة بدون صوت. تبقى الصورة ظاهرة حتى يبدأ الفيديو، وتُعرض بدلاً منه للزوار الذين فعّلوا تقليل الحركة."
+            },
+            {
+              "type": "string",
               "icon": "sicon-format-text-alt",
               "label": "عنوان رئيسي",
               "multilanguage": true,

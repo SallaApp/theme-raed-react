@@ -1,5 +1,5 @@
 import React from 'react';
-import { describe, it, expect, vi } from 'vitest';
+import { afterEach, describe, it, expect, vi } from 'vitest';
 import { act, render, waitFor } from '@testing-library/react';
 import { EnhancedSlider } from '../../../app/components/home/EnhancedSlider';
 
@@ -192,6 +192,77 @@ describe('EnhancedSlider', () => {
         container.querySelector('salla-slider')?.dispatchEvent(new Event('AfterInit'));
       });
       await waitFor(() => expect(container.querySelector('.enhanced-slider__poster')).toBeNull());
+    });
+  });
+
+  describe('background video', () => {
+    const setReducedMotion = (reduce: boolean) =>
+      vi.stubGlobal(
+        'matchMedia',
+        vi.fn().mockReturnValue({ matches: reduce } as MediaQueryList)
+      );
+
+    afterEach(() => {
+      vi.unstubAllGlobals();
+      vi.restoreAllMocks();
+    });
+
+    it('covers the slide with a muted, looping video file over the image', async () => {
+      setReducedMotion(false);
+      const play = vi
+        .spyOn(HTMLMediaElement.prototype, 'play')
+        .mockResolvedValue(undefined);
+      const { container } = render(
+        <EnhancedSlider
+          data={{ slider_banner: [{ ...mockSlides[0], video: 'https://cdn.salla.sa/hero.mp4' }] }}
+        />
+      );
+      const video = await waitFor(() => {
+        const element = container.querySelector<HTMLVideoElement>('video.enhanced-slider__video');
+        expect(element).toBeTruthy();
+        return element!;
+      });
+      expect(video.getAttribute('src')).toBe('https://cdn.salla.sa/hero.mp4');
+      expect(video.getAttribute('poster')).toBe('slide1.jpg');
+      expect(video.loop).toBe(true);
+      expect(video.closest('.overlay-bg')).toBeTruthy();
+      // No IntersectionObserver in jsdom, so it plays straight away, muted.
+      await waitFor(() => expect(play).toHaveBeenCalled());
+      expect(video.muted).toBe(true);
+    });
+
+    it('plays a YouTube link as a lazy, muted embed', async () => {
+      setReducedMotion(false);
+      const { container } = render(
+        <EnhancedSlider
+          data={{
+            slider_banner: [
+              { ...mockSlides[0], video: 'https://youtu.be/dQw4w9WgXcQ' },
+              mockSlides[1],
+            ],
+          }}
+        />
+      );
+      const iframe = await waitFor(() => {
+        const element = container.querySelector('iframe.enhanced-slider__video--embed');
+        expect(element).toBeTruthy();
+        return element!;
+      });
+      expect(iframe.getAttribute('src')).toContain('youtube-nocookie.com/embed/dQw4w9WgXcQ');
+      expect(iframe.getAttribute('loading')).toBe('lazy');
+      expect(container.querySelectorAll('.enhanced-slider__video')).toHaveLength(1);
+    });
+
+    it('keeps the image only for visitors who ask for reduced motion', async () => {
+      setReducedMotion(true);
+      const { container } = render(
+        <EnhancedSlider
+          data={{ slider_banner: [{ ...mockSlides[0], video: 'https://cdn.salla.sa/hero.mp4' }] }}
+        />
+      );
+      await act(async () => undefined);
+      expect(container.querySelector('.enhanced-slider__video')).toBeNull();
+      expect(container.querySelector('.overlay-bg')?.getAttribute('style')).toContain('slide1.jpg');
     });
   });
 });

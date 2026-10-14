@@ -655,6 +655,26 @@
     position: relative;
   }
 
+  /* A slide's background video (EnhancedSlider `SlideVideo`): covers the slide
+     over its image and under the overlay (`.overlay-bg:after` comes later). It
+     never takes taps, so swipes and the CTA still work. */
+  .bg-cover:has(> .enhanced-slider__video) {
+    container-type: size;
+  }
+
+  .enhanced-slider__video {
+    @apply pointer-events-none absolute inset-0 h-full w-full object-cover;
+  }
+
+  /* An embed letterboxes, so it is sized to cover the slide at 16:9 and centred. */
+  .enhanced-slider__video--embed {
+    inset: 50% auto auto 50%;
+    width: max(100cqw, 177.78cqh);
+    height: max(100cqh, 56.25cqw);
+    border: 0;
+    translate: -50% -50%;
+  }
+
   /* Slides (and the SSR poster): 12:5 is too short on a phone for the title,
      the description and the arrows, so phones get 4:3. */
   .swiper-slide {
