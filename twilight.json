@@ -374,6 +374,17 @@
         },
         {
           "type": "boolean",
+          "icon": "sicon-layout-grid",
+          "label": "عرض داخل حاوية",
+          "description": "يعرض المعرض بعرض محتوى الصفحة مع زوايا دائرية، بدلاً من امتداده على كامل عرض الشاشة.",
+          "id": "in_container",
+          "format": "switch",
+          "required": false,
+          "value": false,
+          "selected": false
+        },
+        {
+          "type": "boolean",
           "icon": "sicon-play",
           "label": "التنقل التلقائي بين الصور",
           "description": "ينتقل المعرض إلى الصورة التالية تلقائياً كل بضع ثوانٍ. عند إيقافه يتنقل الزائر بالأسهم أو بالسحب.",
