@@ -141,4 +141,13 @@ describe('default layout dropdown panels', () => {
     const [nested] = rulesMatching(css, new RegExp(`__mainmenu ${sub} ${sub}$`));
     expect(decl(nested, 'border-top-left-radius')).toBeUndefined();
   });
+
+  // menus.scss squares nested panels' tops for every row but the first, with a
+  // selector that outranks a plain nested one.
+  it('rounds every corner of a nested panel, over the old menus.scss rule', async () => {
+    const css = await compileHeader();
+    const [nested] = rulesMatching(css, new RegExp(`__mainmenu ${sub} ${sub}${sub}$`));
+    expect(decl(nested, 'border-radius')).toBe('16px');
+    expect(decl(nested, 'border-width')).toBe('1px');
+  });
 });

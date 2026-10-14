@@ -895,6 +895,15 @@ body.topnav-is-dark .site-header--lite .site-header__bar {
       @apply rounded-t-none;
     }
 
+    /* Nested panels keep all four corners rounded and their border. The
+       Twig-era menus.scss squares a nested panel's top and drops its border
+       for every row but the first, and its selector
+       (`.main-menu .sub-menu ul > li:not(:first-child) > .sub-menu`) outranks
+       a plain nested one, so this repeats the panel class to outrank it. */
+    #{$menu-sub} #{$menu-sub}#{$menu-sub} {
+      @apply rounded border border-gray-100;
+    }
+
     /* nested panel flies out to the inline-end side, level with its row */
     #{$menu-sub} #{$menu-sub} {
       top: -0.375rem;
