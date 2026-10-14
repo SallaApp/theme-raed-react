@@ -896,6 +896,15 @@ body.topnav-is-dark .site-header--lite .site-header__bar {
         flex-wrap: nowrap;
       }
 
+      /* Each root item keeps its natural width on one line. Without this a
+         no-wrap row squeezes them instead (their text breaks onto 2-3 lines),
+         so they measure as fitting and nothing ever moves into "More". */
+      .s-menu-root-level,
+      .s-menu-root-level > a {
+        flex-shrink: 0;
+        white-space: nowrap;
+      }
+
       &.is-measuring {
         overflow: hidden;
       }
