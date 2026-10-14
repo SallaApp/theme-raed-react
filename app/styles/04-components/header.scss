@@ -796,26 +796,17 @@ body.topnav-is-dark .site-header--lite .site-header__bar {
     @apply hidden;
   }
 
-  /* `<salla-menu>` names its classes differently by Twilight version: 3.x
-     prefixes them (`.s-menu-root-level`); 2.14, which a store pinned to it
-     loads from the CDN, does not (`.root-level`, `.has-children`, `.sub-menu`,
-     `.mega-menu`, and no class at all on a panel's rows or on the
-     drawer-only items). Every rule below matches both. */
-  $menu-root: ':is(.s-menu-root-level, .root-level)';
-  $menu-children: ':is(.s-menu-has-children, .has-children)';
-  $menu-sub: ':is(.s-menu-sub-menu, .sub-menu)';
-  $menu-mega: ':is(.s-menu-mega-menu, .mega-menu)';
-  $menu-non-root: ':is(.s-menu-non-root-level, .sub-menu li)';
-  $menu-mobile-item: ':is(.s-menu-mobile-item, .main-menu > li:not(.root-level, .s-menu-root-level))';
 
-  /* `<salla-menu source="header">` ships **no** desktop styling of its own
-     (`:host{display:block}` only) — just class hooks. So the whole mega-menu is
-     theme-owned here: a centred row of `.s-menu-root-level` items, each with an
-     absolutely-positioned `.s-menu-sub-menu` panel that reveals on hover /
-     focus, and nested panels that fly out to the inline-end side.
-     DOM: `nav.mobile-menu > ul.main-menu > li.s-menu-desktop-item
-          (.s-menu-root-level | .s-menu-non-root-level, +.s-menu-has-children,
-           +.s-menu-mega-menu) > a + div.s-menu-sub-menu > ul > li…`. */
+  /* The main menu (HeaderMainMenu.tsx, rendered by the theme): a centred row
+     of `.s-menu-root-level` items, each with an absolutely-positioned
+     `.s-menu-sub-menu` panel that reveals on hover / focus, and nested panels
+     that fly out to the inline-end side.
+     DOM: `ul.main-menu > li(.s-menu-root-level | .s-menu-non-root-level,
+          +.s-menu-has-children, +.s-menu-mega-menu) > a + div.s-menu-sub-menu
+          > ul > li…`, a mega panel adding `.s-menu-products-wrapper` after its
+          `ul`. Class names follow `<salla-menu>`'s 3.x markup; the Twig-era
+          `menus.scss` targets 2.14's (`.sub-menu`, `.has-children`), so its
+          rules don't reach these panels. */
   /* Every box from the row down to a top-level item stretches to the row's
      full height, so the item spans it top to bottom and its panel opens right
      at the row's bottom edge. With the item centred in the row instead, the
@@ -824,57 +815,43 @@ body.topnav-is-dark .site-header--lite .site-header__bar {
   .site-header--default .site-header__mainmenu {
     @apply flex min-w-0 items-stretch self-stretch;
 
-    salla-menu,
-    .mobile-menu {
-      @apply flex w-full min-w-0 items-stretch justify-center;
-    }
-
-    .mobile-menu,
     .main-menu {
       margin: 0 #{!important};
       padding: 0 #{!important};
     }
 
     .main-menu {
-      @apply flex flex-wrap items-stretch justify-center gap-x-0.5;
-    }
-
-    /* drawer-only bits the component also renders into this nav */
-    #{$menu-mobile-item},
-    .close-mobile-menu {
-      display: none #{!important};
+      @apply flex w-full min-w-0 flex-wrap items-stretch justify-center gap-x-0.5;
     }
 
     /* top-level item — centred in the row, positioning context for its panel */
-    #{$menu-root} {
+    .s-menu-root-level {
       display: flex #{!important};
       @apply relative my-0 items-center;
     }
 
-    #{$menu-root} > a {
+    .s-menu-root-level > a {
       @apply inline-flex items-center gap-1 whitespace-nowrap rounded px-3 py-2 text-sm font-medium text-gray-700 transition-colors hover:text-primary;
     }
 
     /* rows inside a panel — stacked */
-    #{$menu-non-root} {
+    .s-menu-non-root-level {
       @apply relative my-0 block;
     }
 
-    #{$menu-sub} ul {
+    .s-menu-sub-menu ul {
       @apply m-0 list-none p-0;
     }
 
-    #{$menu-sub} a {
+    .s-menu-sub-menu a {
       @apply flex items-center justify-between gap-2 whitespace-nowrap rounded px-3 py-2 text-sm text-gray-700 transition-colors hover:bg-gray-50 hover:text-primary;
     }
 
     /* the panel — hidden until the parent item is hovered / focused */
-    #{$menu-sub} {
+    .s-menu-sub-menu {
       @apply invisible absolute z-40 max-w-[90vw] rounded border border-gray-100 bg-white p-1.5 opacity-0 shadow-xl;
       /* Never a scroll container: one clips the panel that flies out of its
-         rows, so a sub-sub menu would never show. Set explicitly, because
-         the Twig-era `menus.scss` makes every 2.14 `.sub-menu` scroll
-         (`max-h-[400px] overflow-y-auto`). */
+         rows, so a sub-sub menu would never show. */
       overflow: visible;
       max-height: none;
       /* Flush with the item: any gap here is space the pointer crosses with
@@ -890,29 +867,20 @@ body.topnav-is-dark .site-header--lite .site-header__bar {
     }
 
     /* A first-level panel opens flush under the header row, so its top
-       corners are square; nested panels keep all four rounded. */
-    #{$menu-root} > #{$menu-sub} {
+       corners are square; nested panels keep all four rounded (above). */
+    .s-menu-root-level > .s-menu-sub-menu {
       @apply rounded-t-none;
     }
 
-    /* Nested panels keep all four corners rounded and their border. The
-       Twig-era menus.scss squares a nested panel's top and drops its border
-       for every row but the first, and its selector
-       (`.main-menu .sub-menu ul > li:not(:first-child) > .sub-menu`) outranks
-       a plain nested one, so this repeats the panel class to outrank it. */
-    #{$menu-sub} #{$menu-sub}#{$menu-sub} {
-      @apply rounded border border-gray-100;
-    }
-
     /* nested panel flies out to the inline-end side, level with its row */
-    #{$menu-sub} #{$menu-sub} {
+    .s-menu-sub-menu .s-menu-sub-menu {
       top: -0.375rem;
       inset-inline: 100% auto;
       transform: translateY(0);
     }
 
-    #{$menu-children}:hover > #{$menu-sub},
-    #{$menu-children}:focus-within > #{$menu-sub} {
+    .s-menu-has-children:hover > .s-menu-sub-menu,
+    .s-menu-has-children:focus-within > .s-menu-sub-menu {
       @apply visible opacity-100;
       transform: translateY(0);
     }
@@ -922,16 +890,16 @@ body.topnav-is-dark .site-header--lite .site-header__bar {
        spans the whole header row, under it: the item is left unpositioned so
        the panel is placed against the row (`.site-header__bar-inner`). Moved
        into "More", it flies out beside its row like any nested panel. */
-    #{$menu-root}#{$menu-mega} {
+    .s-menu-root-level.s-menu-mega-menu {
       position: static;
     }
 
-    #{$menu-mega} > #{$menu-sub} {
+    .s-menu-mega-menu > .s-menu-sub-menu {
       @apply flex gap-4;
       min-width: min(48rem, 90vw);
     }
 
-    #{$menu-root}#{$menu-mega} > #{$menu-sub} {
+    .s-menu-root-level.s-menu-mega-menu > .s-menu-sub-menu {
       top: 100%;
       inset-inline: 0;
       width: auto;
@@ -939,8 +907,19 @@ body.topnav-is-dark .site-header--lite .site-header__bar {
       max-width: none;
     }
 
+    /* Inside a mega panel: its links in a column, its featured products beside
+       them as the theme's product cards, in the same grid as every product
+       list (`.s-products-list-vertical-cards`). */
+    .s-menu-mega-menu > .s-menu-sub-menu > ul {
+      @apply w-56 shrink-0;
+    }
+
     .s-menu-products-wrapper {
       @apply min-w-0 flex-1;
+    }
+
+    .s-menu-root-level.s-menu-mega-menu > .s-menu-sub-menu {
+      @apply gap-6 p-6;
     }
 
     /* One-line menu (`enable_more_menu`, HeaderMainMenu.tsx): items that don't
@@ -957,8 +936,8 @@ body.topnav-is-dark .site-header--lite .site-header__bar {
       /* Each root item keeps its natural width on one line. Without this a
          no-wrap row squeezes them instead (their text breaks onto 2-3 lines),
          so they measure as fitting and nothing ever moves into "More". */
-      #{$menu-root},
-      #{$menu-root} > a {
+      .s-menu-root-level,
+      .s-menu-root-level > a {
         flex-shrink: 0;
         white-space: nowrap;
       }
@@ -977,22 +956,22 @@ body.topnav-is-dark .site-header--lite .site-header__bar {
     /* "More" is the row's last item: its panel lines up with its end edge and
        opens back across the row, so it stays on screen. Panels nested in it fly
        out the usual way, past that end edge (to the left in Arabic). */
-    [data-more-menu] > #{$menu-sub} {
+    [data-more-menu] > .s-menu-sub-menu {
       inset-inline: auto 0;
     }
 
     /* caret — sallaicons chevron, flips on an open top-level item */
-    #{$menu-children} > a::after {
+    .s-menu-has-children > a::after {
       font-family: 'sallaicons';
       content: '\e970';
       @apply ms-1 inline-block text-base leading-none opacity-50 transition-transform;
     }
 
-    #{$menu-root}#{$menu-children} > a::after {
+    .s-menu-root-level.s-menu-has-children > a::after {
       content: '\e96e';
     }
 
-    #{$menu-root}#{$menu-children}:hover > a::after {
+    .s-menu-root-level.s-menu-has-children:hover > a::after {
       @apply opacity-100;
       transform: scaleY(-1);
     }

@@ -98,7 +98,7 @@ function HeaderIntro() {
  *    drawer, action icons, then a store-name / description / social row.
  *  - **default**: a `lg+` top bar ({@link HeaderTopnav}) with the footer menu +
  *    language / branch / currency switchers, then a row of logo · horizontal
- *    `<SallaMenu>` mega-menu · action icons. Below `lg` it collapses to the
+ *    mega-menu (`HeaderMainMenu`) · action icons. Below `lg` it collapses to the
  *    same mobile bar as lite (burger + drawer + icons).
  *
  * The menu opens a slide-in drawer at every breakpoint ({@link HeaderNav}); the

@@ -61,8 +61,7 @@ describe('one-line main menu (enable_more_menu)', () => {
   // measure as fitting, wrap their text, and nothing would ever move into "More".
   it('keeps each root item at its natural width, on one line', async () => {
     const root = await compileHeader();
-    // Matches Twilight 3.x's `.s-menu-root-level` and 2.14's `.root-level`.
-    const item = ':is(.s-menu-root-level, .root-level)';
+    const item = '.s-menu-root-level';
     for (const selector of [`${scope} ${item}`, `${scope} ${item} > a`]) {
       const rule = ruleFor(root, selector);
       expect(decl(rule, 'flex-shrink'), selector).toBe('0');
@@ -77,16 +76,15 @@ describe('one-line main menu (enable_more_menu)', () => {
 });
 
 describe('default layout dropdown panels', () => {
-  const sub = String.raw`:is\(\.s-menu-sub-menu, \.sub-menu\)`;
-  const rootItem = String.raw`:is\(\.s-menu-root-level, \.root-level\)`;
-  const mega = String.raw`:is\(\.s-menu-mega-menu, \.mega-menu\)`;
+  const sub = String.raw`\.s-menu-sub-menu`;
+  const rootItem = String.raw`\.s-menu-root-level`;
+  const mega = String.raw`\.s-menu-mega-menu`;
 
   // A panel that scrolls clips the panel flying out of one of its rows.
   it('never clips a nested panel', async () => {
     const css = await compileHeader();
     const panels = rulesMatching(css, new RegExp(`__mainmenu ${sub}$`));
     expect(panels.length).toBeGreaterThan(0);
-    // Explicit, to beat menus.scss, which makes every 2.14 `.sub-menu` scroll.
     expect(panels.some((rule) => decl(rule, 'overflow') === 'visible')).toBe(true);
     expect(panels.some((rule) => decl(rule, 'max-height') === 'none')).toBe(true);
     for (const rule of panels) {
@@ -116,7 +114,6 @@ describe('default layout dropdown panels', () => {
     );
     for (const selector of [
       '.site-header--default .site-header__mainmenu .main-menu',
-      '.site-header--default .site-header__mainmenu salla-menu',
       '.site-header--default .site-header__mainmenu .site-header__oneline-menu',
     ]) {
       expect(declFor(css, selector, 'align-items'), selector).toBe('stretch');
@@ -138,16 +135,10 @@ describe('default layout dropdown panels', () => {
     expect(decl(first, 'border-top-left-radius')).toBe('0px');
     expect(decl(first, 'border-top-right-radius')).toBe('0px');
 
+    // Nested panels keep the base panel's full radius.
     const [nested] = rulesMatching(css, new RegExp(`__mainmenu ${sub} ${sub}$`));
     expect(decl(nested, 'border-top-left-radius')).toBeUndefined();
-  });
-
-  // menus.scss squares nested panels' tops for every row but the first, with a
-  // selector that outranks a plain nested one.
-  it('rounds every corner of a nested panel, over the old menus.scss rule', async () => {
-    const css = await compileHeader();
-    const [nested] = rulesMatching(css, new RegExp(`__mainmenu ${sub} ${sub}${sub}$`));
-    expect(decl(nested, 'border-radius')).toBe('16px');
-    expect(decl(nested, 'border-width')).toBe('1px');
+    const panels = rulesMatching(css, new RegExp(`__mainmenu ${sub}$`));
+    expect(panels.some((rule) => decl(rule, 'border-radius') === '16px')).toBe(true);
   });
 });

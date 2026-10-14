@@ -1,16 +1,25 @@
-import { useEffect, useMemo, useRef, useState, type MouseEvent } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState, type MouseEvent } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { SallaMenu, SallaMenuCore } from '@salla.sa/twilight-components-react/menu';
+import { Link } from '@salla.sa/twilight-theme-engine/common';
 import { useTranslation } from '@salla.sa/twilight-theme-engine/i18n';
 import { useTwilight } from '@salla.sa/twilight-theme-engine/providers';
 import { menu } from '@salla.sa/twilight-theme-engine/api/menu';
-import { MORE_MENU_ATTR, fitCount, splitMenu, withSafeAttrs } from '../../lib/menuOverflow';
+import { product } from '@salla.sa/twilight-theme-engine/api/product';
+import type { MenuItem } from '@salla.sa/twilight-theme-engine/types';
+import { ProductCard } from '../product/ProductCard';
+import {
+  MORE_MENU_ATTR,
+  MORE_MENU_ID,
+  fitCount,
+  menuProductIds,
+  pruneUntitled,
+  splitMenu,
+} from '../../lib/menuOverflow';
 
-/**
- * A root item of `<salla-menu>`. Twilight 3.x calls it `.s-menu-root-level`; 2.14,
- * which a store pinned to it loads from the CDN, calls it `.root-level`.
- */
-const ROOT_ITEM = ':is(.s-menu-root-level, .root-level)';
+/** Layout effects measure before paint; on the server there is nothing to measure. */
+const useIsomorphicLayoutEffect = typeof window === 'undefined' ? useEffect : useLayoutEffect;
+
+const NO_ITEMS: MenuItem[] = [];
 
 /** What one measurement of the full, one-line menu found. */
 interface Measured {
@@ -22,53 +31,59 @@ interface Measured {
 }
 
 /** A short, stable key for a menu: its items' ids and titles, top level only. */
-function menuKey(items: { id: unknown; title?: string }[]): string {
+function menuKey(items: MenuItem[]): string {
   const text = items.map((item) => `${String(item.id)}:${item.title ?? ''}`).join('|');
   let hash = 0;
   for (let i = 0; i < text.length; i += 1) hash = (hash * 31 + text.charCodeAt(i)) | 0;
   return `${items.length}-${(hash >>> 0).toString(36)}`;
 }
 
-/** Stops the "More" item's `#` link from jumping to the top; it opens on hover / focus. */
-function preventMoreJump(event: MouseEvent<HTMLElement>) {
-  const target = event.target as HTMLElement;
-  if (target.closest(`[${MORE_MENU_ATTR}] > a`)) event.preventDefault();
-}
+/** The "More" link only opens its dropdown (on hover / focus); it goes nowhere. */
+const preventJump = (event: MouseEvent<HTMLAnchorElement>) => event.preventDefault();
 
 /**
- * The default layout's main menu (`lg+`), kept to one line.
+ * The default layout's main menu (`lg+`).
  *
- * With `enable_more_menu` on (the default), items that don't fit move into a
- * last "More" item and open from its dropdown. `<salla-menu>` has no overflow
- * handling of its own, so the theme fetches the header menu, measures it and
- * hands `<salla-menu>` the result as JSON:
+ * Rendered by the theme rather than by `<salla-menu>`, so a mega panel's
+ * featured products are the theme's own {@link ProductCard} — the same card as
+ * every product list — and the markup is the same on every Twilight version.
+ * Data is the store's `menus/header`, the drawer's source too.
  *
- * 1. The whole menu renders once on one line, clipped, and each root item's
- *    width is read. That happens again only when the menu itself changes
- *    (another language, a merchant edit).
- * 2. On every resize, those widths decide how many items fit, and the rest go
- *    into "More".
- *
- * `<salla-menu>` reads `sourceValue` only when it loads, so a new split remounts
- * it (`key`). With the setting off, the menu renders as before, wrapping onto
- * more lines when it has to.
+ * With `enable_more_menu` on (the default) the menu stays on one line: items
+ * that don't fit move into a last "More" item. Off, it wraps onto more lines.
  */
 export function HeaderMainMenu() {
   const { theme } = useTwilight();
   const { t } = useTranslation();
-  const enabled =
+  const oneLine =
     (theme?.settings as { enable_more_menu?: boolean } | undefined)?.enable_more_menu !== false;
+  const { data: rawItems = NO_ITEMS } = useQuery(menu.queries.header());
+  const items = useMemo(() => pruneUntitled(rawItems), [rawItems]);
 
-  if (!enabled) return <SallaMenu source="header" suppressHydrationWarning />;
-  return <OneLineMenu moreTitle={t('common.titles.more', 'More')} />;
+  if (!oneLine) {
+    return (
+      <ul className="main-menu">
+        <MenuItems items={items} root />
+      </ul>
+    );
+  }
+  return <OneLineMenu items={items} moreTitle={t('common.titles.more', 'More')} />;
 }
 
-function OneLineMenu({ moreTitle }: { moreTitle: string }) {
-  const { data: rawItems = [] } = useQuery(menu.queries.header());
-  const items = useMemo(() => withSafeAttrs(rawItems), [rawItems]);
+/**
+ * The menu kept to one line.
+ *
+ * 1. The whole menu renders once, clipped to one line, and each root item's
+ *    width is read before the browser paints. That happens again only when the
+ *    menu itself changes (another language, a merchant edit) or once the web
+ *    font has loaded.
+ * 2. On every resize, those widths decide how many items fit; the rest become
+ *    the children of a last "More" item.
+ */
+function OneLineMenu({ items, moreTitle }: { items: MenuItem[]; moreTitle: string }) {
   const key = useMemo(() => menuKey(items), [items]);
-
   const rootRef = useRef<HTMLDivElement>(null);
+  const listRef = useRef<HTMLUListElement>(null);
   const probeRef = useRef<HTMLLIElement>(null);
   const [measured, setMeasured] = useState<Measured | null>(null);
   const [available, setAvailable] = useState(0);
@@ -82,42 +97,29 @@ function OneLineMenu({ moreTitle }: { moreTitle: string }) {
     [current, items, fit, moreTitle]
   );
 
+  // Measure the full menu, before it paints.
+  useIsomorphicLayoutEffect(() => {
+    const root = rootRef.current;
+    const list = listRef.current;
+    if (current || !root || !list || !items.length) return;
+    const lis = list.querySelectorAll<HTMLElement>(':scope > .s-menu-root-level');
+    setAvailable(root.clientWidth);
+    setMeasured({
+      key,
+      widths: Array.from(lis, (li) => li.getBoundingClientRect().width),
+      more: probeRef.current?.getBoundingClientRect().width ?? 0,
+      gap: parseFloat(getComputedStyle(list).columnGap) || 0,
+    });
+  }, [current, items, key]);
+
   // Track the width the row has to fill.
   useEffect(() => {
     const root = rootRef.current;
     if (!root || typeof ResizeObserver === 'undefined') return;
     const observer = new ResizeObserver(() => setAvailable(root.clientWidth));
     observer.observe(root);
-    setAvailable(root.clientWidth);
     return () => observer.disconnect();
   }, []);
-
-  // Measure the full menu once `<salla-menu>` has rendered every root item.
-  useEffect(() => {
-    const root = rootRef.current;
-    if (current || !root || !items.length) return;
-
-    const measure = (): boolean => {
-      const list = root.querySelector<HTMLElement>('salla-menu .main-menu');
-      const lis = root.querySelectorAll<HTMLElement>(`salla-menu .main-menu > ${ROOT_ITEM}`);
-      if (!list || lis.length !== items.length) return false;
-      const gap = parseFloat(getComputedStyle(list).columnGap) || 0;
-      setMeasured({
-        key,
-        widths: Array.from(lis, (li) => li.getBoundingClientRect().width),
-        more: probeRef.current?.getBoundingClientRect().width ?? 0,
-        gap,
-      });
-      return true;
-    };
-
-    if (measure()) return;
-    const observer = new MutationObserver(() => {
-      if (measure()) observer.disconnect();
-    });
-    observer.observe(root, { childList: true, subtree: true });
-    return () => observer.disconnect();
-  }, [current, items, key]);
 
   // Text measured before the web font loaded is narrower than it will be.
   useEffect(() => {
@@ -134,31 +136,99 @@ function OneLineMenu({ moreTitle }: { moreTitle: string }) {
   }, []);
 
   return (
-    <div
-      ref={rootRef}
-      className={`site-header__oneline-menu${current ? '' : ' is-measuring'}`}
-      onClickCapture={preventMoreJump}
-    >
-      {/* Core, not the lazy `SallaMenu`: that one shows a skeleton until it scrolls
-          into view, and again after every remount below, so there would be
-          nothing to measure until it did. */}
-      <SallaMenuCore
-        key={current ? `${key}-${fit}` : `${key}-measure`}
-        source="json"
-        sourceValue={JSON.stringify(shown)}
-        suppressHydrationWarning
-      />
+    <div ref={rootRef} className={`site-header__oneline-menu${current ? '' : ' is-measuring'}`}>
+      <ul ref={listRef} className="main-menu">
+        <MenuItems items={shown} root />
+      </ul>
       {/* Sizes the "More" item before it exists, styled like a root item. */}
       <ul className="main-menu site-header__more-probe" aria-hidden="true">
-        <li
-          ref={probeRef}
-          className="s-menu-root-level root-level s-menu-has-children has-children"
-        >
+        <li ref={probeRef} className="s-menu-root-level s-menu-has-children">
           <a tabIndex={-1}>
             <span>{moreTitle}</span>
           </a>
         </li>
       </ul>
+    </div>
+  );
+}
+
+function MenuItems({ items, root }: { items: MenuItem[]; root: boolean }) {
+  return (
+    <>
+      {items.map((item) => (
+        <MenuEntry key={`${String(item.id)}-${item.url}`} item={item} root={root} />
+      ))}
+    </>
+  );
+}
+
+/**
+ * One menu item: its link, and a panel of its children when it has any. With
+ * featured products it is a mega panel, which loads them the first time it
+ * opens rather than with the page.
+ */
+function MenuEntry({ item, root }: { item: MenuItem; root: boolean }) {
+  const children = item.children ?? [];
+  const hasChildren = children.length > 0;
+  const productIds = hasChildren ? menuProductIds(item) : [];
+  const isMega = productIds.length > 0;
+  const isMore = item.id === MORE_MENU_ID;
+  const [opened, setOpened] = useState(false);
+
+  const className = [
+    root ? 's-menu-root-level' : 's-menu-non-root-level',
+    hasChildren && 's-menu-has-children',
+    isMega && 's-menu-mega-menu',
+  ]
+    .filter(Boolean)
+    .join(' ');
+
+  return (
+    <li
+      className={className}
+      {...(isMore ? { [MORE_MENU_ATTR]: 'true' } : {})}
+      {...(isMega ? { onMouseEnter: () => setOpened(true), onFocus: () => setOpened(true) } : {})}
+    >
+      {isMore ? (
+        <a href="#" role="button" aria-haspopup="true" onClick={preventJump}>
+          <span>{item.title}</span>
+        </a>
+      ) : (
+        <Link
+          to={item.url}
+          {...(item.target && item.target !== '_self'
+            ? { target: item.target, rel: 'noopener noreferrer' }
+            : {})}
+        >
+          <span>{item.title}</span>
+        </Link>
+      )}
+      {hasChildren && (
+        <div className="s-menu-sub-menu">
+          <ul>
+            <MenuItems items={children} root={false} />
+          </ul>
+          {isMega && opened && <MegaProducts ids={productIds} />}
+        </div>
+      )}
+    </li>
+  );
+}
+
+/** A mega panel's featured products, as the theme's product cards in its product grid. */
+function MegaProducts({ ids }: { ids: number[] }) {
+  const { data } = useQuery(
+    product.queries.list({ source: 'selected', sourceValue: ids, perPage: ids.length })
+  );
+  const products = data?.items ?? [];
+  if (!products.length) return null;
+  return (
+    <div className="s-menu-products-wrapper">
+      <div className="s-products-list-wrapper s-products-list-vertical-cards">
+        {products.map((item) => (
+          <ProductCard key={item.id} product={item} />
+        ))}
+      </div>
     </div>
   );
 }

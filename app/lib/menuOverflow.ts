@@ -1,13 +1,40 @@
 import type { MenuItem } from '@salla.sa/twilight-theme-engine/types';
 
-/**
- * Marks the synthetic "More" item. `<salla-menu>` spreads an item's `attrs` onto
- * its `<li>`, so this is how the stylesheet finds it (`[data-more-menu]`).
- */
+/** Marks the "More" item's `<li>`, so the stylesheet can find it (`[data-more-menu]`). */
 export const MORE_MENU_ATTR = 'data-more-menu';
 
-/** The synthetic item's id; no real menu item uses a string id like it. */
+/** The synthetic "More" item's id; no real menu item uses a string id like it. */
 export const MORE_MENU_ID = 'more-menu';
+
+/**
+ * Drop items with no title (the API returns e.g. the `brands` link as
+ * `title: null`), recursively, so menus only ever see renderable rows.
+ */
+export const pruneUntitled = (items: MenuItem[]): MenuItem[] =>
+  items
+    .filter((item) => item.title != null && item.title !== '')
+    .map((item) =>
+      item.children?.length ? { ...item, children: pruneUntitled(item.children) } : item
+    );
+
+/**
+ * The featured products a menu item carries, which make its panel a mega panel.
+ *
+ * The menus API sends them as `products`, not declared on the engine's
+ * `MenuItem`: a list of ids, or the same as a comma-separated string. Anything
+ * that isn't a positive id is dropped.
+ */
+export function menuProductIds(item: MenuItem): number[] {
+  const raw = (item as MenuItem & { products?: unknown }).products;
+  const list = Array.isArray(raw)
+    ? raw
+    : typeof raw === 'string'
+      ? raw.replace(/[[\]\s]/g, '').split(',')
+      : typeof raw === 'number'
+        ? [raw]
+        : [];
+  return list.map(Number).filter((id) => Number.isInteger(id) && id > 0);
+}
 
 /**
  * How many root items fit on one line.
@@ -36,46 +63,12 @@ export function fitCount(
 
 /**
  * The first `fit` items, then one "More" item holding the rest as its children,
- * which `<salla-menu>` renders as a dropdown like any parent. Unchanged when
- * everything fits.
+ * which renders as a dropdown like any parent. Unchanged when everything fits.
  */
 export function splitMenu(items: MenuItem[], fit: number, moreTitle: string): MenuItem[] {
   if (fit >= items.length) return items;
   return [
     ...items.slice(0, fit),
-    {
-      id: MORE_MENU_ID,
-      title: moreTitle,
-      url: '#',
-      attrs: `${MORE_MENU_ATTR}="true"`,
-      link_attrs: 'aria-haspopup="true"',
-      children: items.slice(fit),
-    },
+    { id: MORE_MENU_ID, title: moreTitle, url: '#', children: items.slice(fit) },
   ];
-}
-
-/** Whether an attribute string is one `<salla-menu>` can parse: `key="value"` pairs. */
-const isAttrList = (value: unknown): value is string =>
-  typeof value === 'string' &&
-  value.trim() !== '' &&
-  value
-    .trim()
-    .split(' ')
-    .every((pair) => pair.includes('='));
-
-/**
- * The items with `attrs` / `link_attrs` that `<salla-menu>` can read.
- *
- * Handed a menu as JSON, it splits each string on spaces and every piece on
- * `=`, so a missing or empty one throws while it renders and the whole menu
- * disappears. The API sends both today; this keeps one odd item from costing
- * the store its menu.
- */
-export function withSafeAttrs(items: MenuItem[]): MenuItem[] {
-  return items.map((item) => ({
-    ...item,
-    attrs: isAttrList(item.attrs) ? item.attrs : `data-menu-id="${item.id}"`,
-    link_attrs: isAttrList(item.link_attrs) ? item.link_attrs : `data-menu-id="${item.id}"`,
-    ...(item.children?.length ? { children: withSafeAttrs(item.children) } : {}),
-  }));
 }

@@ -1,19 +1,17 @@
 import { describe, it, expect } from 'vitest';
 import type { MenuItem } from '@salla.sa/twilight-theme-engine/types';
 import {
-  MORE_MENU_ATTR,
   MORE_MENU_ID,
   fitCount,
+  menuProductIds,
+  pruneUntitled,
   splitMenu,
-  withSafeAttrs,
 } from '../../app/lib/menuOverflow';
 
-const item = (id: number, extra: Partial<MenuItem> = {}): MenuItem => ({
+const item = (id: number, extra: Partial<MenuItem> & { products?: unknown } = {}): MenuItem => ({
   id,
   title: `Item ${id}`,
   url: `/item-${id}`,
-  attrs: `id="item-${id}"`,
-  link_attrs: 'target="_self"',
   ...extra,
 });
 
@@ -42,31 +40,31 @@ describe('splitMenu', () => {
   it('moves the items that do not fit under a last "More" item, in order', () => {
     const shown = splitMenu(items, 2, 'More');
     expect(shown.map((entry) => entry.id)).toEqual([1, 2, MORE_MENU_ID]);
-    const more = shown[2];
-    expect(more.title).toBe('More');
-    expect(more.attrs).toBe(`${MORE_MENU_ATTR}="true"`);
-    expect(more.children?.map((entry) => entry.id)).toEqual([3, 4]);
+    expect(shown[2].title).toBe('More');
+    expect(shown[2].children?.map((entry) => entry.id)).toEqual([3, 4]);
   });
 });
 
-describe('withSafeAttrs', () => {
-  it('keeps attribute strings <salla-menu> can parse', () => {
-    expect(withSafeAttrs([item(1)])[0]).toMatchObject({
-      attrs: 'id="item-1"',
-      link_attrs: 'target="_self"',
-    });
+describe('pruneUntitled', () => {
+  it('drops items with no title, children included', () => {
+    const pruned = pruneUntitled([
+      item(1, { children: [item(11), item(12, { title: '' })] }),
+      item(2, { title: null as unknown as string }),
+    ]);
+    expect(pruned.map((entry) => entry.id)).toEqual([1]);
+    expect(pruned[0].children?.map((entry) => entry.id)).toEqual([11]);
+  });
+});
+
+describe('menuProductIds', () => {
+  it('reads a list of ids, or the same as a string', () => {
+    expect(menuProductIds(item(1, { products: [5, '6'] }))).toEqual([5, 6]);
+    expect(menuProductIds(item(1, { products: '7, 8' }))).toEqual([7, 8]);
+    expect(menuProductIds(item(1, { products: '[9,10]' }))).toEqual([9, 10]);
   });
 
-  it('replaces missing, empty or unparseable ones, children included', () => {
-    const [fixed] = withSafeAttrs([
-      item(1, {
-        attrs: '',
-        link_attrs: undefined,
-        children: [item(2, { attrs: 'class="a b"' })],
-      }),
-    ]);
-    expect(fixed.attrs).toBe('data-menu-id="1"');
-    expect(fixed.link_attrs).toBe('data-menu-id="1"');
-    expect(fixed.children?.[0].attrs).toBe('data-menu-id="2"');
+  it('has none when the item carries no featured products', () => {
+    expect(menuProductIds(item(1))).toEqual([]);
+    expect(menuProductIds(item(1, { products: ['', 'x', 0] }))).toEqual([]);
   });
 });
