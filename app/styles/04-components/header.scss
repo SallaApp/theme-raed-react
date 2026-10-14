@@ -872,11 +872,28 @@ body.topnav-is-dark .site-header--lite .site-header__bar {
       @apply rounded-t-none;
     }
 
+    /* A long first-level list is laid out in columns (`--menu-columns`, set by
+       HeaderMainMenu.tsx: up to 4 columns of about 8 rows), so it grows
+       sideways rather than past the bottom of the screen, where a fixed header
+       leaves no way to scroll to it. Not a scrolling box: that would clip the
+       panels flying out of its rows. */
+    .s-menu-root-level > .s-menu-sub-menu > ul.s-menu-columns {
+      display: grid;
+      grid-template-columns: repeat(var(--menu-columns), minmax(12rem, 1fr));
+      column-gap: 0.25rem;
+    }
+
     /* nested panel flies out to the inline-end side, level with its row */
     .s-menu-sub-menu .s-menu-sub-menu {
       top: -0.375rem;
       inset-inline: 100% auto;
       transform: translateY(0);
+    }
+
+    /* No room past the row's end edge (HeaderMainMenu.tsx measures on hover):
+       it opens toward the row's start instead. */
+    .s-menu-opens-start > .s-menu-sub-menu {
+      inset-inline: auto 100%;
     }
 
     .s-menu-has-children:hover > .s-menu-sub-menu,

@@ -72,3 +72,17 @@ export function splitMenu(items: MenuItem[], fit: number, moreTitle: string): Me
     { id: MORE_MENU_ID, title: moreTitle, url: '#', children: items.slice(fit) },
   ];
 }
+
+/** Rows a first-level panel shows before it adds a column. */
+export const PANEL_ROWS = 8;
+/** The most columns a first-level panel's links take. */
+export const PANEL_MAX_COLUMNS = 4;
+
+/**
+ * How many columns a first-level panel's links take: one per {@link PANEL_ROWS}
+ * links, at most {@link PANEL_MAX_COLUMNS}, so a long list grows sideways
+ * rather than past the bottom of the screen.
+ */
+export function panelColumns(count: number): number {
+  return Math.min(PANEL_MAX_COLUMNS, Math.max(1, Math.ceil(count / PANEL_ROWS)));
+}

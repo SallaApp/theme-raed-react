@@ -4,6 +4,7 @@ import {
   MORE_MENU_ID,
   fitCount,
   menuProductIds,
+  panelColumns,
   pruneUntitled,
   splitMenu,
 } from '../../app/lib/menuOverflow';
@@ -66,5 +67,15 @@ describe('menuProductIds', () => {
   it('has none when the item carries no featured products', () => {
     expect(menuProductIds(item(1))).toEqual([]);
     expect(menuProductIds(item(1, { products: ['', 'x', 0] }))).toEqual([]);
+  });
+});
+
+describe('panelColumns', () => {
+  it('adds a column per 8 links, up to 4', () => {
+    expect(panelColumns(3)).toBe(1);
+    expect(panelColumns(8)).toBe(1);
+    expect(panelColumns(9)).toBe(2);
+    expect(panelColumns(17)).toBe(3);
+    expect(panelColumns(60)).toBe(4);
   });
 });

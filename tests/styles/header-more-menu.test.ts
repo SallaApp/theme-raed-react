@@ -150,4 +150,19 @@ describe('default layout dropdown panels', () => {
     ].join(' ');
     expect(declFor(css, selector, 'grid-template-columns')).toBe('repeat(4, minmax(0, 1fr))');
   });
+
+  // A fixed header leaves no way to scroll to a panel taller than the screen,
+  // and a scrolling panel would clip its nested panels: a long list gets columns.
+  it('lays a long first-level list out in columns, without scrolling', async () => {
+    const css = await compileHeader();
+    const [list] = rulesMatching(css, new RegExp(`${rootItem} > ${sub} > ul\\.s-menu-columns$`));
+    expect(decl(list, 'display')).toBe('grid');
+    expect(decl(list, 'grid-template-columns')).toContain('var(--menu-columns)');
+  });
+
+  it('can open a nested panel toward the row start, when it would not fit', async () => {
+    const css = await compileHeader();
+    const [flipped] = rulesMatching(css, new RegExp(`\\.s-menu-opens-start > ${sub}$`));
+    expect(decl(flipped, 'inset-inline')).toBe('auto 100%');
+  });
 });

@@ -1,4 +1,12 @@
-import { useEffect, useLayoutEffect, useMemo, useRef, useState, type MouseEvent } from 'react';
+import {
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+  type CSSProperties,
+  type MouseEvent,
+} from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from '@salla.sa/twilight-theme-engine/common';
 import { useTranslation } from '@salla.sa/twilight-theme-engine/i18n';
@@ -12,6 +20,7 @@ import {
   MORE_MENU_ID,
   fitCount,
   menuProductIds,
+  panelColumns,
   pruneUntitled,
   splitMenu,
 } from '../../lib/menuOverflow';
@@ -97,20 +106,24 @@ function OneLineMenu({ items, moreTitle }: { items: MenuItem[]; moreTitle: strin
     [current, items, fit, moreTitle]
   );
 
-  // Measure the full menu, before it paints.
+  // Measure the full menu, before it paints. Below `lg` the row is hidden and
+  // everything measures 0, so it waits until the row has a width (the resize
+  // observer below updates `available`, which runs this again).
   useIsomorphicLayoutEffect(() => {
     const root = rootRef.current;
     const list = listRef.current;
     if (current || !root || !list || !items.length) return;
+    const width = root.clientWidth;
+    setAvailable(width);
+    if (width === 0) return;
     const lis = list.querySelectorAll<HTMLElement>(':scope > .s-menu-root-level');
-    setAvailable(root.clientWidth);
     setMeasured({
       key,
       widths: Array.from(lis, (li) => li.getBoundingClientRect().width),
       more: probeRef.current?.getBoundingClientRect().width ?? 0,
       gap: parseFloat(getComputedStyle(list).columnGap) || 0,
     });
-  }, [current, items, key]);
+  }, [current, items, key, available]);
 
   // Track the width the row has to fill.
   useEffect(() => {
@@ -174,11 +187,26 @@ function MenuEntry({ item, root }: { item: MenuItem; root: boolean }) {
   const isMega = productIds.length > 0;
   const isMore = item.id === MORE_MENU_ID;
   const [opened, setOpened] = useState(false);
+  const [opensStart, setOpensStart] = useState(false);
+  const panelRef = useRef<HTMLDivElement>(null);
+  // A long first-level list grows sideways rather than past the bottom of the
+  // screen, where a fixed header leaves no way to scroll to it.
+  const columns = root && !isMega ? panelColumns(children.length) : 1;
+
+  const onOpen = (event: { currentTarget: HTMLLIElement }) => {
+    if (isMega) setOpened(true);
+    // A nested panel opens past its row's end edge (left in Arabic) when it
+    // fits there, and toward the row's start when it would run off screen.
+    if (!root && panelRef.current) {
+      setOpensStart(!fitsTowardEnd(event.currentTarget, panelRef.current));
+    }
+  };
 
   const className = [
     root ? 's-menu-root-level' : 's-menu-non-root-level',
     hasChildren && 's-menu-has-children',
     isMega && 's-menu-mega-menu',
+    opensStart && 's-menu-opens-start',
   ]
     .filter(Boolean)
     .join(' ');
@@ -187,7 +215,7 @@ function MenuEntry({ item, root }: { item: MenuItem; root: boolean }) {
     <li
       className={className}
       {...(isMore ? { [MORE_MENU_ATTR]: 'true' } : {})}
-      {...(isMega ? { onMouseEnter: () => setOpened(true), onFocus: () => setOpened(true) } : {})}
+      {...(hasChildren ? { onMouseEnter: onOpen, onFocus: onOpen } : {})}
     >
       {isMore ? (
         <a href="#" role="button" aria-haspopup="true" onClick={preventJump}>
@@ -204,8 +232,15 @@ function MenuEntry({ item, root }: { item: MenuItem; root: boolean }) {
         </Link>
       )}
       {hasChildren && (
-        <div className="s-menu-sub-menu">
-          <ul>
+        <div ref={panelRef} className="s-menu-sub-menu">
+          <ul
+            {...(columns > 1
+              ? {
+                  className: 's-menu-columns',
+                  style: { '--menu-columns': columns } as CSSProperties,
+                }
+              : {})}
+          >
             <MenuItems items={children} root={false} />
           </ul>
           {isMega && opened && <MegaProducts ids={productIds} />}
@@ -213,6 +248,17 @@ function MenuEntry({ item, root }: { item: MenuItem; root: boolean }) {
       )}
     </li>
   );
+}
+
+/**
+ * Whether a nested panel fits past its row's end edge: to the left of the row
+ * in a right-to-left page, to the right in a left-to-right one.
+ */
+function fitsTowardEnd(row: HTMLElement, panel: HTMLElement): boolean {
+  const rect = row.getBoundingClientRect();
+  const rtl = getComputedStyle(row).direction === 'rtl';
+  const room = rtl ? rect.left : window.innerWidth - rect.right;
+  return room >= panel.offsetWidth;
 }
 
 /** A mega panel's featured products, as the theme's product cards in its product grid. */

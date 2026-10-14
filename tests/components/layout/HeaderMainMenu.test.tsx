@@ -19,6 +19,8 @@ const state = {
   productParams: [] as unknown[],
   /** The row's width, as `clientWidth` reports it. */
   available: 1000,
+  /** Where a nested row's end edge sits (its `right`, in a left-to-right page). */
+  rowRight: 300,
 };
 
 vi.mock('@tanstack/react-query', () => ({
@@ -67,12 +69,23 @@ beforeEach(() => {
   state.products = [];
   state.productParams = [];
   state.available = 1000;
+  state.rowRight = 300;
   // Every root item (the "More" probe included) is 100px wide.
   vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockImplementation(function (
     this: HTMLElement
   ) {
+    if (this.classList.contains('s-menu-non-root-level')) {
+      const right = state.rowRight;
+      return { width: 200, height: 40, top: 0, left: right - 200, right, bottom: 40 } as DOMRect;
+    }
     const width = this.classList.contains('s-menu-root-level') ? 100 : 0;
     return { width, height: 40, top: 0, left: 0, right: width, bottom: 40, x: 0, y: 0 } as DOMRect;
+  });
+  // A nested panel is 224px wide; the window (jsdom) is 1024px.
+  vi.spyOn(HTMLElement.prototype, 'offsetWidth', 'get').mockImplementation(function (
+    this: HTMLElement
+  ) {
+    return this.classList.contains('s-menu-sub-menu') ? 224 : 0;
   });
   vi.spyOn(HTMLElement.prototype, 'clientWidth', 'get').mockImplementation(() => state.available);
   vi.stubGlobal(
@@ -124,6 +137,67 @@ describe('HeaderMainMenu', () => {
     state.available = 1000;
     act(() => resize());
     expect(rootTitles(container)).toEqual(['Item 1', 'Item 2', 'Item 3', 'Item 4', 'Item 5']);
+  });
+
+  // Below lg the row is hidden and measures 0: it waits, and splits once the
+  // window grows and the row gets a width.
+  it('splits a menu that first rendered hidden, once the row has a width', () => {
+    state.available = 0;
+    const { container } = render(<HeaderMainMenu />);
+    expect(container.querySelector('.site-header__oneline-menu.is-measuring')).toBeTruthy();
+
+    state.available = 350;
+    act(() => resize());
+    expect(rootTitles(container)).toEqual(['Item 1', 'Item 2', 'More']);
+  });
+
+  it('lays a long first-level list out in columns', () => {
+    state.items = Array.from({ length: 20 }, (_, i) => ({
+      id: i + 1,
+      title: `Item ${i + 1}`,
+      url: `/item-${i + 1}`,
+    }));
+    state.available = 350;
+    const { container } = render(<HeaderMainMenu />);
+    const list = container.querySelector('[data-more-menu] > .s-menu-sub-menu > ul')!;
+    expect(list.classList.contains('s-menu-columns')).toBe(true);
+    expect((list as HTMLElement).style.getPropertyValue('--menu-columns')).toBe('3');
+  });
+
+  describe('nested panel direction', () => {
+    beforeEach(() => {
+      state.items = [
+        {
+          id: 1,
+          title: 'Home',
+          url: '/home',
+          children: [
+            {
+              id: 2,
+              title: 'Rooms',
+              url: '/rooms',
+              children: [{ id: 3, title: 'Kitchen', url: '/kitchen' }],
+            },
+          ],
+        },
+      ];
+    });
+
+    it('opens past its row when there is room there', () => {
+      state.rowRight = 300; // 724px to the window's edge
+      const { container } = render(<HeaderMainMenu />);
+      const row = container.querySelector('.s-menu-non-root-level.s-menu-has-children')!;
+      fireEvent.mouseEnter(row);
+      expect(row.classList.contains('s-menu-opens-start')).toBe(false);
+    });
+
+    it('opens toward the row start when it would run off screen', () => {
+      state.rowRight = 900; // 124px left, the panel is 224px
+      const { container } = render(<HeaderMainMenu />);
+      const row = container.querySelector('.s-menu-non-root-level.s-menu-has-children')!;
+      fireEvent.mouseEnter(row);
+      expect(row.classList.contains('s-menu-opens-start')).toBe(true);
+    });
   });
 
   it('keeps the "More" link from navigating', () => {
