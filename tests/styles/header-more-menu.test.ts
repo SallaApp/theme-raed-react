@@ -25,6 +25,18 @@ function ruleFor(root: Root, selector: string): Rule | undefined {
   return found;
 }
 
+/** `prop` as set by any rule for exactly `selector` (a selector can have several). */
+function declFor(root: Root, selector: string, prop: string): string | undefined {
+  let value: string | undefined;
+  root.walkRules((rule) => {
+    if (!rule.selectors.includes(selector)) return;
+    rule.walkDecls(prop, (d) => {
+      value = d.value;
+    });
+  });
+  return value;
+}
+
 /** Every rule with a selector matching `pattern`. */
 function rulesMatching(root: Root, pattern: RegExp): Rule[] {
   const rules: Rule[] = [];
@@ -88,5 +100,24 @@ describe('default layout dropdown panels', () => {
     const [panel] = rulesMatching(css, new RegExp(`__mainmenu ${rootItem}${mega} > ${sub}$`));
     expect(decl(panel, 'inset-inline')).toBe('0');
     expect(decl(panel, 'width')).toBe('auto');
+  });
+
+  // A gap between an item and its panel is space the pointer crosses with
+  // neither under it: the panel closes before the pointer reaches it.
+  it('opens a panel flush with its item, which spans the header row', async () => {
+    const css = await compileHeader();
+    const [panel] = rulesMatching(css, new RegExp(`__mainmenu ${sub}$`));
+    expect(decl(panel, 'top')).toBe('100%');
+
+    expect(declFor(css, '.site-header--default .site-header__mainmenu', 'align-self')).toBe(
+      'stretch'
+    );
+    for (const selector of [
+      '.site-header--default .site-header__mainmenu .main-menu',
+      '.site-header--default .site-header__mainmenu salla-menu',
+      '.site-header--default .site-header__mainmenu .site-header__oneline-menu',
+    ]) {
+      expect(declFor(css, selector, 'align-items'), selector).toBe('stretch');
+    }
   });
 });

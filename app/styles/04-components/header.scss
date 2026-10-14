@@ -816,12 +816,17 @@ body.topnav-is-dark .site-header--lite .site-header__bar {
      DOM: `nav.mobile-menu > ul.main-menu > li.s-menu-desktop-item
           (.s-menu-root-level | .s-menu-non-root-level, +.s-menu-has-children,
            +.s-menu-mega-menu) > a + div.s-menu-sub-menu > ul > li…`. */
+  /* Every box from the row down to a top-level item stretches to the row's
+     full height, so the item spans it top to bottom and its panel opens right
+     at the row's bottom edge. With the item centred in the row instead, the
+     space under it belonged to neither item nor panel: moving down to the
+     panel left the item, and the panel closed before the pointer reached it. */
   .site-header--default .site-header__mainmenu {
-    @apply flex min-w-0 items-stretch;
+    @apply flex min-w-0 items-stretch self-stretch;
 
     salla-menu,
     .mobile-menu {
-      @apply flex w-full min-w-0 items-center justify-center;
+      @apply flex w-full min-w-0 items-stretch justify-center;
     }
 
     .mobile-menu,
@@ -831,7 +836,7 @@ body.topnav-is-dark .site-header--lite .site-header__bar {
     }
 
     .main-menu {
-      @apply flex flex-wrap items-center justify-center gap-x-0.5;
+      @apply flex flex-wrap items-stretch justify-center gap-x-0.5;
     }
 
     /* drawer-only bits the component also renders into this nav */
@@ -868,7 +873,9 @@ body.topnav-is-dark .site-header--lite .site-header__bar {
       /* No max-height / overflow: a scrolling panel clips the panel that flies
          out of one of its rows, so a sub-sub menu would never show. */
       @apply invisible absolute z-40 max-w-[90vw] rounded border border-gray-100 bg-white p-1.5 opacity-0 shadow-xl;
-      top: calc(100% + 0.25rem);
+      /* Flush with the item: any gap here is space the pointer crosses with
+         neither the item nor the panel under it, which closes the panel. */
+      top: 100%;
       inset-inline-start: 0;
       min-width: 14rem;
       transform: translateY(4px);
@@ -911,16 +918,6 @@ body.topnav-is-dark .site-header--lite .site-header__bar {
       width: auto;
       min-width: 0;
       max-width: none;
-
-      /* Bridges the gap between the item and the panel, so the pointer can
-         travel down to it without the item losing hover. Only there while the
-         panel is open (it shares the panel's visibility). */
-      &::before {
-        content: '';
-        @apply absolute inset-x-0;
-        bottom: 100%;
-        height: 1.75rem;
-      }
     }
 
     .s-menu-products-wrapper {
@@ -932,7 +929,7 @@ body.topnav-is-dark .site-header--lite .site-header__bar {
        being measured — clipping it after would cut the dropdown panels off. */
     .site-header__oneline-menu {
       /* Not positioned: a mega panel is placed against the header row. */
-      @apply flex w-full min-w-0 justify-center;
+      @apply flex w-full min-w-0 items-stretch justify-center;
 
       .main-menu {
         flex-wrap: nowrap;
