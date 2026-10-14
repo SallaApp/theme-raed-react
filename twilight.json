@@ -374,6 +374,17 @@
           "value": "<div >هذا العنصر غير مناسب لعرض البنرات، يمكنك استخدام عنصر <strong>صور متحركة</strong> بدلاً منه لتظهر صورة البنر بشكل كامل</div>"
         },
         {
+          "type": "boolean",
+          "icon": "sicon-play",
+          "label": "التنقل التلقائي بين الصور",
+          "description": "ينتقل المعرض إلى الصورة التالية تلقائياً كل بضع ثوانٍ. عند إيقافه يتنقل الزائر بالأسهم أو بالسحب.",
+          "id": "auto_play",
+          "format": "switch",
+          "required": false,
+          "value": true,
+          "selected": true
+        },
+        {
           "id": "slides",
           "type": "collection",
           "format": "collection",
@@ -407,6 +418,17 @@
               "required": true,
               "placeholder": null,
               "description": "* المقاس المناسب للصورة هو 900×600 بكسل"
+            },
+            {
+              "type": "string",
+              "icon": "sicon-video",
+              "label": "فيديو الخلفية (اختياري)",
+              "id": "slides.video",
+              "value": null,
+              "format": "url",
+              "required": false,
+              "placeholder": "https://www.youtube.com/watch?v=...",
+              "description": "رابط يوتيوب أو رابط ملف فيديو (MP4 أو WebM) يُعرض بدلاً من الصورة كخلفية متحركة بدون صوت. تبقى الصورة ظاهرة حتى يبدأ الفيديو، وتُعرض بدلاً منه للزوار الذين فعّلوا تقليل الحركة."
             },
             {
               "type": "string",
