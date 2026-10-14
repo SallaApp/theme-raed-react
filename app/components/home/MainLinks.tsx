@@ -87,8 +87,10 @@ export const MainLinks = memo(function MainLinks({ data }: MainLinksProps) {
                   className="swiper-slide slide--one-eighth"
                 >
                   <Link to={itemUrl} className="slide--cat-entry">
+                    {/* The item's image when it has one, filling the circle; its icon
+                        otherwise. */}
                     <span className="slide--cat-entry__media">
-                      {showCats && itemImage ? (
+                      {itemImage ? (
                         <img
                           src={itemImage}
                           width="64"

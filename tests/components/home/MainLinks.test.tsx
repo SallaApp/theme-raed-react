@@ -56,6 +56,27 @@ describe('MainLinks', () => {
     expect(icon?.className).toBe('sicon-cat1');
   });
 
+  it("shows a link's image instead of its icon", () => {
+    const { container } = render(
+      <MainLinks
+        data={{
+          links: [
+            { url: '/perfume', icon: 'sicon-cat1', image: 'perfume.png', title: 'Perfume' },
+            { url: '/gifts', icon: 'sicon-gift', title: 'Gifts' },
+          ],
+        }}
+      />
+    );
+    const [withImage, withIcon] = Array.from(container.querySelectorAll('.slide--cat-entry'));
+    const img = withImage.querySelector('img');
+    expect(img?.getAttribute('src')).toBe('perfume.png');
+    expect(img?.getAttribute('alt')).toBe('Perfume');
+    expect(withImage.querySelector('i')).toBeNull();
+    // No image: the icon, as before.
+    expect(withIcon.querySelector('img')).toBeNull();
+    expect(withIcon.querySelector('i')?.className).toBe('sicon-gift');
+  });
+
   it('renders links with title', () => {
     const { container } = render(<MainLinks data={{ links: mockLinks }} />);
     const title = container.querySelector('.slide--cat-entry h2');
