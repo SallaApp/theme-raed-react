@@ -57,11 +57,9 @@ vi.mock('@salla.sa/twilight-components-react', () => ({
   },
 }));
 
-const section = (over: Record<string, unknown> = {}) => ({
-  products: [
-    { id: 1, name: 'stub-1', price: 10 },
-    { id: 2, name: 'stub-2', price: 20 },
-  ],
+const tab = (over: Record<string, unknown> = {}) => ({
+  name: 'Tab',
+  type: 'latest_products',
   ...over,
 });
 
@@ -71,23 +69,83 @@ describe('FeaturedProducts', () => {
     expect(container.firstChild).toBeNull();
   });
 
-  it('re-fetches each tab in full by id (not the out-of-stock stubs)', () => {
+  it.each([
+    ['latest_products', {}, { source: 'latest' }],
+    ['most_sales', {}, { source: 'sales' }],
+    ['top_rated_products', {}, { source: 'top-rated' }],
+    ['category', { category: [{ value: '12' }] }, { source: 'categories', sourceValue: [12] }],
+    ['tag', { tag: 5 }, { source: 'tags', sourceValue: [5] }],
+    [
+      'chosen_products',
+      { chosen_products: { source: 'selected', source_value: [1, 2] } },
+      { source: 'selected', sourceValue: [1, 2] },
+    ],
+  ])('loads a %s tab from its source', (type, extra, expected) => {
     listMock.mockClear();
-    const { getAllByTestId, queryByText } = render(
-      <FeaturedProducts data={{ items: [section({ label: 'All' })] }} />
+    const { getAllByTestId } = render(
+      <FeaturedProducts data={{ items: [tab({ type, ...extra })] }} />
     );
+    expect(listMock).toHaveBeenCalledWith(expect.objectContaining(expected));
+    expect(getAllByTestId('product-card')).toHaveLength(2);
+  });
+
+  it('still renders the legacy payload (label, stub products, nested main_product)', () => {
+    listMock.mockClear();
+    const { getAllByTestId, getAllByText, container } = render(
+      <FeaturedProducts
+        data={{
+          title: 'Legacy heading',
+          items: [
+            { label: 'Old A', products: [{ id: 1 }, { id: 2 }] },
+            { label: 'Old B', products: [{ id: 3 }] },
+          ],
+        }}
+      />
+    );
+    expect(getAllByText('Old A').length).toBeGreaterThan(0);
+    expect(container.querySelector('h2.s-block__title')?.textContent).toBe('Legacy heading');
     expect(listMock).toHaveBeenCalledWith(
       expect.objectContaining({ source: 'selected', sourceValue: [1, 2] })
     );
-    // cards come from the fetched list, not the raw stubs
-    expect(getAllByTestId('product-card')).toHaveLength(2);
-    expect(queryByText('Full P1')).toBeTruthy();
-    expect(queryByText('stub-1')).toBeNull();
+    expect(getAllByTestId('product-card').length).toBeGreaterThan(0);
+  });
+
+  it('renders a legacy nested main_product as the special product', () => {
+    const { getAllByTestId, container } = render(
+      <FeaturedProducts
+        data={{
+          main_product: { title: 'Old deal', product: { id: 9, name: 'Hero' } },
+          items: [{ label: 'A', products: [{ id: 1 }] }],
+        }}
+      />
+    );
+    expect(
+      getAllByTestId('product-card').some((el) => el.getAttribute('data-layout') === 'special')
+    ).toBe(true);
+    expect(container.querySelector('h2.s-block__title')?.textContent).toBe('Old deal');
+  });
+
+  it('keeps the legacy main_product title even without a product', () => {
+    const { container } = render(
+      <FeaturedProducts
+        data={{ title: 'Fallback', main_product: { title: 'Only title' }, items: [tab()] }}
+      />
+    );
+    expect(container.querySelector('h2.s-block__title')?.textContent).toBe('Only title');
+  });
+
+  it('skips a tab whose source needs a value that is missing', () => {
+    listMock.mockClear();
+    const { container } = render(
+      <FeaturedProducts data={{ items: [tab({ type: 'category', category: null })] }} />
+    );
+    expect(listMock).not.toHaveBeenCalled();
+    expect(container.querySelector('[data-testid="product-card"]')).toBeNull();
   });
 
   it('marks the first tab panel active so it is not left display:none', () => {
     const { container } = render(
-      <FeaturedProducts data={{ items: [section({ label: 'A' }), section({ label: 'B' })] }} />
+      <FeaturedProducts data={{ items: [tab({ name: 'A' }), tab({ name: 'B' })] }} />
     );
     const panels = container.querySelectorAll('.tabs-wrapper .tabs__item');
     expect(panels).toHaveLength(2);
@@ -97,7 +155,7 @@ describe('FeaturedProducts', () => {
 
   it('switches the active panel when another tab is clicked', () => {
     const { container, getAllByText } = render(
-      <FeaturedProducts data={{ items: [section({ label: 'A' }), section({ label: 'B' })] }} />
+      <FeaturedProducts data={{ items: [tab({ name: 'A' }), tab({ name: 'B' })] }} />
     );
     fireEvent.click(getAllByText('B')[0]);
     const panels = container.querySelectorAll('.tabs-wrapper .tabs__item');
@@ -105,41 +163,28 @@ describe('FeaturedProducts', () => {
     expect(panels[1].classList.contains('is-active')).toBe(true);
   });
 
-  it('labels tabs from the API `label` field', () => {
+  it('falls back to a numbered label when a tab has no name', () => {
     const { getAllByText } = render(
-      <FeaturedProducts
-        data={{ items: [section({ label: 'أحدث المنتجات' }), section({ label: 'الأكثر مبيعاً' })] }}
-      />
+      <FeaturedProducts data={{ items: [tab({ name: '' }), tab({ name: undefined })] }} />
     );
-    expect(getAllByText('أحدث المنتجات').length).toBeGreaterThan(0);
-    expect(getAllByText('الأكثر مبيعاً').length).toBeGreaterThan(0);
-  });
-
-  it('falls back to a visible label when a section has no label/title/name', () => {
-    const { getAllByText, container } = render(
-      <FeaturedProducts data={{ items: [section({ type: 'latest_products' }), section()] }} />
-    );
-    expect(getAllByText('Latest Products').length).toBeGreaterThan(0);
+    expect(getAllByText('Products 1').length).toBeGreaterThan(0);
     expect(getAllByText('Products 2').length).toBeGreaterThan(0);
-    container.querySelectorAll('.tab-trigger .s-button-text').forEach((el) => {
-      expect(el.textContent?.trim()).not.toBe('');
-    });
   });
 
   it('hides the tab bar for a single section', () => {
-    const { container } = render(
-      <FeaturedProducts data={{ items: [section({ label: 'Only' })] }} />
-    );
+    const { container } = render(<FeaturedProducts data={{ items: [tab()] }} />);
     expect(container.querySelector('.tabs')).toBeNull();
     expect(container.querySelector('.tabs-wrapper .tabs__item.is-active')).toBeTruthy();
   });
 
-  it('renders the special product with the special layout', () => {
+  it('renders the main product and title for special_offer_with_products', () => {
     const { getAllByTestId, container } = render(
       <FeaturedProducts
         data={{
-          main_product: { title: 'Deal', product: { id: 9, name: 'Hero' } },
-          items: [section()],
+          show_method: [{ value: 'special_offer_with_products' }],
+          main_product_title: 'Deal',
+          main_product: { id: 9, name: 'Hero' },
+          items: [tab()],
         }}
       />
     );
@@ -148,6 +193,21 @@ describe('FeaturedProducts', () => {
     );
     expect(special?.textContent).toBe('Hero');
     expect(container.querySelector('h2.s-block__title')?.textContent).toBe('Deal');
+  });
+
+  it('fetches an unhydrated special product by id for products_with_special_product', () => {
+    listMock.mockClear();
+    render(
+      <FeaturedProducts
+        data={{
+          show_method: 'products_with_special_product',
+          items: [tab({ special_product: { source: 'selected', source_value: [7] } })],
+        }}
+      />
+    );
+    expect(listMock).toHaveBeenCalledWith(
+      expect.objectContaining({ source: 'selected', sourceValue: [7], perPage: 1 })
+    );
   });
 });
 

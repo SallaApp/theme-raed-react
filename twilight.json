@@ -12,7 +12,6 @@
     "color",
     "breadcrumb",
     "unite-cards-height",
-    "component-featured-products",
     "component-fixed-banner",
     "component-fixed-products",
     "component-products-slider",
@@ -741,6 +740,315 @@
               "id": "show_cats",
               "operation": "=",
               "value": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "6a73e723-1357-43a3-ac70-de94a15280ef",
+      "title": {
+        "en": "Featured products",
+        "ar": "منتجات مميزة"
+      },
+      "icon": "sicon-list-play",
+      "path": "home.featured-products",
+      "image": "https://cdn.salla.network/images/themes/legacy-blocks/products_without_special_product.png",
+      "fields": [
+        {
+          "type": "static",
+          "format": "description",
+          "id": "preview-products_with_special_product",
+          "value": "<div ><img class='w-full' src='https://cdn.salla.network/images/themes/legacy-blocks/products_with_special_product.png'></div>",
+          "conditions": [
+            {
+              "id": "show_method",
+              "operation": "=",
+              "value": "products_with_special_product"
+            }
+          ]
+        },
+        {
+          "type": "static",
+          "format": "description",
+          "id": "preview-special_offer_with_products",
+          "value": "<div ><img class='w-full' src='https://cdn.salla.network/images/themes/legacy-blocks/special_offer_with_products.png'></div>",
+          "conditions": [
+            {
+              "id": "show_method",
+              "operation": "=",
+              "value": "special_offer_with_products"
+            }
+          ]
+        },
+        {
+          "type": "static",
+          "format": "description",
+          "id": "preview-products_without_special_product",
+          "value": "<div ><img class='w-full' src='https://cdn.salla.network/images/themes/legacy-blocks/products_without_special_product.png'></div>",
+          "conditions": [
+            {
+              "id": "show_method",
+              "operation": "=",
+              "value": "products_without_special_product"
+            }
+          ]
+        },
+        {
+          "id": "show_method",
+          "icon": "sicon-settings",
+          "type": "items",
+          "label": "طريقة العرض",
+          "format": "dropdown-list",
+          "source": "Manual",
+          "options": [
+            {
+              "key": "special_offer_with_products",
+              "label": "عرض خاص + منتجات",
+              "value": "special_offer_with_products"
+            },
+            {
+              "key": "products_without_special_product",
+              "label": "منتجات بدون منتج مميز",
+              "value": "products_without_special_product"
+            },
+            {
+              "key": "products_with_special_product",
+              "label": "منتج مميز + منتجات",
+              "value": "products_with_special_product"
+            }
+          ],
+          "required": true,
+          "selected": [
+            {
+              "key": "products_without_special_product",
+              "label": "منتجات بدون منتج مميز",
+              "value": "products_without_special_product"
+            }
+          ],
+          "description": "",
+          "multichoice": false
+        },
+        {
+          "id": "static-desc",
+          "type": "static",
+          "format": "description",
+          "value": "\nيفضل إضافة مجموعتان (تبويبان) من المنتجات لطريقة العرض هذه\n",
+          "conditions": [
+            {
+              "id": "show_method",
+              "operation": "=",
+              "value": "products_with_special_product"
+            }
+          ]
+        },
+        {
+          "id": "main_product_title",
+          "icon": "sicon-type-square",
+          "type": "string",
+          "label": "المنتج الرئيسي",
+          "value": "",
+          "format": "text",
+          "required": true,
+          "maxLength": 100,
+          "minLength": 1,
+          "conditions": [
+            {
+              "id": "show_method",
+              "operation": "=",
+              "value": "special_offer_with_products"
+            }
+          ],
+          "description": "",
+          "placeholder": "العنوان الرئيسي",
+          "multilanguage": true
+        },
+        {
+          "id": "main_product",
+          "icon": "sicon-keyboard_arrow_down",
+          "type": "items",
+          "label": "منتج عليه عرض تخفيض",
+          "format": "dropdown-list",
+          "source": "products",
+          "options": [],
+          "selected": [],
+          "conditions": [
+            {
+              "id": "show_method",
+              "operation": "=",
+              "value": "special_offer_with_products"
+            }
+          ],
+          "searchable": true,
+          "description": "في حال إختيار منتج، سيتم عرضه بشكل بارز وبجواره بطاقات لأربعة منتجات"
+        },
+        {
+          "id": "items",
+          "type": "collection",
+          "format": "collection",
+          "label": "تبويبات المنتجات",
+          "required": true,
+          "minLength": 1,
+          "maxLength": 4,
+          "item_label": "تبويب ",
+          "description": "يمكن إضافة عدة منتجات على شكل مجموعات (تبويبات)، ويمكن للزائر التنقل بينها عن طريق النقر على اسماء التبويبات",
+          "value": [
+            {
+              "items.name": "أحدث المنتجات",
+              "items.type": "latest_products",
+              "items.category": "",
+              "items.chosen_products": null,
+              "items.special_product": null
+            }
+          ],
+          "fields": [
+            {
+              "id": "items.name",
+              "icon": "sicon-type-square",
+              "type": "string",
+              "label": "عنوان التبويب",
+              "value": "",
+              "format": "text",
+              "required": true,
+              "maxLength": 40,
+              "minLength": 1,
+              "description": "",
+              "placeholder": "عنوان التبويب",
+              "multilanguage": true
+            },
+            {
+              "id": "items.type",
+              "icon": "sicon-t-shirt",
+              "type": "items",
+              "label": "مجموعة منتجات من:",
+              "format": "dropdown-list",
+              "source": "Manual",
+              "options": [
+                {
+                  "key": "category",
+                  "label": "تصنيف",
+                  "value": "category"
+                },
+                {
+                  "key": "most_sales",
+                  "label": "الأكثر مبيعا",
+                  "value": "most_sales"
+                },
+                {
+                  "key": "latest_products",
+                  "label": "أحدث المنتجات",
+                  "value": "latest_products"
+                },
+                {
+                  "key": "chosen_products",
+                  "label": "منتجات مختارة",
+                  "value": "chosen_products"
+                },
+                {
+                  "key": "top_rated_products",
+                  "label": "الأعلى تقييما",
+                  "value": "top_rated_products"
+                },
+                {
+                  "key": "tag",
+                  "label": "منتجات مع وسم",
+                  "value": "tag"
+                }
+              ],
+              "required": true,
+              "selected": [
+                {
+                  "key": "latest_products",
+                  "label": "أحدث المنتجات",
+                  "value": "latest_products"
+                }
+              ],
+              "description": ""
+            },
+            {
+              "id": "items.chosen_products",
+              "icon": "sicon-keyboard_arrow_down",
+              "type": "items",
+              "label": "المنتجات المختارة",
+              "format": "dropdown-list",
+              "source": "products",
+              "options": [],
+              "selected": [],
+              "maxLength": 6,
+              "conditions": [
+                {
+                  "id": "items.type",
+                  "operation": "=",
+                  "value": "chosen_products",
+                  "value_index": ".",
+                  "collection_id": "items"
+                }
+              ],
+              "searchable": true,
+              "description": "",
+              "multichoice": true
+            },
+            {
+              "id": "items.category",
+              "icon": "sicon-keyboard_arrow_down",
+              "type": "items",
+              "label": "التصنيف",
+              "format": "dropdown-list",
+              "source": "categories",
+              "options": [],
+              "selected": [],
+              "conditions": [
+                {
+                  "id": "items.type",
+                  "operation": "=",
+                  "value": "category",
+                  "value_index": ".",
+                  "collection_id": "items"
+                }
+              ],
+              "searchable": true,
+              "description": ""
+            },
+            {
+              "id": "items.tag",
+              "icon": "sicon-tag",
+              "type": "items",
+              "label": "الوسم",
+              "format": "dropdown-list",
+              "source": "products_tags",
+              "options": [],
+              "required": true,
+              "selected": [],
+              "conditions": [
+                {
+                  "id": "items.type",
+                  "operation": "=",
+                  "value": "tag",
+                  "value_index": ".",
+                  "collection_id": "items"
+                }
+              ],
+              "searchable": true,
+              "description": "اختر وسم المنتجات التي تريد عرضها"
+            },
+            {
+              "id": "items.special_product",
+              "icon": "sicon-keyboard_arrow_down",
+              "type": "items",
+              "label": "منتج مميز",
+              "format": "dropdown-list",
+              "source": "products",
+              "options": [],
+              "selected": [],
+              "conditions": [
+                {
+                  "id": "show_method",
+                  "operation": "=",
+                  "value": "products_with_special_product"
+                }
+              ],
+              "searchable": true,
+              "description": "في حال إختيار منتج، سيتم عرضه بشكل بارز وبجواره بطاقات لثلاثة منتجات"
             }
           ]
         }
