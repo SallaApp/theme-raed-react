@@ -954,6 +954,11 @@ salla-reviews:not(:has(.s-reviews-swiper-slide)) {
 .s-block--main-links {
   @extend .s-block--categories;
 
+    /* Three links a row on phones, not the shared slider's two (slider.scss). */
+  .slide--one-eighth {
+    @apply w-1/3 md:w-1/4 lg:w-[12.5%];
+  }
+
   /* Circular avatar-style items: a rounded, tinted "bubble" holding the image
      or icon, with the title sitting below it rather than inside a card. */
   .slide--cat-entry {
