@@ -955,14 +955,11 @@ body.topnav-is-dark .site-header--lite .site-header__bar {
       inset-inline-start: 0;
     }
 
-    /* "More" is the row's last item: its panel opens toward the row's start so
-       it stays on screen, and so do the panels nested in it. */
+    /* "More" is the row's last item: its panel lines up with its end edge and
+       opens back across the row, so it stays on screen. Panels nested in it fly
+       out the usual way, past that end edge (to the left in Arabic). */
     [data-more-menu] > #{$menu-sub} {
       inset-inline: auto 0;
-    }
-
-    [data-more-menu] #{$menu-sub} #{$menu-sub} {
-      inset-inline: auto 100%;
     }
 
     /* caret — sallaicons chevron, flips on an open top-level item */

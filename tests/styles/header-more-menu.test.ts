@@ -120,4 +120,13 @@ describe('default layout dropdown panels', () => {
       expect(declFor(css, selector, 'align-items'), selector).toBe('stretch');
     }
   });
+
+  // In Arabic a nested panel opens to the left of its row, past the row's end
+  // edge; inside "More" too, where there is room for it.
+  it('opens nested panels past their row, inside "More" as well', async () => {
+    const css = await compileHeader();
+    const [nested] = rulesMatching(css, new RegExp(`__mainmenu ${sub} ${sub}$`));
+    expect(decl(nested, 'inset-inline')).toBe('100% auto');
+    expect(rulesMatching(css, new RegExp(`\\[data-more-menu\\] ${sub} ${sub}`))).toHaveLength(0);
+  });
 });
