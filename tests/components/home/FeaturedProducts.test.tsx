@@ -125,6 +125,15 @@ describe('FeaturedProducts', () => {
     expect(container.querySelector('h2.s-block__title')?.textContent).toBe('Old deal');
   });
 
+  it('keeps the legacy main_product title even without a product', () => {
+    const { container } = render(
+      <FeaturedProducts
+        data={{ title: 'Fallback', main_product: { title: 'Only title' }, items: [tab()] }}
+      />
+    );
+    expect(container.querySelector('h2.s-block__title')?.textContent).toBe('Only title');
+  });
+
   it('skips a tab whose source needs a value that is missing', () => {
     listMock.mockClear();
     const { container } = render(

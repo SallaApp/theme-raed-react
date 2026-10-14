@@ -211,10 +211,14 @@ export function FeaturedProducts({ data }: { data: FeaturedProductsData }) {
         : null);
   const hasSpecial = isFullProduct(specialValue) || toIds(specialValue).length > 0;
   const hasTabs = tabs.length > 1;
+  const mainTitle =
+    data.main_product && typeof data.main_product === 'object' && 'title' in data.main_product
+      ? (data.main_product as { title?: string }).title
+      : '';
   const heading =
-    showMethod === 'special_offer_with_products' || legacySpecial
-      ? ((data.main_product as { title?: string } | null)?.title || data.main_product_title)
-      : data.title;
+    mainTitle ||
+    (showMethod === 'special_offer_with_products' ? data.main_product_title : '') ||
+    data.title;
   const perTab = hasSpecial ? 4 : 8;
 
   return (
