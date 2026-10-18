@@ -52,7 +52,7 @@ vi.mock('@salla.sa/twilight-theme-engine/i18n', () => ({
 }));
 vi.mock('@salla.sa/twilight-theme-engine/common', () => ({
   Breadcrumb: () => null,
-  NoContent: ({ message }: { message: string }) => <p data-testid="no-content">{message}</p>,
+  NoContent: ({ message }: { message: string }) => <p data-testid="cart-empty-message">{message}</p>,
   Link: ({ children }: { children?: unknown }) => <a>{children as never}</a>,
   Image: () => <img alt="" />,
 }));
@@ -203,7 +203,7 @@ describe('CartPage', () => {
       const { getByTestId, queryByTestId } = renderPage();
 
       await waitFor(() =>
-        expect(getByTestId('no-content').textContent).toBe('pages.cart.empty_cart')
+        expect(getByTestId('cart-empty-message').textContent).toBe('pages.cart.empty_cart')
       );
       expect(queryByTestId('skeleton')).toBeNull();
     });
