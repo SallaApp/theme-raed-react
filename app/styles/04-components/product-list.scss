@@ -126,3 +126,37 @@
     }
   }
 }
+
+/* Phones: the toolbar pins under the sticky title bar (`.mobile-page-title`,
+   3rem) once it reaches it, slides out of view while the page scrolls down and
+   back in when it scrolls up. `ProductListPage.tsx` (`MobileStickyToolbar`)
+   sets `is-stuck` / `is-hidden`. The white band behind it keeps the products
+   from showing around the rounded bar; its padding is taken back with a
+   negative top margin, so in its own place the layout is unchanged. */
+@media (max-width: 767px) {
+  .s-catalog-toolbar-sticky {
+    @apply sticky z-20 -mx-2.5 -mt-2 mb-4 bg-white px-2.5 py-2;
+    top: calc(var(--app-safe-area-top, 0px) + 3rem);
+    transition:
+      transform 0.25s ease,
+      box-shadow 0.25s ease;
+
+    .s-catalog-toolbar {
+      @apply mb-0;
+    }
+
+    &.is-stuck {
+      @apply shadow-sm;
+    }
+
+    /* Up behind the title bar, and past the status bar inside the app. Hidden
+       once out of view, so it can't take focus. */
+    &.is-hidden {
+      transform: translateY(calc(-100% - 3rem - var(--app-safe-area-top, 0px)));
+      visibility: hidden;
+      transition:
+        transform 0.25s ease,
+        visibility 0s linear 0.25s;
+    }
+  }
+}
