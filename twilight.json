@@ -1596,6 +1596,16 @@
           "maxLength": 200
         },
         {
+          "type": "string",
+          "icon": "sicon-color-palette",
+          "label": "لون الخلفية",
+          "id": "background_color",
+          "format": "color",
+          "required": false,
+          "value": "#f9fafb",
+          "description": "لون خلفية العنصر خلف المقالات. اللون الرمادي الفاتح هو الافتراضي."
+        },
+        {
           "type": "items",
           "icon": "sicon-journal-pencil",
           "label": "مقالات المدونة",

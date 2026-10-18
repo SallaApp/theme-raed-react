@@ -177,4 +177,18 @@ describe('Blog', () => {
     expect(container.querySelector('.s-blog__title')?.textContent).toBe('Blog');
     expect(container.querySelector('.s-blog__desc')).toBeNull();
   });
+
+  it('paints the band in the merchant color, or leaves the light gray default', () => {
+    const colored = renderBlog(
+      <Blog data={{ posts: ['-/a-1673272609'], background_color: '#f5f1ea' }} />
+    );
+    const band = colored.container.querySelector('.s-blog') as HTMLElement;
+    expect(band.style.backgroundColor).toBe('rgb(245, 241, 234)');
+    colored.unmount();
+
+    const { container } = renderBlog(
+      <Blog data={{ posts: ['-/a-1673272609'], background_color: ' ' }} />
+    );
+    expect((container.querySelector('.s-blog') as HTMLElement).getAttribute('style')).toBeNull();
+  });
 });

@@ -1113,7 +1113,7 @@ salla-reviews:not(:has(.s-reviews-swiper-slide)) {
   (like the testimonials). Markup: app/components/home/Blog.tsx
 */
 .s-block--blog {
-  @apply bg-gray-50 py-10 lg:py-16 overflow-hidden;
+  @apply overflow-hidden;
 
   .scroll-carousel__track {
     padding-inline-start: max(1rem, calc(50% - 630px));
@@ -1128,6 +1128,9 @@ salla-reviews:not(:has(.s-reviews-swiper-slide)) {
 }
 
 .s-blog {
+  /* The band: light gray unless the merchant picks a color (`background_color`). */
+  @apply bg-gray-50 py-10 lg:py-16;
+
   &__head {
     @apply mb-6 lg:mb-8;
   }

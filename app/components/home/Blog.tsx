@@ -21,6 +21,8 @@ export interface BlogProps {
     title?: string;
     /** Smaller text under the heading; hidden when empty. */
     description?: string;
+    /** twilight.json `background_color`: the band's color; light gray when unset. */
+    background_color?: string;
     position?: number;
     [key: string]: unknown;
   };
@@ -114,9 +116,11 @@ export const Blog = memo(function Blog({ data }: BlogProps) {
   // An empty title hides the heading; a block saved before the field existed has none.
   const title = (data.title ?? t('blocks.home.blog', 'Blog')).trim();
   const description = data.description?.trim();
+  const background = data.background_color?.trim();
 
   return (
-    <>
+    // The band is on the block's own wrapper: the engine's section takes a class, not a style.
+    <div className="s-blog" style={background ? { backgroundColor: background } : undefined}>
       {(title || description) && (
         <div className="container s-blog__head">
           {title && <h2 className="s-blog__title">{title}</h2>}
@@ -135,6 +139,6 @@ export const Blog = memo(function Blog({ data }: BlogProps) {
           )
         )}
       </ScrollCarousel>
-    </>
+    </div>
   );
 });
