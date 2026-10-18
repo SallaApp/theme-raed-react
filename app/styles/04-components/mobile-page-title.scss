@@ -6,7 +6,11 @@
    ========================================================================= */
 
 .mobile-page-title {
-  @apply flex h-12 mb-5 items-center gap-1 border-b border-gray-100 bg-white px-2 md:hidden;
+  @apply sticky z-30 flex h-12 mb-5 items-center gap-1 border-b border-gray-100 bg-white px-2 md:hidden;
+  /* Stays at the top while the page scrolls, below the status bar inside the
+     Salla app (0 in a browser). The product listing's toolbar pins under it
+     (`product-list.scss`). */
+  top: var(--app-safe-area-top, 0px);
 }
 
 .mobile-page-title__back {

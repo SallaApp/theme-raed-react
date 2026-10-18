@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useMemo, useCallback } from 'react';
+import { useState, useRef, useEffect, useMemo, useCallback, type ReactNode } from 'react';
 import { HookSlot } from '@salla.sa/twilight-theme-engine/hooks';
 import { useStore } from '@salla.sa/twilight-theme-engine/hooks/useStore';
 import { useTranslation } from '@salla.sa/twilight-theme-engine/i18n';
@@ -25,6 +25,8 @@ import { ProductCard } from './ProductCard';
 import { useAppliedFilters } from '@salla.sa/twilight-theme-engine/routes/product-listing';
 import type { ProductListFilters } from '@salla.sa/twilight-theme-engine/api/product';
 import { BlockHookSlot, BottomSheet } from '../common';
+import { useAppSafeAreaTop } from '../../hooks/useAppSafeAreaTop';
+import { useScrollDirection } from '../../hooks/useScrollDirection';
 import {
   ChevronDownIcon,
   DashboardSquare01Icon,
@@ -133,6 +135,53 @@ function BrandHeader({ source }: { source: ProductListLoaderData['source'] }) {
           )}
         </div>
       </header>
+    </>
+  );
+}
+
+/** The mobile title bar's height (`.mobile-page-title`, `h-12`); the toolbar pins below it. */
+const TITLE_BAR_PX = 48;
+
+/**
+ * On phones the toolbar pins under the sticky title bar once it scrolls up to
+ * it (`is-stuck`), slides out of view while the page scrolls down and back in
+ * when it scrolls up (`is-hidden`). In its own place on the page it never
+ * hides. A zero-height sentinel above it tells when it is pinned, as in
+ * `Header.tsx`. Styling: `04-components/product-list.scss`; desktop keeps the
+ * plain toolbar.
+ */
+function MobileStickyToolbar({ children }: { children: ReactNode }) {
+  const sentinelRef = useRef<HTMLDivElement>(null);
+  // Inside the Salla app the title bar sits below the status bar.
+  const safeTop = useAppSafeAreaTop();
+  const direction = useScrollDirection();
+  const [stuck, setStuck] = useState(false);
+
+  useEffect(() => {
+    const sentinel = sentinelRef.current;
+    if (!sentinel || typeof IntersectionObserver === 'undefined') return;
+    const top = safeTop + TITLE_BAR_PX;
+    const observer = new IntersectionObserver(
+      // Out of view above the pin line, not below the fold.
+      ([entry]) => setStuck(!entry.isIntersecting && entry.boundingClientRect.top < top),
+      { threshold: 0, rootMargin: `-${top}px 0px 0px 0px` }
+    );
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  }, [safeTop]);
+
+  const className = [
+    's-catalog-toolbar-sticky',
+    stuck && 'is-stuck',
+    stuck && direction === 'down' && 'is-hidden',
+  ]
+    .filter(Boolean)
+    .join(' ');
+
+  return (
+    <>
+      <div ref={sentinelRef} aria-hidden="true" />
+      <div className={className}>{children}</div>
     </>
   );
 }
@@ -502,23 +551,25 @@ export function ProductListPage({
       </h1>
 
       {/* Toolbar — one bar: filter show/hide at the start, options at the end */}
-      <CatalogToolbar
-        showFilters={showFilters}
-        filtersHidden={filtersHidden}
-        onToggleFiltersHidden={() => setFiltersHidden(filtersHidden === '1' ? '0' : '1')}
-        onOpenMobileFilters={() => setFiltersOpen(true)}
-        // `pagination.next` truthy means more pages exist beyond this one —
-        // `products.length` (this page only) isn't the true total then, and
-        // the API's cursor pagination has no total-count field to fall back
-        // to, so show nothing rather than a number that's quietly wrong.
-        productsCount={shownNext ? undefined : shownProducts.length}
-        view={view}
-        onViewChange={setView}
-        selectedSort={selectedSort}
-        sortOptionsWithTrans={sortOptionsWithTrans}
-        currentSortLabel={currentSortLabel}
-        onSortChange={handleSortChange}
-      />
+      <MobileStickyToolbar>
+        <CatalogToolbar
+          showFilters={showFilters}
+          filtersHidden={filtersHidden}
+          onToggleFiltersHidden={() => setFiltersHidden(filtersHidden === '1' ? '0' : '1')}
+          onOpenMobileFilters={() => setFiltersOpen(true)}
+          // `pagination.next` truthy means more pages exist beyond this one —
+          // `products.length` (this page only) isn't the true total then, and
+          // the API's cursor pagination has no total-count field to fall back
+          // to, so show nothing rather than a number that's quietly wrong.
+          productsCount={shownNext ? undefined : shownProducts.length}
+          view={view}
+          onViewChange={setView}
+          selectedSort={selectedSort}
+          sortOptionsWithTrans={sortOptionsWithTrans}
+          currentSortLabel={currentSortLabel}
+          onSortChange={handleSortChange}
+        />
+      </MobileStickyToolbar>
 
       <CatalogGrid
         filtersVisible={filtersVisible}
