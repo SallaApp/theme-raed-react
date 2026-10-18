@@ -87,17 +87,20 @@ export const Blog = memo(function Blog({ data }: BlogProps) {
     queries: picked.map(({ id }) => ({ ...blog.queries.article(id), retry: false })),
   });
 
-  // The fetched article, or what the block saved if it can't be fetched.
-  const articles = picked
-    .map(({ item }, index): BlogArticleData | null => {
-      const fetched = results[index]?.data as BlogArticleData | undefined;
-      if (fetched) return fetched;
-      return item && typeof item === 'object' ? (item as BlogArticleData) : null;
+  // One slot per pick, in the picked order: a placeholder while its article
+  // loads (so a pick that loads first doesn't jump ahead), then the fetched
+  // article, or what the block saved if it can't be fetched.
+  const slots = picked
+    .map(({ item, id }, index) => {
+      const result = results[index];
+      if (result?.isLoading) return { id, article: null };
+      const saved = item && typeof item === 'object' ? (item as BlogArticleData) : undefined;
+      const article = (result?.data as BlogArticleData | undefined) ?? saved;
+      return article?.name ? { id, article } : undefined;
     })
-    .filter((article): article is BlogArticleData => Boolean(article?.name));
+    .filter((slot): slot is { id: string; article: BlogArticleData | null } => Boolean(slot));
 
-  const loading = results.some((result) => result.isLoading);
-  if (!articles.length && !loading) return null;
+  if (!slots.length) return null;
 
   return (
     <>
@@ -108,12 +111,13 @@ export const Blog = memo(function Blog({ data }: BlogProps) {
         prevLabel={t('blocks.home.reviews_prev', 'Previous')}
         nextLabel={t('blocks.home.reviews_next', 'Next')}
       >
-        {articles.length
-          ? articles.map((article, index) => (
-              <ArticleCard key={article.id ?? index} article={article} />
-            ))
-          : // Keeps the block's height while the articles load (no layout shift).
-            picked.map(({ id }) => <div key={id} className="s-blog-card is-loading" />)}
+        {slots.map(({ id, article }, index) =>
+          article ? (
+            <ArticleCard key={`${id}:${index}`} article={article} />
+          ) : (
+            <div key={`${id}:${index}`} className="s-blog-card is-loading" />
+          )
+        )}
       </ScrollCarousel>
     </>
   );

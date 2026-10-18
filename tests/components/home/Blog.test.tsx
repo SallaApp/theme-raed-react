@@ -100,6 +100,32 @@ describe('Blog', () => {
     expect(second.querySelector('.s-blog-card__meta')?.textContent).toBe('formatted:2025-10-12سارة');
   });
 
+  it('keeps each pick in its slot when a later pick loads first', async () => {
+    let releaseFirst: (article: object) => void = () => undefined;
+    find.mockImplementation((id: string) =>
+      id === '1673272609'
+        ? new Promise((resolve) => {
+            releaseFirst = resolve;
+          })
+        : Promise.resolve(articles[id])
+    );
+    const { container } = renderBlog(
+      <Blog data={{ posts: ['-/a-1673272609', '-/a-160640909'] }} />
+    );
+
+    await waitFor(() => expect(container.querySelector('.s-blog-card__title')).toBeTruthy());
+    let cards = container.querySelectorAll('.s-blog-card');
+    expect(cards).toHaveLength(2);
+    expect(cards[0].classList.contains('is-loading')).toBe(true);
+    expect(cards[1].querySelector('.s-blog-card__title')?.textContent).toBe('فن طبقات العطر');
+
+    releaseFirst(articles['1673272609']);
+    await waitFor(() => expect(container.querySelector('.is-loading')).toBeNull());
+    cards = container.querySelectorAll('.s-blog-card');
+    expect(cards[0].querySelector('.s-blog-card__title')?.textContent).toBe('أسرار العناية بالعطور');
+    expect(cards[1].querySelector('.s-blog-card__title')?.textContent).toBe('فن طبقات العطر');
+  });
+
   it('shows loading cards while the articles load', () => {
     find.mockImplementation(() => new Promise(() => undefined));
     const { container } = renderBlog(<Blog data={{ posts: ['-/a-1673272609'] }} />);
@@ -114,7 +140,11 @@ describe('Blog', () => {
         }}
       />
     );
+    // Each pick waits in its slot until its request fails, then falls back.
+    expect(container.querySelectorAll('.s-blog-card.is-loading')).toHaveLength(2);
     await waitFor(() => expect(container.querySelector('.is-loading')).toBeNull());
+    expect(find).toHaveBeenCalledWith('999');
+    expect(find).toHaveBeenCalledWith('888');
     const cards = container.querySelectorAll('.s-blog-card');
     expect(cards).toHaveLength(1);
     expect(cards[0].querySelector('.s-blog-card__title')?.textContent).toBe('Saved post');
