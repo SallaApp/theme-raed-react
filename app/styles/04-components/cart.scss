@@ -70,3 +70,26 @@ salla-list-tile.s-gifting-widget .s-list-tile-item-content::before{
 #coupon-input {
   @apply rounded;
 }
+
+/* Cart loading placeholder (`CartSkeleton`, styled by the Salla tailwind
+   theme): each item row is one line of image, details and a 216px actions
+   group (quantity, total, delete with 32px gaps). On a phone that is wider
+   than the screen, and the details can't shrink, so the row ran off the start
+   edge. Below `sm` the actions wrap onto their own line, as a real cart item
+   does, and the gaps tighten. */
+@media (max-width: 639px) {
+  .s-skeleton-cart-item {
+    @apply flex-wrap gap-y-4 p-4;
+  }
+
+  .s-skeleton-cart-item-info {
+    @apply min-w-0;
+  }
+
+  .s-skeleton-cart-item-actions {
+    @apply w-full justify-between gap-4;
+    /* The row's `space-x-4` gives every item after the first an inline
+       margin; on its own line the actions start at the edge. */
+    margin-inline: 0 !important;
+  }
+}

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, waitFor } from '@testing-library/react';
+import { fireEvent, render, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import type { Page } from '@salla.sa/twilight-theme-engine/types';
 import { CartPage } from '../../../app/components/cart/CartPage';
@@ -29,6 +29,8 @@ const makeCart = () => ({
   ],
 });
 let cartData = makeCart();
+// Set to make `cart/<id>` fail, as an error response does.
+let cartError: Error | null = null;
 
 vi.mock('@salla.sa/twilight-components-react/conditional-offer', () => ({
   SallaConditionalOffer: () => null,
@@ -50,7 +52,7 @@ vi.mock('@salla.sa/twilight-theme-engine/i18n', () => ({
 }));
 vi.mock('@salla.sa/twilight-theme-engine/common', () => ({
   Breadcrumb: () => null,
-  NoContent: () => null,
+  NoContent: ({ message }: { message: string }) => <p data-testid="no-content">{message}</p>,
   Link: ({ children }: { children?: unknown }) => <a>{children as never}</a>,
   Image: () => <img alt="" />,
 }));
@@ -75,7 +77,13 @@ vi.mock('@salla.sa/twilight-theme-engine/api/cart', async (importOriginal) => {
       ...cart,
       queries: {
         ...cart.queries,
-        detail: (id: number) => ({ queryKey: ['cart', id], queryFn: () => cartData }),
+        detail: (id: number) => ({
+          queryKey: ['cart', id],
+          queryFn: () => {
+            if (cartError) throw cartError;
+            return cartData;
+          },
+        }),
       },
     },
   };
@@ -83,7 +91,8 @@ vi.mock('@salla.sa/twilight-theme-engine/api/cart', async (importOriginal) => {
 
 function renderPage() {
   return render(
-    <QueryClientProvider client={new QueryClient()}>
+    // No retries, so a failed request reaches its error state straight away.
+    <QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}>
       <CartPage page={{} as Page} />
     </QueryClientProvider>
   );
@@ -95,6 +104,7 @@ describe('CartPage', () => {
 
   beforeEach(() => {
     cartData = makeCart();
+    cartError = null;
     getCurrentCartId = vi.fn(() => Promise.resolve(5));
     originalSalla = (window as { salla?: unknown }).salla;
     (window as { salla?: unknown }).salla = {
@@ -164,6 +174,38 @@ describe('CartPage', () => {
 
       await waitFor(() => expect(container.querySelector('.cart-item')).toBeTruthy());
       expect(container.querySelector('.cart-options')).toBeNull();
+    });
+  });
+
+  describe('when the cart cannot be loaded', () => {
+    it('shows an error with a retry instead of the skeleton when the cart request fails', async () => {
+      cartError = new Error('Request failed with status code 404');
+      const { getByText, queryByTestId, container } = renderPage();
+
+      await waitFor(() => expect(getByText('common.errors.error_occurred')).toBeTruthy());
+      expect(queryByTestId('skeleton')).toBeNull();
+
+      cartError = null;
+      fireEvent.click(getByText('common.elements.try_again'));
+      await waitFor(() => expect(container.querySelector('.cart-item')).toBeTruthy());
+    });
+
+    it('shows the error when the SDK fails to give the cart id', async () => {
+      getCurrentCartId.mockImplementation(() => Promise.reject(new Error('no cart id')));
+      const { getByText, queryByTestId } = renderPage();
+
+      await waitFor(() => expect(getByText('common.errors.error_occurred')).toBeTruthy());
+      expect(queryByTestId('skeleton')).toBeNull();
+    });
+
+    it('shows the empty cart, not the skeleton, when the SDK knows of no cart', async () => {
+      getCurrentCartId.mockImplementation(() => Promise.resolve(null));
+      const { getByTestId, queryByTestId } = renderPage();
+
+      await waitFor(() =>
+        expect(getByTestId('no-content').textContent).toBe('pages.cart.empty_cart')
+      );
+      expect(queryByTestId('skeleton')).toBeNull();
     });
   });
 });
