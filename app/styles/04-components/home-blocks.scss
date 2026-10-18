@@ -1107,3 +1107,81 @@ salla-reviews:not(:has(.s-reviews-swiper-slide)) {
     @apply mt-3 inline-flex items-center justify-center rounded-full bg-white px-6 py-2.5 text-sm font-bold text-gray-900 shadow-lg transition-transform hover:scale-[1.03] hover:no-underline;
   }
 }
+/*
+  Blog — the articles the merchant picked, as cards in the shared scroll
+  carousel: heading in the container, the row bleeding past its other edge
+  (like the testimonials). Markup: app/components/home/Blog.tsx
+*/
+.s-block--blog {
+  @apply bg-gray-50 py-10 lg:py-16 overflow-hidden;
+
+  .scroll-carousel__track {
+    padding-inline-start: max(1rem, calc(50% - 630px));
+    padding-inline-end: 1rem;
+    scroll-padding-inline-start: max(1rem, calc(50% - 630px));
+    padding-block: 0.5rem; /* room for the cards' shadow */
+  }
+
+  .scroll-carousel__controls {
+    @apply container;
+  }
+}
+
+.s-blog__heading {
+  @apply mb-6 text-xl font-bold text-gray-900 lg:mb-8 lg:text-2xl;
+}
+
+.s-blog-card {
+  @apply flex shrink-0 flex-col rounded-2xl bg-white p-4 shadow-sm lg:p-6;
+  flex: 0 0 85%;
+  scroll-snap-align: start;
+
+  @media (min-width: 640px) {
+    flex-basis: 55%;
+  }
+
+  @media (min-width: 1024px) {
+    flex-basis: calc((100% - 3rem) / 2.6);
+  }
+
+  &.is-loading {
+    @apply min-h-[22rem] animate-pulse;
+  }
+
+  &__image {
+    @apply block overflow-hidden rounded-xl bg-gray-100;
+    aspect-ratio: 16 / 7.2;
+
+    img {
+      @apply transition-transform duration-500;
+    }
+
+    &:hover img {
+      @apply scale-105;
+    }
+  }
+
+  &__meta {
+    @apply mt-4 flex flex-wrap items-center gap-x-6 gap-y-1 text-sm text-gray-500 lg:mt-5;
+
+    span {
+      @apply inline-flex items-center gap-1.5;
+    }
+
+    svg {
+      @apply h-4 w-4 shrink-0;
+    }
+  }
+
+  &__title {
+    @apply mt-2 text-base font-bold leading-snug text-gray-900 line-clamp-1 lg:text-lg;
+
+    a:hover {
+      @apply text-primary no-underline;
+    }
+  }
+
+  &__excerpt {
+    @apply mt-2 text-sm leading-relaxed text-gray-500 line-clamp-2 lg:mt-3 lg:text-base;
+  }
+}

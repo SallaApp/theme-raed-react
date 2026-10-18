@@ -274,6 +274,22 @@ export const UserIcon = (props: SVGProps<SVGSVGElement>) => (
   </svg>
 );
 
+export const CalendarIcon = (props: SVGProps<SVGSVGElement>) => (
+  <svg {...base} {...props}>
+    <path d="M16 2V6M8 2V6" {...stroke} />
+    <path
+      d="M13 4H11C7.229 4 5.343 4 4.172 5.172C3 6.343 3 8.229 3 12V14C3 17.771 3 19.657 4.172 20.828C5.343 22 7.229 22 11 22H13C16.771 22 18.657 22 19.828 20.828C21 19.657 21 17.771 21 14V12C21 8.229 21 6.343 19.828 5.172C18.657 4 16.771 4 13 4Z"
+      {...stroke}
+    />
+    <path d="M3 10H21" {...stroke} />
+    <path
+      d="M11.995 14H12.004M11.995 18H12.004M15.991 14H16M8 14H8.009M8 18H8.009"
+      {...stroke}
+      strokeWidth={2}
+    />
+  </svg>
+);
+
 export const DiscountTagIcon = (props: SVGProps<SVGSVGElement>) => (
   <svg {...base} {...props}>
     <path

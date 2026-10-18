@@ -1557,6 +1557,33 @@
           "maxLength": 30
         }
       ]
+    },
+    {
+      "key": "f3372a16-2ec0-4345-b03f-867f443f628e",
+      "title": {
+        "en": "Blog",
+        "ar": "المدونة"
+      },
+      "icon": "sicon-journal-pencil",
+      "path": "home.blog",
+      "fields": [
+        {
+          "type": "items",
+          "icon": "sicon-journal-pencil",
+          "label": "مقالات المدونة",
+          "id": "posts",
+          "format": "dropdown-list",
+          "description": "اختر المقالات التي تظهر في العنصر، وتُعرض لكل مقالة صورتها وعنوانها ونبذة عنها وتاريخ نشرها وكاتبها.",
+          "selected": [],
+          "options": [],
+          "required": true,
+          "multichoice": true,
+          "source": "blog_articles",
+          "searchable": true,
+          "minLength": 1,
+          "maxLength": 10
+        }
+      ]
     }
   ],
   "support_url": "https://salla.com/",
