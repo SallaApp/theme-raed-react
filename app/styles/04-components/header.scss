@@ -705,6 +705,23 @@
   }
 }
 
+/* While `<salla-menu>` hydrates, the components library shows its menu
+   skeleton (`MenuColumnSkeleton`: three full-width 18px bars, stacked), which
+   made the top bar three rows tall. The bar is one row of links, so the
+   placeholder is one short line. The library sets each bar's size inline. */
+.site-header__topnav-inner .s-skeleton-menu-columns {
+  @apply flex items-center;
+
+  .s-skeleton-wrapper {
+    width: 16rem !important;
+    height: 0.75rem !important;
+
+    &:not(:first-child) {
+      @apply hidden;
+    }
+  }
+}
+
 .site-header__topnav-actions {
   @apply flex shrink-0 items-center gap-1;
 }
