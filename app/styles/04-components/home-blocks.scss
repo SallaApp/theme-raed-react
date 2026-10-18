@@ -468,6 +468,76 @@
   }
 }
 
+/*
+  Photos slider with text — the photos slider's cards (two in a row on
+  desktop) with the enhanced slider's title, text, button and background video
+  on each. Markup: app/components/home/PhotosSliderWithText.tsx
+*/
+.s-text-photos-slider__slide {
+  @apply relative block shrink-0 rounded-2xl overflow-hidden bg-gray-900 text-white hover:no-underline;
+  flex: 0 0 88%;
+  aspect-ratio: 4 / 3; /* room for the title, text and button on a phone */
+  container-type: size; /* sizes a YouTube background to cover the card */
+  scroll-snap-align: start;
+
+  @media (min-width: 640px) {
+    flex-basis: 70%;
+    aspect-ratio: 3 / 2;
+  }
+
+  @media (min-width: 1024px) {
+    flex-basis: calc(50% - 0.75rem);
+  }
+}
+
+.s-text-photos-slider__overlay {
+  @apply pointer-events-none absolute inset-0 bg-black/40;
+}
+
+.s-text-photos-slider__content {
+  @apply relative flex h-full flex-col items-center justify-center px-6 text-center sm:px-12 lg:px-16;
+}
+
+.s-text-photos-slider__title {
+  @apply mb-3 text-xl font-bold leading-tight last:mb-0 sm:mb-4 sm:text-2xl lg:text-[2rem];
+}
+
+.s-text-photos-slider__description {
+  @apply text-sm leading-relaxed line-clamp-2 sm:text-base lg:text-lg lg:line-clamp-3;
+}
+
+.s-block--photos-slider-with-text {
+  /* The photos slider's container treatment: the row starts at the
+     container's edge and bleeds past the other into the viewport. */
+  .scroll-carousel__track {
+    padding-inline-start: max(1rem, calc(50% - 630px));
+    padding-inline-end: 1rem;
+    scroll-padding-inline-start: max(1rem, calc(50% - 630px));
+  }
+
+  .scroll-carousel__controls {
+    @apply container;
+  }
+
+  .home-slider__cta {
+    @apply mt-5 sm:mt-8;
+  }
+
+  /* `in_container`: boxed to the container on both sides, no bleed. */
+  &.s-block--photos-slider-with-text-boxed .scroll-carousel {
+    @apply container;
+
+    .scroll-carousel__track {
+      padding-inline: 0;
+      scroll-padding-inline-start: 0;
+    }
+
+    .scroll-carousel__controls {
+      @apply px-0;
+    }
+  }
+}
+
 
 .s-block {
   @apply mt-8 sm:mt-16;
@@ -641,18 +711,14 @@
   @apply bg-gray-100 pt-8 sm:pt-12 pb-8 sm:pb-20;
 }
 
-.s-block--enhanced-slider {
-  @extend .s-block--hero-slider;
-  @extend .s-block--full-bg;
-
-  /* CTA pill under the title / subtitle — `EnhancedSlider.tsx` only renders it
-     when the slide has a `btnname`. */
+/* Shared by the enhanced slider and the photos slider with text: the slide
+   button and background video. */
+.s-block--enhanced-slider,
+.s-block--photos-slider-with-text {
+  /* CTA pill under the title / subtitle — `EnhancedSlider.tsx` and
+     `PhotosSliderWithText.tsx` only render it when the slide has a `btnname`. */
   .home-slider__cta {
     @apply mt-6 inline-flex min-h-11 items-center justify-center rounded-full bg-white px-5 py-1.5 text-sm font-medium text-gray-900 shadow-sm transition-transform hover:scale-[1.03] hover:no-underline sm:mt-8 sm:min-h-[44px] sm:px-6 sm:text-base;
-  }
-
-  salla-slider.fullwidth-slider {
-    position: relative;
   }
 
   /* A slide's background video (EnhancedSlider `SlideVideo`): covers the slide
@@ -680,6 +746,15 @@
     &:not([data-state='playing']) {
       opacity: 0;
     }
+  }
+}
+
+.s-block--enhanced-slider {
+  @extend .s-block--hero-slider;
+  @extend .s-block--full-bg;
+
+  salla-slider.fullwidth-slider {
+    position: relative;
   }
 
   /* Slides (and the SSR poster): 12:5 is too short on a phone for the title,
