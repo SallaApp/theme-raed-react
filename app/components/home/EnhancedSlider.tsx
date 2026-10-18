@@ -40,7 +40,7 @@ export interface EnhancedSliderProps {
 }
 
 /** Whether motion is allowed (no reduced-motion request); false on the server and before hydration. */
-function useMotionAllowed() {
+export function useMotionAllowed() {
   const [allowed, setAllowed] = useState(false);
   useEffect(() => {
     const query = window.matchMedia?.('(prefers-reduced-motion: reduce)');
@@ -58,7 +58,7 @@ function useMotionAllowed() {
  * the visible slide's video downloads and plays. Videos are found in the DOM, not
  * through refs, so the copies Swiper makes of slides for looping play too.
  */
-function useSlideVideos(root: RefObject<HTMLElement | null>, enabled: boolean) {
+export function useSlideVideos(root: RefObject<HTMLElement | null>, enabled: boolean) {
   useEffect(() => {
     const element = root.current;
     if (!element || !enabled) return;
@@ -184,7 +184,7 @@ function YouTubeBackground({ id }: { id: string }) {
  * {@link useSlideVideos} to play it; a YouTube embed loads lazily and plays
  * muted on its own.
  */
-function SlideVideo({ url, poster }: { url?: string; poster?: string }) {
+export function SlideVideo({ url, poster }: { url?: string; poster?: string }) {
   const video = parseSlideVideo(url);
   if (!video) return null;
   if (video.kind === 'youtube') return <YouTubeBackground id={video.id} />;
