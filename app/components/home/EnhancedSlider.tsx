@@ -5,6 +5,8 @@ import { parseSlideVideo, youtubeEmbedUrl } from '../../lib/slideVideo';
 
 export interface SliderBanner {
   link?: string;
+  /** twilight.json `slides.url`: where the slide's button goes. */
+  url?: string;
   image?: string;
   mobile_image?: string;
   video?: string;
@@ -219,9 +221,10 @@ function SlideText({ slide, poster }: { slide: SliderBanner; poster?: boolean })
             {slide.subtitle || slide.description}
           </p>
         )}
-        {slide.show_button && slide.btnname && (
+        {/* A button text shows the button; legacy `slider_banner` data can still switch it off. */}
+        {slide.btnname?.trim() && slide.show_button !== false && (
           <Link
-            to={slide.link || '#'}
+            to={slide.url || slide.link || '#'}
             data-swiper-parallax="-100"
             className="home-slider__cta"
             // The poster is aria-hidden, so its copy stays out of the tab order. Both link

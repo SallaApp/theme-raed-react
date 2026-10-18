@@ -648,7 +648,7 @@
   /* CTA pill under the title / subtitle — `EnhancedSlider.tsx` only renders it
      when the slide has a `btnname`. */
   .home-slider__cta {
-    @apply mt-6 inline-flex items-center justify-center rounded-full bg-white px-7 py-3 text-sm font-bold text-gray-900 shadow-lg transition-transform hover:scale-[1.03] hover:no-underline;
+    @apply mt-6 inline-flex min-h-11 items-center justify-center rounded-full bg-white px-5 py-1.5 text-sm font-medium text-gray-900 shadow-sm transition-transform hover:scale-[1.03] hover:no-underline sm:mt-8 sm:min-h-[44px] sm:px-6 sm:text-base;
   }
 
   salla-slider.fullwidth-slider {
