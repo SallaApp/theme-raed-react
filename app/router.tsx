@@ -17,11 +17,11 @@ import {
   FixedProducts,
   MainLinks,
   PhotosSlider,
-  PhotosSliderWithText,
   ProductsSlider,
   SliderProductsWithHeader,
   EnhancedSquareBanners,
 } from './components/home';
+import { PhotosSliderWithText } from './components/home/PhotosSliderWithText';
 import { registerThemeHooks } from './hooks';
 import { ProductListSkeleton } from './components/product/ProductListSkeleton';
 

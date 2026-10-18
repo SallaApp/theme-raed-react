@@ -5,7 +5,6 @@ export { FeaturedProducts, featuredProductsConfig } from './FeaturedProducts';
 export { FixedProducts } from './FixedProducts';
 export { MainLinks } from './MainLinks';
 export { PhotosSlider } from './PhotosSlider';
-export { PhotosSliderWithText } from './PhotosSliderWithText';
 export { ProductsSlider } from './ProductsSlider';
 export { SliderProductsWithHeader } from './SliderProductsWithHeader';
 export { EnhancedSquareBanners } from './EnhancedSquareBanners';

@@ -110,4 +110,33 @@ describe('PhotosSliderWithText', () => {
     act(() => vi.advanceTimersByTime(5000));
     expect(Element.prototype.scrollBy).toHaveBeenCalledTimes(1);
   });
+
+  it('stops auto scrolling when the visitor turns on reduced motion mid-visit', () => {
+    vi.useFakeTimers();
+    let reduce = false;
+    const listeners = new Set<() => void>();
+    vi.spyOn(window, 'matchMedia').mockImplementation(
+      (query) =>
+        ({
+          get matches() {
+            return query.includes('reduced-motion') ? reduce : false;
+          },
+          media: query,
+          addEventListener: (_type: string, listener: () => void) => listeners.add(listener),
+          removeEventListener: (_type: string, listener: () => void) => listeners.delete(listener),
+        }) as unknown as MediaQueryList
+    );
+
+    const { container } = render(<PhotosSliderWithText data={{ slides }} />);
+    const track = container.querySelector('.scroll-carousel__track') as HTMLElement;
+    Object.defineProperty(track, 'scrollWidth', { value: 2000, configurable: true });
+    Object.defineProperty(track, 'clientWidth', { value: 1000, configurable: true });
+    act(() => vi.advanceTimersByTime(5000));
+    expect(Element.prototype.scrollBy).toHaveBeenCalledTimes(1);
+
+    reduce = true;
+    act(() => listeners.forEach((listener) => listener()));
+    act(() => vi.advanceTimersByTime(15000));
+    expect(Element.prototype.scrollBy).toHaveBeenCalledTimes(1);
+  });
 });

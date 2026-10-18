@@ -2,6 +2,7 @@ import { memo, useCallback, useEffect, useRef, useState, type RefObject } from '
 import { SallaSlider } from '@salla.sa/twilight-components-react/slider';
 import { Link } from '@salla.sa/twilight-theme-engine/common';
 import { parseSlideVideo, youtubeEmbedUrl } from '../../lib/slideVideo';
+import { useMotionAllowed } from '../../hooks/useMotionAllowed';
 
 export interface SliderBanner {
   link?: string;
@@ -37,20 +38,6 @@ export interface EnhancedSliderProps {
     priority?: boolean;
     [key: string]: unknown;
   };
-}
-
-/** Whether motion is allowed (no reduced-motion request); false on the server and before hydration. */
-export function useMotionAllowed() {
-  const [allowed, setAllowed] = useState(false);
-  useEffect(() => {
-    const query = window.matchMedia?.('(prefers-reduced-motion: reduce)');
-    // Follows the setting live: switching it on mid-visit removes the videos.
-    const sync = () => setAllowed(!query?.matches);
-    sync();
-    query?.addEventListener?.('change', sync);
-    return () => query?.removeEventListener?.('change', sync);
-  }, []);
-  return allowed;
 }
 
 /**

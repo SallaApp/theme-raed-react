@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import { ArrowLeftIcon, ArrowRightIcon } from '../icons';
 import { useDragScroll } from '../../hooks/useDragScroll';
+import { useMotionAllowed } from '../../hooks/useMotionAllowed';
 
 export interface ScrollCarouselProps {
   children: ReactNode;
@@ -71,8 +72,12 @@ export function ScrollCarousel({
   const focused = useRef(false);
   const touchedAt = useRef(0);
 
+  // Follows the setting live: switching reduced motion on mid-visit stops the timer.
+  const motionAllowed = useMotionAllowed();
+  const playing = autoPlay && motionAllowed;
+
   useEffect(() => {
-    if (!autoPlay || window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return;
+    if (!playing) return;
     const timer = window.setInterval(() => {
       const el = track.current;
       if (!el || document.hidden || hovered.current || focused.current) return;
@@ -88,7 +93,7 @@ export function ScrollCarousel({
       el.scrollBy({ left: forward * slideStep(el), behavior: 'smooth' });
     }, AUTO_PLAY_INTERVAL_MS);
     return () => window.clearInterval(timer);
-  }, [autoPlay]);
+  }, [playing]);
 
   const thumbWidth = Math.max(8, thumb * 100);
 

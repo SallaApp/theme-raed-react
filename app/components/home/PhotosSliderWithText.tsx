@@ -3,7 +3,8 @@ import { Link, Image } from '@salla.sa/twilight-theme-engine/common';
 import { useTranslation } from '@salla.sa/twilight-theme-engine/i18n';
 import { ScrollCarousel } from '../common/ScrollCarousel';
 import { parseSlideVideo } from '../../lib/slideVideo';
-import { SlideVideo, useMotionAllowed, useSlideVideos, type SliderBanner } from './EnhancedSlider';
+import { useMotionAllowed } from '../../hooks/useMotionAllowed';
+import { SlideVideo, useSlideVideos, type SliderBanner } from './EnhancedSlider';
 
 export interface PhotosSliderWithTextProps {
   data: {
