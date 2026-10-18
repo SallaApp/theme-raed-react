@@ -73,5 +73,6 @@
   "pages.order.can_edit_or_delete_your_review_within": "يمكنك تعديل أو حذف تقييمك خلال",
   "pages.order.edit_period_ended": "تم انتهاء المدة المحددة لتعديل التقييم",
   "pages.order.delete_period_ended": "تم انتهاء المدة المحددة لحذف التقييم",
-  "pages.order.days_since_added": "أيام من إضافته"
+  "pages.order.days_since_added": "أيام من إضافته",
+  "blocks.home.blog": "المدونة"
 }

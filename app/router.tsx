@@ -21,6 +21,7 @@ import {
   SliderProductsWithHeader,
   EnhancedSquareBanners,
 } from './components/home';
+import { Blog } from './components/home/Blog';
 import { PhotosSliderWithText } from './components/home/PhotosSliderWithText';
 import { registerThemeHooks } from './hooks';
 import { ProductListSkeleton } from './components/product/ProductListSkeleton';
@@ -65,6 +66,7 @@ registerHomeComponents({
   'fixed-products': FixedProducts,
   'slider-products-with-header': SliderProductsWithHeader,
   'enhanced-square-banners': EnhancedSquareBanners,
+  blog: Blog,
 });
 
 // Wrapper `<section>` classes for `featured-products` — the engine only styles
@@ -72,6 +74,11 @@ registerHomeComponents({
 // `custom-testimonials` gets `s-block--full-bg` so the gray band runs edge-to-edge.
 registerHomeComponentConfig({
   'featured-products': featuredProductsConfig,
+  // Gray band edge to edge; the height is a card plus the heading and controls.
+  blog: {
+    className: 's-block s-block--blog s-block--full-bg',
+    height: 'clamp(480px, 45vw, 660px)',
+  },
   'custom-testimonials': {
     className: 's-block s-block--custom-testimonials s-block--full-bg',
   },
