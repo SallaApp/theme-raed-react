@@ -121,6 +121,51 @@ describe('EnhancedSlider', () => {
     expect(container.querySelector('.home-slider__cta')).toBeNull();
   });
 
+  it('renders the merchant button from button text alone, linked to its url', () => {
+    const { container } = render(
+      <EnhancedSlider
+        data={{ slides: [{ ...mockSlides[0], btnname: 'Shop now', url: '/offers' }] }}
+      />
+    );
+    const cta = container.querySelector('.home-slider__cta');
+    expect(cta?.textContent).toBe('Shop now');
+    expect(cta?.getAttribute('href')).toBe('/offers');
+  });
+
+  it('omits the merchant button when its text is only spaces', () => {
+    const { container } = render(
+      <EnhancedSlider data={{ slides: [{ ...mockSlides[0], btnname: '   ', url: '/offers' }] }} />
+    );
+    expect(container.querySelector('.home-slider__cta')).toBeNull();
+  });
+
+  it('links the button to url over the legacy link', () => {
+    const { container } = render(
+      <EnhancedSlider
+        data={{
+          slides: [{ ...mockSlides[0], btnname: 'Shop now', url: '/new', link: '/old' }],
+        }}
+      />
+    );
+    expect(container.querySelector('.home-slider__cta')?.getAttribute('href')).toBe('/new');
+  });
+
+  it('falls back to the legacy link, then to #, when the slide has no url', () => {
+    const { container } = render(
+      <EnhancedSlider
+        data={{
+          slides: [
+            { ...mockSlides[0], btnname: 'Shop now', link: '/old' },
+            { ...mockSlides[1], btnname: 'Browse' },
+          ],
+        }}
+      />
+    );
+    const ctas = container.querySelectorAll('salla-slider .home-slider__cta');
+    expect(ctas[0]?.getAttribute('href')).toBe('/old');
+    expect(ctas[1]?.getAttribute('href')).toBe('#');
+  });
+
   it('renders slides with overlay background', () => {
     const { container } = render(<EnhancedSlider data={{ slider_banner: mockSlides }} />);
     const overlay = container.querySelector('.overlay-bg');
