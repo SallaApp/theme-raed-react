@@ -4,7 +4,7 @@ import { FixedProductsSkeleton } from '@salla.sa/twilight-components-react';
 import { Link } from '@salla.sa/twilight-theme-engine/common';
 import { useTranslation } from '@salla.sa/twilight-theme-engine/i18n';
 import { product, type ProductsListSource } from '@salla.sa/twilight-theme-engine/api/product';
-import { ProductCard } from '../product/ProductCard';
+import { ProductCard } from '../product';
 import { blockLimit } from '../../lib/blockLimit';
 
 export interface FixedProductsProps {

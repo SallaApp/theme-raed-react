@@ -30,7 +30,7 @@ vi.mock('@salla.sa/twilight-components-react', () => ({
   FixedProductsSkeleton: () => <div data-testid="home-fixed-products-skeleton" />,
 }));
 
-vi.mock('../../../app/components/product/ProductCard', () => ({
+vi.mock('../../../app/components/product', () => ({
   ProductCard: ({ product }: { product: { id: number; name?: string } }) => (
     <div data-testid={`home-fixed-products-card-${product.id}`}>{product.name}</div>
   ),

@@ -17,6 +17,13 @@ const twilight: {
   currency: { code: 'SAR' },
 };
 
+// Only the module under test, not the whole barrel and everything it re-exports.
+vi.mock('../../../app/components/common', async () => ({
+  BottomSheet: (await vi.importActual<typeof import('../../../app/components/common/BottomSheet')>(
+    '../../../app/components/common/BottomSheet'
+  )).BottomSheet,
+}));
+
 vi.mock('@salla.sa/twilight-theme-engine/hooks/useUser', () => ({
   useUser: () => ({ isLoggedIn: user.isLoggedIn }),
 }));

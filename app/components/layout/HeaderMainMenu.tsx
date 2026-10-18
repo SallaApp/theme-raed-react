@@ -14,7 +14,7 @@ import { useTwilight } from '@salla.sa/twilight-theme-engine/providers';
 import { menu } from '@salla.sa/twilight-theme-engine/api/menu';
 import { product } from '@salla.sa/twilight-theme-engine/api/product';
 import type { MenuItem } from '@salla.sa/twilight-theme-engine/types';
-import { ProductCard } from '../product/ProductCard';
+import { ProductCard } from '../product';
 import {
   MORE_MENU_ATTR,
   MORE_MENU_ID,

@@ -13,8 +13,8 @@ import type { ProductPageProps } from '@salla.sa/twilight-theme-engine/routes/pr
 import { ProductGallery } from './ProductGallery';
 import { ProductDetails } from './ProductDetails';
 import { AddToCartForm } from './AddToCartForm';
-import { BlockHookSlot } from '../common/BlockHookSlot';
-import { ProductsSlider } from '../home/ProductsSlider';
+import { BlockHookSlot } from '../common';
+import { ProductsSlider } from '../home';
 
 /**
  * "Similar products" slider. A separate component (not inline in

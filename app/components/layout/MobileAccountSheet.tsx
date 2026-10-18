@@ -4,7 +4,7 @@ import { useTwilight } from '@salla.sa/twilight-theme-engine/providers';
 import { useTranslation } from '@salla.sa/twilight-theme-engine/i18n';
 import { useUser } from '@salla.sa/twilight-theme-engine/hooks/useUser';
 import { Footer } from '@salla.sa/twilight-theme-engine/layout';
-import { BottomSheet } from '../common/BottomSheet';
+import { BottomSheet } from '../common';
 import { useCloseOnDesktop } from '../../hooks/useCloseOnDesktop';
 import { ROWS_IN_DELAY_MS } from '../../hooks/useStaggeredRows';
 import { ArrowLeftIcon, LanguagesIcon, MapPinIcon, Money01Icon, UserIcon } from '../icons';
