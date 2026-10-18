@@ -149,4 +149,32 @@ describe('Blog', () => {
     expect(cards).toHaveLength(1);
     expect(cards[0].querySelector('.s-blog-card__title')?.textContent).toBe('Saved post');
   });
+
+  it('shows the merchant title and subtitle', async () => {
+    const { container } = renderBlog(
+      <Blog
+        data={{
+          posts: ['-/a-1673272609'],
+          title: 'المدونة',
+          description: 'تصفح أحدث مقالات المدونة',
+        }}
+      />
+    );
+    expect(container.querySelector('.s-blog__title')?.textContent).toBe('المدونة');
+    expect(container.querySelector('.s-blog__desc')?.textContent).toBe('تصفح أحدث مقالات المدونة');
+  });
+
+  it('hides an empty title and subtitle', () => {
+    const { container } = renderBlog(
+      <Blog data={{ posts: ['-/a-1673272609'], title: ' ', description: '' }} />
+    );
+    expect(container.querySelector('.s-blog__head')).toBeNull();
+    expect(container.querySelector('.s-blog-card')).toBeTruthy();
+  });
+
+  it('falls back to the translated heading when the block has no title saved', () => {
+    const { container } = renderBlog(<Blog data={{ posts: ['-/a-1673272609'] }} />);
+    expect(container.querySelector('.s-blog__title')?.textContent).toBe('Blog');
+    expect(container.querySelector('.s-blog__desc')).toBeNull();
+  });
 });

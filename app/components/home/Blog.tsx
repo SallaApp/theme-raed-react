@@ -17,10 +17,19 @@ export interface BlogProps {
   data: {
     /** twilight.json `posts`: the articles the merchant picked, as ids or `{ id, … }`. */
     posts?: unknown[];
+    /** Heading over the cards; the translated "Blog" when the block has none saved. */
+    title?: string;
+    /** Smaller text under the heading; hidden when empty. */
+    description?: string;
     position?: number;
     [key: string]: unknown;
   };
 }
+
+// The image repeats the title's link, so it stays out of the tab order and the
+// accessibility tree. Both link adapters forward these; BaseLinkProps just
+// doesn't declare them.
+const IMAGE_LINK_PROPS = { tabIndex: -1, 'aria-hidden': true } as const;
 
 function ArticleCard({ article }: { article: BlogArticleData }) {
   const { format } = useDate();
@@ -36,7 +45,7 @@ function ArticleCard({ article }: { article: BlogArticleData }) {
 
   return (
     <article className="s-blog-card">
-      <Link to={url} className="s-blog-card__image" tabIndex={-1} aria-hidden="true">
+      <Link to={url} className="s-blog-card__image" {...IMAGE_LINK_PROPS}>
         {article.image && (
           <Image
             src={article.image}
@@ -102,11 +111,18 @@ export const Blog = memo(function Blog({ data }: BlogProps) {
 
   if (!slots.length) return null;
 
+  // An empty title hides the heading; a block saved before the field existed has none.
+  const title = (data.title ?? t('blocks.home.blog', 'Blog')).trim();
+  const description = data.description?.trim();
+
   return (
     <>
-      <div className="container">
-        <h2 className="s-blog__heading">{t('blocks.home.blog', 'Blog')}</h2>
-      </div>
+      {(title || description) && (
+        <div className="container s-blog__head">
+          {title && <h2 className="s-blog__title">{title}</h2>}
+          {description && <p className="s-blog__desc">{description}</p>}
+        </div>
+      )}
       <ScrollCarousel
         prevLabel={t('blocks.home.reviews_prev', 'Previous')}
         nextLabel={t('blocks.home.reviews_next', 'Next')}

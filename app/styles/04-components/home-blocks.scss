@@ -1127,8 +1127,18 @@ salla-reviews:not(:has(.s-reviews-swiper-slide)) {
   }
 }
 
-.s-blog__heading {
-  @apply mb-6 text-xl font-bold text-gray-900 lg:mb-8 lg:text-2xl;
+.s-blog {
+  &__head {
+    @apply mb-6 lg:mb-8;
+  }
+
+  &__title {
+    @apply text-xl font-bold text-gray-900 lg:text-2xl;
+  }
+
+  &__desc {
+    @apply mt-2 text-sm text-gray-500 lg:mt-3 lg:text-base;
+  }
 }
 
 .s-blog-card {

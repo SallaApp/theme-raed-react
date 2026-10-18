@@ -1568,6 +1568,34 @@
       "path": "home.blog",
       "fields": [
         {
+          "type": "string",
+          "icon": "sicon-format-text-alt",
+          "label": "العنوان الرئيسي",
+          "multilanguage": true,
+          "id": "title",
+          "value": "المدونة",
+          "required": false,
+          "format": "text",
+          "description": "يظهر أعلى المقالات. اتركه فارغاً لإخفائه.",
+          "placeholder": "مثال: المدونة",
+          "minLength": 0,
+          "maxLength": 100
+        },
+        {
+          "type": "string",
+          "icon": "sicon-typography",
+          "label": "العنوان الفرعي",
+          "multilanguage": true,
+          "id": "description",
+          "value": null,
+          "required": false,
+          "format": "text",
+          "description": "يظهر أسفل العنوان الرئيسي بخط أصغر. اتركه فارغاً لإخفائه.",
+          "placeholder": "مثال: تصفح أحدث مقالات المدونة",
+          "minLength": 0,
+          "maxLength": 200
+        },
+        {
           "type": "items",
           "icon": "sicon-journal-pencil",
           "label": "مقالات المدونة",
