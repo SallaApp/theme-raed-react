@@ -1079,6 +1079,36 @@ salla-reviews:not(:has(.s-reviews-swiper-slide)) {
   @extend .s-block--categories;
 }
 
+/* Quick links before `<salla-slider>` loads. Rendered in the browser (lazy
+   blocks, client navigation), the React wrapper sets `type` as a property, so
+   the element has no `type="carousel"` attribute yet and the components
+   library's styles treat it as a plain slider: every slide but the first
+   hidden (`:not([type='carousel']) … div:nth-child(n+2)`), and no row layout.
+   Show one clipped row instead: the slide widths above fit as many as Swiper
+   will (3 on phones, 4 on tablets, 8 on desktop). `!important` beats the
+   library rule's specificity. */
+.s-block--main-links,
+.s-block--square-links {
+  salla-slider:not(.hydrated) > [slot='items'] {
+    @apply flex flex-nowrap overflow-hidden;
+
+    > div {
+      @apply shrink-0;
+      display: block !important;
+    }
+
+    /* Centred while they fit (`centerInsufficientSlides`); start-aligned once
+       they overflow, as auto margins don't go below zero. */
+    > div:first-child {
+      margin-inline-start: auto;
+    }
+
+    > div:last-child {
+      margin-inline-end: auto;
+    }
+  }
+}
+
 .s-block--slider-products-with-header {
   @extend .s-block--slider-with-bg;
   @extend .s-block--full-bg;
