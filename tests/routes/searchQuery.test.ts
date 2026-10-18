@@ -4,10 +4,7 @@ import { searchListingSearch } from '@salla.sa/twilight-theme-engine/routes/prod
 // The setup file stubs only the exports the other tests use; the engine's listing module needs the rest at import.
 vi.mock('@salla.sa/twilight-components-react', async (importOriginal) => importOriginal());
 
-// TD-17264: TanStack Router JSON-parses search params, so `/search?q=3000` reaches the route as the
-// number 3000. The engine's search loader calls `.trim()` on it, which threw and showed a 500 page for
-// any numeric query. Engine 1.0.95 turns `q` into a string in the route's `validateSearch`; this theme
-// uses the engine's generated search route, so it only stays fixed while it resolves 1.0.95 or later.
+// TanStack JSON-parses `?q=3000` to a number; the engine route must hand the loader a string.
 describe('search route query', () => {
   it.each([
     [3000, '3000'],
