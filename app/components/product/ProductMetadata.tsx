@@ -18,6 +18,10 @@ interface ProductMetadataProps {
  * Rendered under the gallery slider on `md`+ ({@link ProductGallery}) and at the
  * end of the description on mobile ({@link ProductDetails}); the `className`
  * carries the `hidden md:block` / `md:hidden` toggle.
+ *
+ * The build's `no-manual-dom` check flags the `classList` calls. They stay: the
+ * boxes are rendered by `<salla-metadata>`, not React, so there is no ref or
+ * React state that reaches them.
  */
 export function ProductMetadata({ className }: ProductMetadataProps) {
   const rootRef = useRef<HTMLDivElement>(null);

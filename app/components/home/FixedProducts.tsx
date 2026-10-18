@@ -26,7 +26,7 @@ export interface FixedProductsProps {
  * Fork of the engine block — identical markup and data flow, only swapped to the
  * theme's {@link ProductCard} wrapper so the grid here gets the same card
  * treatment as every other product list (solid add-to-cart button, wishlist
- * moved to the footer, `is-theme-card`; see `04-components/product.scss`).
+ * moved to the footer; see `04-components/product.scss`).
  * Registered in `app/router.tsx`.
  *
  * Unlike the engine block, it shows as many products as the merchant's `limit`,

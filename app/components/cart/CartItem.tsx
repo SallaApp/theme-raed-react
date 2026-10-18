@@ -250,6 +250,8 @@ export function CartItem({ item, isFirst = false, onMutated }: CartItemProps) {
   const { t } = useTranslation();
   const { format } = useMoney();
   const [deleting, setDeleting] = useState(false);
+  // Set once the item is deleted with no `onMutated` to refetch the cart.
+  const [removed, setRemoved] = useState(false);
   // Belt-and-suspenders against `CartQuantity`'s debounced commit: it cancels
   // its pending timer once `disabled` propagates, but that's a render away —
   // a delete within the 350ms debounce window could otherwise still fire a
@@ -288,14 +290,16 @@ export function CartItem({ item, isFirst = false, onMutated }: CartItemProps) {
     setDeleting(true);
     try {
       await window.salla?.cart.deleteItem(item.id);
-      // Prefer a refetch (also refreshes the summary); fall back to yanking the row.
+      // Prefer a refetch (also refreshes the summary); fall back to dropping the row.
       if (onMutated) onMutated();
-      else document.querySelector(`#item-${item.id}`)?.remove();
+      else setRemoved(true);
     } catch {
       deletingRef.current = false;
       setDeleting(false);
     }
   };
+
+  if (removed) return null;
 
   const isFreeProduct = toNumber(item.price) === 0 && item.has_discount;
 

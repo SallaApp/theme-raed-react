@@ -1,4 +1,4 @@
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 import type {
   DragEvent as ReactDragEvent,
   MouseEvent as ReactMouseEvent,
@@ -17,6 +17,9 @@ const DRAG_THRESHOLD = 3;
  * so a click on a link / button inside a slide would never reach it — the
  * "similar products" cards became unclickable. Once a real drag happens,
  * `onClickCapture` swallows the trailing click so it doesn't activate a slide.
+ *
+ * `dragging` is true during a real drag: put `is-dragging` on the container
+ * with it, and spread the rest (the handlers) onto the container.
  */
 export function useDragScroll(ref: RefObject<HTMLDivElement | null>) {
   const state = useRef({
@@ -26,6 +29,7 @@ export function useDragScroll(ref: RefObject<HTMLDivElement | null>) {
     moved: false,
     pointerId: -1,
   });
+  const [dragging, setDragging] = useState(false);
 
   const onPointerDown = (event: ReactPointerEvent<HTMLDivElement>) => {
     const el = ref.current;
@@ -50,7 +54,7 @@ export function useDragScroll(ref: RefObject<HTMLDivElement | null>) {
       // plain click still reaches whatever is under it.
       state.current.moved = true;
       el.setPointerCapture?.(state.current.pointerId);
-      el.classList.add('is-dragging');
+      setDragging(true);
     }
 
     el.scrollLeft = state.current.startScroll - delta;
@@ -65,7 +69,7 @@ export function useDragScroll(ref: RefObject<HTMLDivElement | null>) {
     } catch {
       /* pointer was never captured (plain click) */
     }
-    el?.classList.remove('is-dragging');
+    setDragging(false);
   };
 
   const onClickCapture = (event: ReactMouseEvent<HTMLDivElement>) => {
@@ -79,6 +83,7 @@ export function useDragScroll(ref: RefObject<HTMLDivElement | null>) {
   const onDragStart = (event: ReactDragEvent<HTMLDivElement>) => event.preventDefault();
 
   return {
+    dragging,
     onPointerDown,
     onPointerMove,
     onPointerUp: endDrag,

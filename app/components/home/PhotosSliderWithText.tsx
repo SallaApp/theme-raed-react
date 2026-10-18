@@ -1,7 +1,7 @@
 import { memo, useRef } from 'react';
 import { Link, Image } from '@salla.sa/twilight-theme-engine/common';
 import { useTranslation } from '@salla.sa/twilight-theme-engine/i18n';
-import { ScrollCarousel } from '../common/ScrollCarousel';
+import { ScrollCarousel } from '../common';
 import { parseSlideVideo } from '../../lib/slideVideo';
 import { useMotionAllowed } from '../../hooks/useMotionAllowed';
 import { SlideVideo, useSlideVideos, type SliderBanner } from './EnhancedSlider';

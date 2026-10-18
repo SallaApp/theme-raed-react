@@ -336,7 +336,7 @@ export function AddProductToast() {
 
       <div className="s-add-product-toast__body">
         <Link to={product.url} className="s-add-product-toast__image" onClick={close}>
-          <img src={product.image} alt={product.name} loading="lazy" />
+          <img src={product.image} alt={product.name} width={80} height={80} loading="lazy" />
         </Link>
         <div className="s-add-product-toast__details">
           <Link to={product.url} className="s-add-product-toast__name" onClick={close}>

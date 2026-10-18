@@ -36,7 +36,7 @@ export function ScrollCarousel({
   autoPlay = false,
 }: ScrollCarouselProps) {
   const track = useRef<HTMLDivElement>(null);
-  const drag = useDragScroll(track);
+  const { dragging, ...drag } = useDragScroll(track);
   const [pos, setPos] = useState(0);
   const [thumb, setThumb] = useState(1);
 
@@ -120,7 +120,9 @@ export function ScrollCarousel({
     >
       <div
         ref={track}
-        className={`scroll-carousel__track hide-scroll ${className}`.trim()}
+        className={['scroll-carousel__track hide-scroll', dragging && 'is-dragging', className]
+          .filter(Boolean)
+          .join(' ')}
         onScroll={sync}
         {...drag}
       >

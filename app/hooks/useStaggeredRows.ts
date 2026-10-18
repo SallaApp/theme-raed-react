@@ -21,6 +21,10 @@ export const ROWS_IN_DELAY_MS = 350;
  * of that (registering the custom element, fetching data). A fixed delay can't
  * cover either reliably, so this watches the document (`BottomSheet` portals to
  * `<body>`) until a `rowSelector` match shows up, then releases the stagger.
+ *
+ * The build's `no-manual-dom` check flags its `document.querySelector` calls.
+ * They stay: the rows are rendered by the web component, inside a portal, so
+ * there is no ref or React state that reaches them.
  */
 export function useStaggeredRows(
   open: boolean,

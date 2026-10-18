@@ -89,3 +89,38 @@ describe('CartItem quantity', () => {
     expect(screen.getByLabelText<HTMLInputElement>('pages.products.quantity').value).toBe('1');
   });
 });
+
+describe('CartItem delete', () => {
+  const deleteItem = vi.fn(() => Promise.resolve());
+  let originalSalla: unknown;
+
+  beforeEach(() => {
+    originalSalla = (window as { salla?: unknown }).salla;
+    (window as { salla?: unknown }).salla = { cart: { deleteItem } };
+  });
+
+  afterEach(() => {
+    (window as { salla?: unknown }).salla = originalSalla;
+    deleteItem.mockClear();
+  });
+
+  it('refetches through onMutated after a delete, keeping the row for the refetch to drop', async () => {
+    const onMutated = vi.fn();
+    const { container } = render(<CartItem item={item} onMutated={onMutated} />);
+    await act(async () => {
+      fireEvent.click(screen.getByLabelText('common.elements.remove'));
+    });
+    expect(deleteItem).toHaveBeenCalledWith(1);
+    expect(onMutated).toHaveBeenCalledOnce();
+    expect(container.querySelector('#item-1')).toBeTruthy();
+  });
+
+  it('drops its own row after a delete when nothing refetches the cart', async () => {
+    const { container } = render(<CartItem item={item} />);
+    await act(async () => {
+      fireEvent.click(screen.getByLabelText('common.elements.remove'));
+    });
+    expect(deleteItem).toHaveBeenCalledWith(1);
+    expect(container.querySelector('#item-1')).toBeNull();
+  });
+});
