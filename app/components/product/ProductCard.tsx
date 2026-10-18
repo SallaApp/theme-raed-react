@@ -11,13 +11,13 @@ type ProductCardProps = ComponentProps<typeof EngineProductCard>;
  * Thin wrapper over the engine `ProductCard`.
  *
  * After mount (and whenever the lazily-hydrated bits appear):
- *  - marks a vertical card with `is-theme-card`, sets `display: none` inline
- *    on the engine's own image-corner wishlist button (a plain style mutation
- *    on an existing node — safe, unlike moving it; see below), and portals a
- *    theme-owned wishlist button into `.s-product-card-content-footer`
- *    instead. Hiding it inline rather than through `04-components/product.scss`
- *    keeps this component correct on its own — that stylesheet's `is-theme-card`
- *    rule still applies too once it lands, redundantly.
+ *  - sets `display: none` inline on a vertical card's own image-corner
+ *    wishlist button (a plain style mutation on an existing node — safe,
+ *    unlike moving it; see below), and portals a theme-owned wishlist button
+ *    into `.s-product-card-content-footer` instead. Hiding it inline rather
+ *    than only through `04-components/product.scss` keeps this component
+ *    correct on its own — that stylesheet's rule hides it too, from the
+ *    first paint.
  *  - The engine's button is a React-owned node; physically moving it there
  *    with `appendChild` (the previous approach) left React still tracking it
  *    as a child of the image container, so on unmount (e.g. navigating away)
@@ -44,8 +44,6 @@ export function ProductCard(props: ProductCardProps) {
 
       const vertical = root.querySelector<HTMLElement>('.s-product-card-vertical');
       if (!vertical) return;
-
-      vertical.classList.add('is-theme-card');
 
       const originalWishlistBtn = vertical.querySelector<HTMLElement>(
         '.s-product-card-image .s-product-card-wishlist-btn'

@@ -147,9 +147,9 @@
      default image-corner button first (a visible flash on every page with
      product cards, since every current usage goes through that wrapper).
      `.s-product-card-vertical` is the engine's own class, present in the
-     first paint, so hiding the image-overlay copy here (rather than behind
-     the JS-added `is-theme-card`) removes the flash instead of just timing
-     it differently. */
+     first paint, so hiding the image-overlay copy here (rather than from
+     the wrapper's effect) removes the flash instead of just timing it
+     differently. */
   .s-product-card-vertical .s-product-card-image > .s-product-card-wishlist-btn {
     display: none;
   }

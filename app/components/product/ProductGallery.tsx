@@ -1,4 +1,4 @@
-import { type RefObject, useCallback, useEffect, useRef, useState } from 'react';
+import { type ComponentRef, type RefObject, useCallback, useEffect, useRef, useState } from 'react';
 import { SallaSlider } from '@salla.sa/twilight-components-react/slider';
 import { SallaSocialShare } from '@salla.sa/twilight-components-react/social-share';
 import { useTwilight } from '@salla.sa/twilight-theme-engine/providers';
@@ -58,6 +58,7 @@ export function ProductGallery({ product }: ProductGalleryProps) {
   const wishlist = useWishlist();
   const { theme } = useTwilight();
   const sliderId = `details-slider-${product.id}`;
+  const sliderRef = useRef<ComponentRef<typeof SallaSlider>>(null);
   const objectFit = theme.settings.slider_background_size ?? 'cover';
   const hydrated = useHydrated();
   const isMobile = useMobileViewport();
@@ -85,7 +86,7 @@ export function ProductGallery({ product }: ProductGalleryProps) {
 
   useEffect(() => {
     const raf = requestAnimationFrame(() => {
-      const el = document.getElementById(sliderId);
+      const el = sliderRef.current;
       if (!el?.parentElement) return;
       const { parentElement, nextSibling } = el;
       parentElement.removeChild(el);
@@ -161,6 +162,7 @@ export function ProductGallery({ product }: ProductGalleryProps) {
       </div>
 
       <SallaSlider
+        ref={sliderRef}
         id={sliderId}
         className="details-slider rounded image-slider"
         type="thumbs"

@@ -2,6 +2,13 @@ import { afterEach, beforeEach, describe, it, expect, vi } from 'vitest';
 import { act, render, fireEvent } from '@testing-library/react';
 import { PhotosSliderWithText } from '../../../app/components/home/PhotosSliderWithText';
 
+// The common barrel loads every module in the folder; load only the carousel.
+vi.mock('../../../app/components/common', async () => ({
+  ScrollCarousel: (await vi.importActual<typeof import('../../../app/components/common/ScrollCarousel')>(
+    '../../../app/components/common/ScrollCarousel'
+  )).ScrollCarousel,
+}));
+
 vi.mock('@salla.sa/twilight-theme-engine/i18n', () => ({
   useTranslation: () => ({ t: (_k: string, fb?: string) => fb ?? _k }),
 }));

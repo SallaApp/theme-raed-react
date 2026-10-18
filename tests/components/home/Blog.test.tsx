@@ -4,6 +4,13 @@ import { render, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Blog } from '../../../app/components/home/Blog';
 
+// The common barrel loads every module in the folder; load only the carousel.
+vi.mock('../../../app/components/common', async () => ({
+  ScrollCarousel: (await vi.importActual<typeof import('../../../app/components/common/ScrollCarousel')>(
+    '../../../app/components/common/ScrollCarousel'
+  )).ScrollCarousel,
+}));
+
 const find = vi.fn();
 
 vi.mock('@salla.sa/twilight-theme-engine/api/blog', () => ({

@@ -3,6 +3,11 @@ import react from '@vitejs/plugin-react';
 
 export default defineConfig({
   plugins: [react()],
+  // One React for the app and the engine, as in vite.config.ts: a test that renders a real
+  // engine provider otherwise gets the engine's own copy (null hooks) when it is linked.
+  resolve: {
+    dedupe: ['react', 'react-dom', 'react/jsx-runtime'],
+  },
   test: {
     globals: true,
     environment: 'jsdom',

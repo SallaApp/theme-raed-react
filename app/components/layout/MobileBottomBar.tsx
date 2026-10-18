@@ -51,7 +51,12 @@ function getCartSdk(): CartSdk | undefined {
    header's own `<salla-user-menu>` dropdown is dismissed too). Whichever
    tab is tapped, every *other* overlay is dismissed first (so nothing is left
    stacked behind a backdrop) and the tapped tab's icon lights while its own
-   overlay is open. */
+   overlay is open.
+
+   The build's `no-manual-dom` check flags the `document.querySelector` calls
+   below. They stay: the search modal and the user menu are rendered by Salla
+   web components elsewhere on the page, so there is no ref or React state
+   that reaches them. */
 
 type Tab = 'home' | 'categories' | 'search' | 'cart' | 'account';
 

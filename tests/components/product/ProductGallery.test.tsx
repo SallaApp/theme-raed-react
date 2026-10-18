@@ -1,6 +1,6 @@
-import { useEffect, type ReactNode } from 'react';
+import { useEffect, type ReactNode, type Ref } from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, waitFor, fireEvent } from '@testing-library/react';
+import { act, render, waitFor, fireEvent } from '@testing-library/react';
 import { renderToString } from 'react-dom/server';
 import type { Product } from '@salla.sa/twilight-theme-engine/types';
 import { ProductGallery } from '../../../app/components/product/ProductGallery';
@@ -15,9 +15,24 @@ vi.mock('@salla.sa/twilight-theme-engine/i18n', () => ({
 
 // The web component never upgrades in jsdom; report it laid out, as Swiper's afterInit does.
 vi.mock('@salla.sa/twilight-components-react/slider', () => ({
-  SallaSlider: ({ children, onAfterInit }: { children?: ReactNode; onAfterInit?: () => void }) => {
+  // `ref` and `id` reach the element, as the real wrapper forwards them to `<salla-slider>`.
+  SallaSlider: ({
+    children,
+    onAfterInit,
+    ref,
+    id,
+  }: {
+    children?: ReactNode;
+    onAfterInit?: () => void;
+    ref?: Ref<HTMLDivElement>;
+    id?: string;
+  }) => {
     useEffect(() => onAfterInit?.(), [onAfterInit]);
-    return <div>{children}</div>;
+    return (
+      <div ref={ref} id={id}>
+        {children}
+      </div>
+    );
   },
 }));
 
@@ -96,6 +111,34 @@ describe('ProductGallery first image', () => {
     expect(html).toMatch(
       /product-gallery__poster[^]*?src="https:\/\/cdn\.test\/a\.webp"[^>]*fetchPriority="high"/
     );
+  });
+
+  it('re-inserts the slider it holds a ref to on the next frame, in the same place', async () => {
+    const frames: FrameRequestCallback[] = [];
+    const raf = vi.spyOn(window, 'requestAnimationFrame').mockImplementation((callback) => {
+      frames.push(callback);
+      return frames.length;
+    });
+
+    try {
+      const { container } = render(<ProductGallery product={product} />);
+      const slider = container.querySelector(`#details-slider-${product.id}`)!;
+      const parent = slider.parentElement!;
+      const next = slider.nextSibling;
+      const removeChild = vi.spyOn(parent, 'removeChild');
+      const insertBefore = vi.spyOn(parent, 'insertBefore');
+
+      act(() => frames.splice(0).forEach((callback) => callback(0)));
+
+      expect(removeChild).toHaveBeenCalledWith(slider);
+      expect(insertBefore).toHaveBeenCalledWith(slider, next);
+      expect(slider.parentElement).toBe(parent);
+      expect(slider.nextSibling).toBe(next);
+      // Let the poster's async hide finish inside the test.
+      await waitFor(() => expect(container.querySelector('.product-gallery__poster')).toBeNull());
+    } finally {
+      raf.mockRestore();
+    }
   });
 
   it('drops the copy once the slider is laid out', async () => {

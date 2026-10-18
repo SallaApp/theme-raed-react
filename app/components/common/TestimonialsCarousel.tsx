@@ -56,7 +56,7 @@ export interface TestimonialsCarouselProps {
 export function TestimonialsCarousel({ items, title, description }: TestimonialsCarouselProps) {
   const { t } = useTranslation();
   const scroller = useRef<HTMLDivElement>(null);
-  const drag = useDragScroll(scroller);
+  const { dragging, ...drag } = useDragScroll(scroller);
   const [pos, setPos] = useState(0);
   const [thumb, setThumb] = useState(1);
 
@@ -102,7 +102,7 @@ export function TestimonialsCarousel({ items, title, description }: Testimonials
 
       <div
         ref={scroller}
-        className="s-testimonials__scroller hide-scroll"
+        className={`s-testimonials__scroller hide-scroll${dragging ? ' is-dragging' : ''}`}
         onScroll={sync}
         {...drag}
       >
