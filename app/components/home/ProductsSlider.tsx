@@ -4,8 +4,8 @@ import { useTranslation } from '@salla.sa/twilight-theme-engine/i18n';
 import { product, type ProductsListSource } from '@salla.sa/twilight-theme-engine/api/product';
 import { Link } from '@salla.sa/twilight-theme-engine/common';
 import { ProductsListSkeleton } from '@salla.sa/twilight-components-react';
-import { ScrollCarousel } from '../common/ScrollCarousel';
-import { ProductCard } from '../product/ProductCard';
+import { ScrollCarousel } from '../common';
+import { ProductCard } from '../product';
 import { blockLimit } from '../../lib/blockLimit';
 
 export interface ProductsSliderProps {

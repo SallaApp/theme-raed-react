@@ -1,6 +1,6 @@
 import { memo } from 'react';
 import { useTranslation } from '@salla.sa/twilight-theme-engine/i18n';
-import { TestimonialsCarousel, type TestimonialItem } from '../common/TestimonialsCarousel';
+import { TestimonialsCarousel, type TestimonialItem } from '../common';
 
 export interface CustomTestimonialsProps {
   data: {

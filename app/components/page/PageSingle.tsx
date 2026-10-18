@@ -3,7 +3,7 @@ import { SallaComments } from '@salla.sa/twilight-components-react/comments';
 import type { StaticPage } from '@salla.sa/twilight-theme-engine/routes/page';
 import { Breadcrumb } from '@salla.sa/twilight-theme-engine/common';
 import { useComments } from '@salla.sa/twilight-theme-engine/hooks/useComments';
-import { BlockHookSlot } from '../common/BlockHookSlot';
+import { BlockHookSlot } from '../common';
 
 /** Engine `StaticPage` plus the `type` our forked loader threads through. */
 export type PageWithType = StaticPage & { type?: string };

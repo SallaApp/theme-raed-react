@@ -2,6 +2,13 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, fireEvent } from '@testing-library/react';
 import { CustomTestimonials } from '../../../app/components/home/CustomTestimonials';
 
+// Only the module under test, not the whole barrel and everything it re-exports.
+vi.mock('../../../app/components/common', async () => ({
+  TestimonialsCarousel: (await vi.importActual<typeof import('../../../app/components/common/TestimonialsCarousel')>(
+    '../../../app/components/common/TestimonialsCarousel'
+  )).TestimonialsCarousel,
+}));
+
 vi.mock('@salla.sa/twilight-theme-engine/i18n', () => ({
   useTranslation: () => ({ t: (_k: string, fb?: string) => fb ?? _k }),
 }));

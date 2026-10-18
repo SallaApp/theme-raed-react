@@ -24,8 +24,7 @@ import type { Product } from '@salla.sa/twilight-theme-engine/types';
 import { ProductCard } from './ProductCard';
 import { useAppliedFilters } from '@salla.sa/twilight-theme-engine/routes/product-listing';
 import type { ProductListFilters } from '@salla.sa/twilight-theme-engine/api/product';
-import { BlockHookSlot } from '../common/BlockHookSlot';
-import { BottomSheet } from '../common/BottomSheet';
+import { BlockHookSlot, BottomSheet } from '../common';
 import {
   ChevronDownIcon,
   DashboardSquare01Icon,
