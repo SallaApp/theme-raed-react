@@ -1,7 +1,7 @@
 import { Suspense, useCallback } from 'react';
 import type { Product } from '@salla.sa/twilight-theme-engine/types';
 import { product, type ProductsListSource } from '@salla.sa/twilight-theme-engine/api/product';
-import { ProductCard } from '../product/ProductCard';
+import { ProductCard } from '../product';
 import { ProductsSliderSkeleton, SallaProductsSlider } from '@salla.sa/twilight-components-react';
 
 interface ProductsSourceConfig {

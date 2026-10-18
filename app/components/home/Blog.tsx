@@ -4,7 +4,7 @@ import { Link, Image } from '@salla.sa/twilight-theme-engine/common';
 import { useDate } from '@salla.sa/twilight-theme-engine/hooks';
 import { useTranslation } from '@salla.sa/twilight-theme-engine/i18n';
 import { blog } from '@salla.sa/twilight-theme-engine/api/blog';
-import { ScrollCarousel } from '../common/ScrollCarousel';
+import { ScrollCarousel } from '../common';
 import { CalendarIcon, UserIcon } from '../icons';
 import {
   blogArticleAuthor,

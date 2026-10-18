@@ -22,6 +22,7 @@ import {
   EnhancedSquareBanners,
 } from './components/home';
 import { Blog } from './components/home/Blog';
+import { PhotosSliderWithText } from './components/home/PhotosSliderWithText';
 import { registerThemeHooks } from './hooks';
 import { ProductListSkeleton } from './components/product/ProductListSkeleton';
 
@@ -49,6 +50,7 @@ registerHomeComponents({
   // progress bar + arrows as testimonials/products, cards instead of a thin
   // full-width banner strip.
   'photos-slider': PhotosSlider,
+  'photos-slider-with-text': PhotosSliderWithText,
   // The renderer checks `home:featured-products:<view_style>` before the bare
   // key (theme-engine `HomePageRenderer.getComponentByPath`), and
   // `...DefaultHomeComponents` above still has the engine's own component
@@ -118,6 +120,12 @@ registerHomeComponentConfig({
     placeholder: <SliderSkeleton />,
     className: (data) =>
       `s-block s-block--photos-slider${data.is_repeated ? ' repeated-block' : ''}`,
+  },
+  'photos-slider-with-text': {
+    height: 'clamp(300px, 36vw, 470px)', // a card plus the controls row
+    placeholder: <SliderSkeleton />,
+    className: (data) =>
+      `s-block s-block--photos-slider-with-text${data.in_container ? ' s-block--photos-slider-with-text-boxed' : ''}`,
   },
 });
 

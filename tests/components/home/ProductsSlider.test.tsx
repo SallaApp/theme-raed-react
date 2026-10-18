@@ -5,6 +5,13 @@ import { ProductsSlider } from '../../../app/components/home/ProductsSlider';
 
 const listMock = vi.fn();
 
+// Only the module under test, not the whole barrel and everything it re-exports.
+vi.mock('../../../app/components/common', async () => ({
+  ScrollCarousel: (await vi.importActual<typeof import('../../../app/components/common/ScrollCarousel')>(
+    '../../../app/components/common/ScrollCarousel'
+  )).ScrollCarousel,
+}));
+
 vi.mock('@salla.sa/twilight-theme-engine/i18n', () => ({
   useTranslation: () => ({ t: (_k: string, fb?: string) => fb ?? _k }),
 }));
@@ -31,7 +38,7 @@ vi.mock('@salla.sa/twilight-components-react', () => ({
   ProductsListSkeleton: () => <div data-testid="list-skeleton" />,
 }));
 
-vi.mock('../../../app/components/product/ProductCard', () => ({
+vi.mock('../../../app/components/product', () => ({
   ProductCard: ({ product }: { product: { id?: number; name?: string } }) => (
     <div data-testid="product-card">{product.name}</div>
   ),

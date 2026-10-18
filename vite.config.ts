@@ -24,7 +24,7 @@ export default defineConfig(async () => ({
       // app/styles/vendor/swiper.css via app.css and critical.scss instead.
       {
         find: /^swiper\/css(\/navigation|\/autoplay)?$/,
-        replacement: path.resolve(__dirname, './app/lib/empty-css.ts'),
+        replacement: path.resolve(import.meta.dirname, './app/lib/empty-css.ts'),
       },
     ],
     // Singleton libs whose React context must be shared between the app and the

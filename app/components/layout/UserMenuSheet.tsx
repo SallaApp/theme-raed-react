@@ -1,7 +1,7 @@
 import type { MouseEvent } from 'react';
 import { SallaUserMenu } from '@salla.sa/twilight-components-react/user-menu';
 import { useTranslation } from '@salla.sa/twilight-theme-engine/i18n';
-import { BottomSheet } from '../common/BottomSheet';
+import { BottomSheet } from '../common';
 import { useCloseOnDesktop } from '../../hooks/useCloseOnDesktop';
 import { useStaggeredRows } from '../../hooks/useStaggeredRows';
 

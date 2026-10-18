@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import { ArrowLeftIcon, ArrowRightIcon } from '../icons';
 import { useDragScroll } from '../../hooks/useDragScroll';
+import { useMotionAllowed } from '../../hooks/useMotionAllowed';
 
 export interface ScrollCarouselProps {
   children: ReactNode;
@@ -9,7 +10,18 @@ export interface ScrollCarouselProps {
   className?: string;
   prevLabel: string;
   nextLabel: string;
+  /** Scroll forward one slide on a timer, back to the start at the end. Off by default. */
+  autoPlay?: boolean;
 }
+
+/** One slide and the gap after it. */
+function slideStep(el: HTMLElement) {
+  const first = el.firstElementChild as HTMLElement | null;
+  return (first?.offsetWidth || el.clientWidth * 0.8) + 24;
+}
+
+/** How long each slide stays before {@link ScrollCarousel}'s `autoPlay` moves on. */
+const AUTO_PLAY_INTERVAL_MS = 5000;
 
 /**
  * Horizontal scroller with a progress bar and prev/next arrows — the shared
@@ -21,6 +33,7 @@ export function ScrollCarousel({
   className = '',
   prevLabel,
   nextLabel,
+  autoPlay = false,
 }: ScrollCarouselProps) {
   const track = useRef<HTMLDivElement>(null);
   const drag = useDragScroll(track);
@@ -51,15 +64,60 @@ export function ScrollCarousel({
   const step = (dir: number) => {
     const el = track.current;
     if (!el) return;
-    const first = el.firstElementChild as HTMLElement | null;
-    const amount = (first?.offsetWidth || el.clientWidth * 0.8) + 24;
-    el.scrollBy({ left: dir * amount, behavior: 'smooth' });
+    el.scrollBy({ left: dir * slideStep(el), behavior: 'smooth' });
   };
+
+  // Autoplay waits while the visitor hovers, focuses or has just touched the row.
+  const hovered = useRef(false);
+  const focused = useRef(false);
+  const touchedAt = useRef(0);
+
+  // Follows the setting live: switching reduced motion on mid-visit stops the timer.
+  const motionAllowed = useMotionAllowed();
+  const playing = autoPlay && motionAllowed;
+
+  useEffect(() => {
+    if (!playing) return;
+    const timer = window.setInterval(() => {
+      const el = track.current;
+      if (!el || document.hidden || hovered.current || focused.current) return;
+      if (Date.now() - touchedAt.current < AUTO_PLAY_INTERVAL_MS * 2) return;
+      const max = el.scrollWidth - el.clientWidth;
+      if (max <= 0) return;
+      if (Math.abs(el.scrollLeft) >= max - 2) {
+        el.scrollTo({ left: 0, behavior: 'smooth' });
+        return;
+      }
+      // Forward is towards negative scrollLeft in RTL.
+      const forward = getComputedStyle(el).direction === 'rtl' ? -1 : 1;
+      el.scrollBy({ left: forward * slideStep(el), behavior: 'smooth' });
+    }, AUTO_PLAY_INTERVAL_MS);
+    return () => window.clearInterval(timer);
+  }, [playing]);
 
   const thumbWidth = Math.max(8, thumb * 100);
 
   return (
-    <div className="scroll-carousel">
+    <div
+      className="scroll-carousel"
+      {...(autoPlay && {
+        onMouseEnter: () => {
+          hovered.current = true;
+        },
+        onMouseLeave: () => {
+          hovered.current = false;
+        },
+        onFocus: () => {
+          focused.current = true;
+        },
+        onBlur: () => {
+          focused.current = false;
+        },
+        onPointerDown: () => {
+          touchedAt.current = Date.now();
+        },
+      })}
+    >
       <div
         ref={track}
         className={`scroll-carousel__track hide-scroll ${className}`.trim()}

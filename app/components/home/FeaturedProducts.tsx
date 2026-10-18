@@ -2,7 +2,7 @@ import { Suspense, useCallback, useMemo, useState } from 'react';
 import type { Product } from '@salla.sa/twilight-theme-engine/types';
 import { useTranslation } from '@salla.sa/twilight-theme-engine/i18n';
 import { product, type ProductsListSource } from '@salla.sa/twilight-theme-engine/api/product';
-import { ProductCard } from '../product/ProductCard';
+import { ProductCard } from '../product';
 import { SallaProductsList, ProductsListSkeleton } from '@salla.sa/twilight-components-react';
 
 /**

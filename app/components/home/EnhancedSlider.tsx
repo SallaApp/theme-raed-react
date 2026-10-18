@@ -2,9 +2,12 @@ import { memo, useCallback, useEffect, useRef, useState, type RefObject } from '
 import { SallaSlider } from '@salla.sa/twilight-components-react/slider';
 import { Link } from '@salla.sa/twilight-theme-engine/common';
 import { parseSlideVideo, youtubeEmbedUrl } from '../../lib/slideVideo';
+import { useMotionAllowed } from '../../hooks/useMotionAllowed';
 
 export interface SliderBanner {
   link?: string;
+  /** twilight.json `slides.url`: where the slide's button goes. */
+  url?: string;
   image?: string;
   mobile_image?: string;
   video?: string;
@@ -37,26 +40,12 @@ export interface EnhancedSliderProps {
   };
 }
 
-/** Whether motion is allowed (no reduced-motion request); false on the server and before hydration. */
-function useMotionAllowed() {
-  const [allowed, setAllowed] = useState(false);
-  useEffect(() => {
-    const query = window.matchMedia?.('(prefers-reduced-motion: reduce)');
-    // Follows the setting live: switching it on mid-visit removes the videos.
-    const sync = () => setAllowed(!query?.matches);
-    sync();
-    query?.addEventListener?.('change', sync);
-    return () => query?.removeEventListener?.('change', sync);
-  }, []);
-  return allowed;
-}
-
 /**
  * Plays each slide video while it is on screen and pauses it otherwise, so only
  * the visible slide's video downloads and plays. Videos are found in the DOM, not
  * through refs, so the copies Swiper makes of slides for looping play too.
  */
-function useSlideVideos(root: RefObject<HTMLElement | null>, enabled: boolean) {
+export function useSlideVideos(root: RefObject<HTMLElement | null>, enabled: boolean) {
   useEffect(() => {
     const element = root.current;
     if (!element || !enabled) return;
@@ -182,7 +171,7 @@ function YouTubeBackground({ id }: { id: string }) {
  * {@link useSlideVideos} to play it; a YouTube embed loads lazily and plays
  * muted on its own.
  */
-function SlideVideo({ url, poster }: { url?: string; poster?: string }) {
+export function SlideVideo({ url, poster }: { url?: string; poster?: string }) {
   const video = parseSlideVideo(url);
   if (!video) return null;
   if (video.kind === 'youtube') return <YouTubeBackground id={video.id} />;
@@ -219,9 +208,10 @@ function SlideText({ slide, poster }: { slide: SliderBanner; poster?: boolean })
             {slide.subtitle || slide.description}
           </p>
         )}
-        {slide.show_button && slide.btnname && (
+        {/* A button text shows the button; legacy `slider_banner` data can still switch it off. */}
+        {slide.btnname?.trim() && slide.show_button !== false && (
           <Link
-            to={slide.link || '#'}
+            to={slide.url || slide.link || '#'}
             data-swiper-parallax="-100"
             className="home-slider__cta"
             // The poster is aria-hidden, so its copy stays out of the tab order. Both link

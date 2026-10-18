@@ -59,7 +59,7 @@ vi.mock('@salla.sa/twilight-theme-engine/common', () => ({
     </a>
   ),
 }));
-vi.mock('../../../app/components/product/ProductCard', () => ({
+vi.mock('../../../app/components/product', () => ({
   ProductCard: ({ product }: { product: { name: string } }) => (
     <div className="theme-product-card">{product.name}</div>
   ),
