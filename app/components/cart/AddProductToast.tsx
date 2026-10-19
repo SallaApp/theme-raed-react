@@ -3,6 +3,7 @@ import { useTranslation } from '@salla.sa/twilight-theme-engine/i18n';
 import { Link } from '@salla.sa/twilight-theme-engine/common';
 import { useMoney } from '@salla.sa/twilight-theme-engine/hooks/useMoney';
 import type { Money } from '@salla.sa/twilight-theme-engine/types';
+import { CheckCircleIcon } from '../icons';
 
 interface ToastProduct {
   id: number;
@@ -280,11 +281,9 @@ export function AddProductToast() {
   const salla = window.salla as {
     url?: {
       get?: (key: string) => string | undefined;
-      asset?: (path: string) => string | undefined;
     };
   };
   const cartUrl = salla?.url?.get?.('cart') || '/cart';
-  const checkIconUrl = salla?.url?.asset?.('images/check.svg') || '/images/check.svg';
 
   const formatMoney = (value: number | Money): React.ReactNode => {
     return typeof value === 'object' && value.formatted
@@ -311,13 +310,10 @@ export function AddProductToast() {
 
       <div className="s-add-product-toast__header">
         <div className="s-add-product-toast__header-content">
-          <img
-            src={checkIconUrl}
-            alt="Success"
-            width={16}
-            height={16}
-            className="s-add-product-toast__icon"
-          />
+          {/* Inline, not `salla.url.asset('images/check.svg')`: that helper points at
+              a Twig theme's asset folder, which a React theme doesn't have
+              (`…/themes//images/check.svg`, a broken image). */}
+          <CheckCircleIcon className="s-add-product-toast__icon" aria-hidden="true" />
           <span className="s-add-product-toast__title">
             {t('pages.cart.added_to_cart', 'Added to Cart')}
           </span>

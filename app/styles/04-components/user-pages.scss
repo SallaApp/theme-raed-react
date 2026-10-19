@@ -205,6 +205,15 @@ body:has(.profile-header) {
 .blog-single .s-comments-item-user-info-name{
   @apply mx-0
 }
+
+/* Related articles in the sidebar (theme-engine's blog/BlogSinglePage.tsx):
+   each card's `p-5` boxed the image in padding; the image and text now sit
+   flush with the card's edges. The utility classes are matched as attributes:
+   written as `.rounded-md.p-5`, Sass `@extend`s elsewhere rewrite the
+   selector (one copy came out as a global `.p-5 { padding: 0 }`). */
+.blog-single aside > [class~='rounded-md'][class~='p-5'] {
+  padding: 0;
+}
 /* Wishlist "Share" bar — dropdown (share the list / share specific items) and the
    selection mode that puts a checkbox on each card. Markup: theme-engine's
    account/wishlist/WishlistShare.tsx. */

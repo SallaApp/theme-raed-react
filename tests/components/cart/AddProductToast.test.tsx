@@ -100,7 +100,8 @@ describe('AddProductToast', () => {
         off: (name: string, cb: Listener) => listeners.get(name)?.delete(cb),
       },
       cart: { api: { details } },
-      url: { get: () => '/cart', asset: (path: string) => `/${path}` },
+      // A React theme's `salla.url.asset` points at a Twig asset folder it doesn't have.
+      url: { get: () => '/cart', asset: (path: string) => `https://cdn.test/themes//${path}` },
     };
   });
 
@@ -116,6 +117,16 @@ describe('AddProductToast', () => {
     await waitFor(() => expect(screen.getAllByText('Added product').length).toBeGreaterThan(0));
     expect(screen.queryByText('Older line product')).toBeNull();
     expect(details).toHaveBeenCalledTimes(1);
+  });
+
+  it('draws its success icon inline, not from salla.url.asset', async () => {
+    const { container } = render(<AddProductToast />);
+
+    emitAdd(addResponse(ALL_LINES), String(ADDED.product_id));
+
+    await waitFor(() => expect(screen.getAllByText('Added product').length).toBeGreaterThan(0));
+    expect(container.querySelector('svg.s-add-product-toast__icon')).toBeTruthy();
+    expect(container.querySelector('img[src*="check.svg"]')).toBeNull();
   });
 
   it('shows the existing line when the added product merged into it', async () => {

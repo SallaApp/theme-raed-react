@@ -51,6 +51,16 @@ export const ArrowRightIcon = (props: SVGProps<SVGSVGElement>) => (
   </svg>
 );
 
+export const CheckCircleIcon = (props: SVGProps<SVGSVGElement>) => (
+  <svg {...base} {...props}>
+    <path
+      d="M22 12C22 6.477 17.523 2 12 2C6.477 2 2 6.477 2 12C2 17.523 6.477 22 12 22C17.523 22 22 17.523 22 12Z"
+      {...stroke}
+    />
+    <path d="M8 12.5L10.5 15L16 9" {...stroke} />
+  </svg>
+);
+
 export const ArrowLeftIcon = (props: SVGProps<SVGSVGElement>) => (
   <svg {...base} {...props}>
     <path d="M15 6C15 6 9.00001 10.4189 9 12C8.99999 13.5812 15 18 15 18" {...stroke} />

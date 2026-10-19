@@ -128,8 +128,8 @@
       "icon": "sicon-toggle-off",
       "format": "switch",
       "required": false,
-      "value": true,
-      "selected": true
+      "value": false,
+      "selected": false
     },
     {
       "type": "boolean",

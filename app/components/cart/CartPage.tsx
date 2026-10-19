@@ -18,7 +18,8 @@ import { CartItem } from './CartItem';
  *
  * Same data flow as upstream, plus a column-heading row above the items
  * (Products (N) · Quantity · Total) so the flat {@link CartItem} rows read as a
- * table. Upgrade notes: `FORKS.md`.
+ * table, and an error state with a retry when the cart can't be loaded
+ * (upstream keeps its skeleton up for good). Upgrade notes: `FORKS.md`.
  */
 function CartPageContent({ page }: CartPageProps) {
   const { store } = useTwilight();
@@ -29,12 +30,14 @@ function CartPageContent({ page }: CartPageProps) {
   usePageConfig(page);
   const { data: loyaltyPoints } = useQuery(loyalty.queries.points());
 
-  const { data: cartId } = useQuery(cart.queries.currentId());
+  const cartIdQuery = useQuery(cart.queries.currentId());
+  const cartId = cartIdQuery.data;
 
-  const { data: cartData } = useQuery({
+  const cartQuery = useQuery({
     ...cart.queries.detail(cartId!),
     enabled: !!cartId,
   });
+  const cartData = cartQuery.data;
 
   // Refetch after a row mutates its quantity / gets deleted — the SDK doesn't
   // push cart changes back into React, so item totals and the summary would
@@ -54,14 +57,40 @@ function CartPageContent({ page }: CartPageProps) {
     };
   }, [refetchCart]);
 
-  const isLoading = cartId == null || cartData === undefined;
+  // A failed request leaves its data undefined, so without this the skeleton
+  // stayed up for good (e.g. `cart/<id>` answering an error).
+  const failed = cartIdQuery.isError || cartQuery.isError;
+  // The SDK knew of no cart.
+  const noCart = cartIdQuery.isSuccess && cartId == null;
 
-  if (isLoading) {
+  if (failed) {
+    return (
+      <div className="container">
+        <Breadcrumb page={page} />
+        <div className="no-content-placeholder">
+          <i className="sicon-shopping-bag icon"></i>
+          <p>{t('common.errors.error_occurred', 'Something went wrong')}</p>
+          <button
+            type="button"
+            className="btn btn--outline-primary btn--rounded-full"
+            onClick={() => {
+              if (cartIdQuery.isError) cartIdQuery.refetch();
+              else cartQuery.refetch();
+            }}
+          >
+            {t('common.elements.try_again', 'Try again')}
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (!noCart && (cartId == null || cartData === undefined)) {
     return <CartSkeleton />;
   }
 
   // No cart: it was already turned into an order, shown empty like Twig.
-  if (!cartData || cartData.items.length === 0) {
+  if (noCart || !cartData || cartData.items.length === 0) {
     return (
       <div className="container">
         <Breadcrumb page={page} />
