@@ -2,6 +2,8 @@ import { describe, it, expect, vi } from 'vitest';
 import { render, fireEvent } from '@testing-library/react';
 import {
   FeaturedProducts,
+  FeaturedProductsSpecialOffer,
+  FeaturedProductsWithSpecialProduct,
   featuredProductsConfig,
 } from '../../../app/components/home/FeaturedProducts';
 
@@ -215,6 +217,45 @@ describe('FeaturedProducts', () => {
     expect(listMock).toHaveBeenCalledWith(
       expect.objectContaining({ source: 'selected', sourceValue: [7], perPage: 1 })
     );
+  });
+});
+
+describe('single-layout blocks', () => {
+  it('FeaturedProductsSpecialOffer shows the main product and title without a show_method', () => {
+    const { getAllByTestId, container } = render(
+      <FeaturedProductsSpecialOffer
+        data={{ main_product_title: 'Deal', main_product: { id: 9, name: 'Hero' }, items: [tab()] }}
+      />
+    );
+    const special = getAllByTestId('product-card').find(
+      (el) => el.getAttribute('data-layout') === 'special'
+    );
+    expect(special?.textContent).toBe('Hero');
+    expect(container.querySelector('h2.s-block__title')?.textContent).toBe('Deal');
+  });
+
+  it('FeaturedProductsWithSpecialProduct loads the active tab special product without a show_method', () => {
+    listMock.mockClear();
+    render(
+      <FeaturedProductsWithSpecialProduct
+        data={{ items: [tab({ special_product: { source: 'selected', source_value: [7] } })] }}
+      />
+    );
+    expect(listMock).toHaveBeenCalledWith(
+      expect.objectContaining({ source: 'selected', sourceValue: [7], perPage: 1 })
+    );
+  });
+
+  it('the tabs-only block ignores main_product without a special-offer show_method', () => {
+    const { getAllByTestId, container } = render(
+      <FeaturedProducts
+        data={{ main_product_title: 'Deal', main_product: { id: 9, name: 'Hero' }, items: [tab()] }}
+      />
+    );
+    expect(
+      getAllByTestId('product-card').some((el) => el.getAttribute('data-layout') === 'special')
+    ).toBe(false);
+    expect(container.querySelector('h2.s-block__title')).toBeNull();
   });
 });
 

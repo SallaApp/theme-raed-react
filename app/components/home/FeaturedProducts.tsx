@@ -15,6 +15,11 @@ import { SallaProductsList, ProductsListSkeleton } from '@salla.sa/twilight-comp
  * Keeps the engine/Twig class names (`s-block__title`, `tabs`, `tabs-wrapper`,
  * `tabs__item`, `tab-trigger`) so `04-components/home-blocks.scss` styles it.
  * {@link featuredProductsConfig} supplies the wrapper `<section>` classes.
+ *
+ * Its three layouts are separate blocks: `featured-products` (tabs only),
+ * `featured-products-special-offer` and `featured-products-special-product`.
+ * The older combined block chose one through `show_method`, which saved blocks
+ * may still carry, so `featured-products` keeps honoring it.
  */
 
 const TYPE_TO_SOURCE: Record<string, ProductsListSource> = {
@@ -25,6 +30,12 @@ const TYPE_TO_SOURCE: Record<string, ProductsListSource> = {
   top_rated_products: 'top-rated',
   tag: 'tags',
 };
+
+/** The block's layouts; each is its own home block (see {@link FeaturedProductsSpecialOffer}). */
+export type FeaturedProductsShowMethod =
+  | 'products_without_special_product'
+  | 'special_offer_with_products'
+  | 'products_with_special_product';
 
 /** A dropdown-list value as the backend may send it: scalar, `{value|key|id}`, or an array of those. */
 type PickerValue = string | number | { id?: unknown; value?: unknown; key?: unknown } | null | undefined;
@@ -179,7 +190,14 @@ function SpecialProduct({ value }: { value: FeaturedProductsData['main_product']
   );
 }
 
-export function FeaturedProducts({ data }: { data: FeaturedProductsData }) {
+export function FeaturedProducts({
+  data,
+  showMethod: fixedShowMethod,
+}: {
+  data: FeaturedProductsData;
+  /** Set by the single-layout blocks; otherwise the layout comes from `data.show_method`. */
+  showMethod?: FeaturedProductsShowMethod;
+}) {
   const { t } = useTranslation();
   const sections = useMemo(() => (Array.isArray(data.items) ? data.items : []), [data.items]);
   const [active, setActive] = useState('0');
@@ -196,7 +214,7 @@ export function FeaturedProducts({ data }: { data: FeaturedProductsData }) {
 
   if (!sections.length) return null;
 
-  const showMethod = scalar(data.show_method);
+  const showMethod = fixedShowMethod ?? scalar(data.show_method);
   const activeIndex = Math.max(0, tabs.findIndex((tab) => tab.key === active));
   const legacySpecial =
     data.main_product && typeof data.main_product === 'object' && 'product' in data.main_product
@@ -258,6 +276,16 @@ export function FeaturedProducts({ data }: { data: FeaturedProductsData }) {
       </div>
     </>
   );
+}
+
+/** `featured-products-special-offer` home block: a discounted product and its title beside the tabs. */
+export function FeaturedProductsSpecialOffer({ data }: { data: FeaturedProductsData }) {
+  return <FeaturedProducts data={data} showMethod="special_offer_with_products" />;
+}
+
+/** `featured-products-special-product` home block: each tab has its own highlighted product. */
+export function FeaturedProductsWithSpecialProduct({ data }: { data: FeaturedProductsData }) {
+  return <FeaturedProducts data={data} showMethod="products_with_special_product" />;
 }
 
 /** True for the multi-section grid layout (`style3`). */
