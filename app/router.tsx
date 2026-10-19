@@ -13,8 +13,6 @@ import {
   CustomTestimonials,
   EnhancedSlider,
   FeaturedProducts,
-  FeaturedProductsSpecialOffer,
-  FeaturedProductsWithSpecialProduct,
   featuredProductsConfig,
   FixedProducts,
   MainLinks,
@@ -24,6 +22,10 @@ import {
   EnhancedSquareBanners,
 } from './components/home';
 import { Blog } from './components/home/Blog';
+import {
+  FeaturedProductsSpecialOffer,
+  FeaturedProductsWithSpecialProduct,
+} from './components/home/FeaturedProducts';
 import { PhotosSliderWithText } from './components/home/PhotosSliderWithText';
 import { registerThemeHooks } from './hooks';
 import { ProductListSkeleton } from './components/product/ProductListSkeleton';
