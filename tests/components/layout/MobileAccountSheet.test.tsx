@@ -24,6 +24,37 @@ vi.mock('../../../app/components/common', async () => ({
   )).BottomSheet,
 }));
 
+// Mutable so a test can render the menu with no rows yet: real-world state the
+// first time `<salla-user-menu>` mounts, before it has registered and fetched
+// the profile. `vi.hoisted` shares it with the hoisted `vi.mock` factory. Two
+// representative rows only; which items show is the component's own business.
+const menuState = vi.hoisted(() => ({ hasItems: true }));
+
+vi.mock('@salla.sa/twilight-components-react/user-menu', () => ({
+  SallaUserMenu: ({ inline, className }: { inline?: boolean; className?: string }) => (
+    <salla-user-menu
+      data-testid="account-sheet-user-menu"
+      inline={inline ? '' : undefined}
+      class={className}
+    >
+      {menuState.hasItems && (
+        <ul className="s-user-menu-inline">
+          <li className="s-user-menu-dropdown-item">
+            <a className="s-user-menu-dropdown-item-link" href="/account/notifications">
+              Notifications
+            </a>
+          </li>
+          <li className="s-user-menu-dropdown-item s-user-menu-dropdown-item-logout">
+            <a className="s-user-menu-dropdown-item-link" href="/logout">
+              Logout
+            </a>
+          </li>
+        </ul>
+      )}
+    </salla-user-menu>
+  ),
+}));
+
 vi.mock('@salla.sa/twilight-theme-engine/hooks/useUser', () => ({
   useUser: () => ({ isLoggedIn: user.isLoggedIn }),
 }));
@@ -65,16 +96,9 @@ async function settle() {
   });
 }
 
-function renderSheet(onOpenImportantLinks = () => {}, onOpenUserMenu = () => {}) {
+function renderSheet(onOpenImportantLinks = () => {}) {
   const onClose = vi.fn();
-  render(
-    <MobileAccountSheet
-      open
-      onClose={onClose}
-      onOpenImportantLinks={onOpenImportantLinks}
-      onOpenUserMenu={onOpenUserMenu}
-    />
-  );
+  render(<MobileAccountSheet open onClose={onClose} onOpenImportantLinks={onOpenImportantLinks} />);
   return onClose;
 }
 
@@ -88,43 +112,39 @@ beforeEach(() => {
 afterEach(() => {
   cleanup();
   document.body.classList.remove('menu-opened');
+  menuState.hasItems = true;
 });
 
 describe('MobileAccountSheet', () => {
   it('renders nothing while closed', () => {
-    render(
-      <MobileAccountSheet
-        open={false}
-        onClose={() => {}}
-        onOpenImportantLinks={() => {}}
-        onOpenUserMenu={() => {}}
-      />
-    );
+    render(<MobileAccountSheet open={false} onClose={() => {}} onOpenImportantLinks={() => {}} />);
     expect(document.querySelector('.account-sheet')).toBeNull();
   });
 
-  it('titles the sheet "More", not "Account" — it is not account-specific any more', async () => {
+  it('titles the sheet "My Account"', async () => {
     renderSheet();
     await settle();
 
-    expect(document.querySelector('.bottom-sheet__title')?.textContent).toBe('More');
-    expect(document.querySelector('[role="dialog"]')?.getAttribute('aria-label')).toBe('More');
+    expect(document.querySelector('.bottom-sheet__title')?.textContent).toBe('My Account');
+    expect(document.querySelector('[role="dialog"]')?.getAttribute('aria-label')).toBe(
+      'My Account'
+    );
   });
 
-  it('opens the user-menu sheet from its own row for a logged-in customer, with no avatar header', async () => {
-    const onOpenUserMenu = vi.fn();
-    const onClose = renderSheet(() => {}, onOpenUserMenu);
+  it("opens with the logged-in customer's links inline, before the settings card", async () => {
+    renderSheet();
     await settle();
 
-    expect(document.querySelector('.account-sheet__user')).toBeNull();
-    fireEvent.click(screen.getByTestId('account-sheet-user-menu'));
-    expect(onOpenUserMenu).toHaveBeenCalledTimes(1);
-    // A second sheet, not a drill-in -- this one must close rather than stay
-    // open underneath it (same reasoning as the important-links row).
-    expect(onClose).not.toHaveBeenCalled();
+    const menu = screen.getByTestId('account-sheet-user-menu');
+    expect(menu.hasAttribute('inline')).toBe(true);
+    const settings = document.querySelector('.account-sheet__list');
+    expect(
+      menu.compareDocumentPosition(settings as Node) & Node.DOCUMENT_POSITION_FOLLOWING
+    ).toBeTruthy();
+    expect(screen.queryByTestId('account-sheet-login')).toBeNull();
   });
 
-  it('shows a login row for a guest instead of the account row', async () => {
+  it("shows a login card for a guest instead of the customer's links", async () => {
     user.isLoggedIn = false;
     const dispatch = vi.fn();
     (window as unknown as { salla: unknown }).salla = { event: { dispatch } };
@@ -132,7 +152,14 @@ describe('MobileAccountSheet', () => {
     await settle();
 
     expect(screen.queryByTestId('account-sheet-user-menu')).toBeNull();
-    fireEvent.click(screen.getByText('Login'));
+    const card = document.querySelector('.account-sheet__login-card');
+    expect(card?.textContent).toContain('Log in to your store account');
+    // The card comes first, before the settings rows.
+    expect(
+      card!.compareDocumentPosition(document.querySelector('.account-sheet__list') as Node) &
+        Node.DOCUMENT_POSITION_FOLLOWING
+    ).toBeTruthy();
+    fireEvent.click(screen.getByTestId('account-sheet-login'));
     expect(onClose).toHaveBeenCalledTimes(1);
     expect(dispatch).toHaveBeenCalledWith('login::open');
   });
@@ -364,6 +391,109 @@ describe('MobileAccountSheet', () => {
           <MobileAccountSheet open={false} onClose={onClose} onOpenImportantLinks={() => {}} />
         );
         expect(document.querySelector('.account-sheet__content')?.className).not.toContain('is-in');
+      } finally {
+        vi.useRealTimers();
+      }
+    });
+  });
+
+  // The customer's links card staggers on its own: `<salla-user-menu>`
+  // renders its rows asynchronously, so `.is-in` waits for a row to exist.
+  describe("customer's links entrance", () => {
+    const menuClass = () => document.querySelector('.account-sheet__user-menu')?.className ?? '';
+
+    /** Advance the fake `setTimeout`, then flush the two real animation frames
+     *  `afterNextPaint` waits for (fake timers don't fake requestAnimationFrame). */
+    async function advanceAndSettle(ms: number) {
+      act(() => {
+        vi.advanceTimersByTime(ms);
+      });
+      await settle();
+    }
+
+    it('does not release the stagger while the sheet is still sliding in', async () => {
+      vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+      try {
+        renderSheet();
+        expect(menuClass()).not.toContain('is-in');
+
+        await advanceAndSettle(165);
+        expect(menuClass()).not.toContain('is-in');
+      } finally {
+        vi.useRealTimers();
+      }
+    });
+
+    it('releases the stagger once the sheet has settled', async () => {
+      vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+      try {
+        renderSheet();
+
+        await advanceAndSettle(450);
+        expect(menuClass()).toContain('is-in');
+      } finally {
+        vi.useRealTimers();
+      }
+    });
+
+    it('resets the stagger on close, so it replays from the top next time', async () => {
+      vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+      try {
+        const { rerender } = render(
+          <MobileAccountSheet open onClose={() => {}} onOpenImportantLinks={() => {}} />
+        );
+        await advanceAndSettle(450);
+        expect(menuClass()).toContain('is-in');
+
+        rerender(
+          <MobileAccountSheet open={false} onClose={() => {}} onOpenImportantLinks={() => {}} />
+        );
+        expect(menuClass()).not.toContain('is-in');
+      } finally {
+        vi.useRealTimers();
+      }
+    });
+
+    it('waits for the menu to render a row before starting the stagger', async () => {
+      menuState.hasItems = false;
+      vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+      try {
+        renderSheet();
+
+        await advanceAndSettle(1000);
+        expect(menuClass()).not.toContain('is-in');
+
+        // The web component renders its rows later, outside React.
+        const menu = document.querySelector('.account-sheet__user-menu');
+        await act(async () => {
+          const li = document.createElement('li');
+          li.className = 's-user-menu-dropdown-item';
+          menu?.appendChild(li);
+          await Promise.resolve(); // let the MutationObserver's microtask run
+        });
+
+        await advanceAndSettle(1000);
+        expect(menuClass()).toContain('is-in');
+      } finally {
+        vi.useRealTimers();
+      }
+    });
+
+    it('still releases the stagger when the sheet starts closed and opens later', async () => {
+      vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+      try {
+        const { rerender } = render(
+          <MobileAccountSheet open={false} onClose={() => {}} onOpenImportantLinks={() => {}} />
+        );
+        expect(document.querySelector('.account-sheet__user-menu')).toBeNull();
+
+        rerender(<MobileAccountSheet open onClose={() => {}} onOpenImportantLinks={() => {}} />);
+        await act(async () => {
+          await Promise.resolve();
+        });
+
+        await advanceAndSettle(1000);
+        expect(menuClass()).toContain('is-in');
       } finally {
         vi.useRealTimers();
       }

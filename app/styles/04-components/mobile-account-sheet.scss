@@ -1,8 +1,9 @@
-/* Mobile "More" sheet — the bottom bar's More (···) tab.
+/* Mobile "My Account" sheet — the bottom bar's My Account tab.
    Markup: app/components/layout/MobileAccountSheet.tsx (a `BottomSheet` with
-   `.account-sheet`). Two card groups -- settings (profile, language,
-   currency, branch, important links) and contacts (telegram, email, mobile,
-   whatsapp) -- then the footer widgets (`.store-footer--sheet`). */
+   `.account-sheet`). The customer's links (logged in), then two card groups --
+   settings (login, language, currency, branch, important links) and contacts
+   (telegram, email, mobile, whatsapp) -- then the footer widgets
+   (`.store-footer--sheet`). */
 
 /* Full screen height — overrides the base sheet's `max-h-[85vh]`. `dvh` so the
    mobile browser's collapsing toolbar doesn't push the bottom out of view. */
@@ -14,8 +15,17 @@
   max-height: 100dvh;
 }
 
+/* A guest's first card: a prompt over a full-width login button. */
+.account-sheet__login-card {
+  @apply mb-4 flex flex-col items-center gap-4 rounded border border-gray-100 bg-white px-4 py-5 text-center;
+}
+
+.account-sheet__login-title {
+  @apply text-base font-bold text-gray-900;
+}
+
 .account-sheet__login {
-  @apply flex w-full items-center justify-center rounded bg-primary px-4 py-3 text-sm font-bold text-primary-reverse transition-opacity hover:opacity-90;
+  @apply flex w-full items-center justify-center rounded-full bg-primary px-4 py-3 text-sm font-bold text-primary-reverse transition-opacity hover:opacity-90;
 }
 
 /* Settings card: profile / language / currency / branch / important links.
@@ -325,7 +335,7 @@ body.footer-is-dark .store-footer--sheet {
   }
 }
 
-/* Important links sheet — the More sheet's "Important links" row opens this
+/* Important links sheet — the My Account sheet's "Important links" row opens this
    one in turn (`ImportantLinksSheet.tsx`), full-screen like `.account-sheet`
    rather than a drill-in within it. */
 .bottom-sheet.important-links-sheet {
@@ -336,29 +346,19 @@ body.footer-is-dark .store-footer--sheet {
   max-height: 100dvh;
 }
 
-/* User menu sheet — the More sheet's "Account" row opens this one in turn
-   (`UserMenuSheet.tsx`), mirroring the desktop header's user-menu dropdown.
-   Full-screen like `.account-sheet`, same reasoning as important-links above. */
-.bottom-sheet.user-menu-sheet {
-  @apply rounded-none;
-  height: 100vh;
-  height: 100dvh;
-  max-height: 100vh;
-  max-height: 100dvh;
-}
-
-/* `<salla-user-menu inline>` renders a bare `.s-user-menu-inline` list of
+/* The customer's links, the sheet's first card (logged in).
+   `<salla-user-menu inline>` renders a bare `.s-user-menu-inline` list of
    `.s-user-menu-dropdown-item` rows, each wrapping a
    `.s-user-menu-dropdown-item-link` anchor with its own icon + title -- same
    rounded card + divided-row shape as `.account-sheet__list` above
    (duplicated via @apply rather than shared literally -- web-component-
    rendered elements, no element to put the `account-sheet__list-item` class
    on). */
-.user-menu-sheet__menu .s-user-menu-inline {
-  @apply block overflow-hidden rounded border border-gray-100;
+.account-sheet__user-menu .s-user-menu-inline {
+  @apply mb-4 block overflow-hidden rounded border border-gray-100;
 }
 
-.user-menu-sheet__menu .s-user-menu-dropdown-item {
+.account-sheet__user-menu .s-user-menu-dropdown-item {
   @apply border-b border-gray-100 bg-white last:border-b-0;
   opacity: 0;
   transform: translateY(10px);
@@ -367,7 +367,7 @@ body.footer-is-dark .store-footer--sheet {
     transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.user-menu-sheet__menu .s-user-menu-dropdown-item-link {
+.account-sheet__user-menu .s-user-menu-dropdown-item-link {
   @apply flex w-full items-center gap-3 px-4 py-3.5 text-start text-sm font-medium text-gray-800 transition-colors hover:bg-gray-50;
 
   /* Icon -- an inline SVG the component renders itself (`innerHTML`), sized
@@ -403,7 +403,7 @@ body.footer-is-dark .store-footer--sheet {
    button (`.account-sheet .bottom-sheet__close`, below). The component
    marks it with this class on the `<li>` itself (always the last item --
    see salla-user-menu.tsx), not a separate wrapper. */
-.user-menu-sheet__menu .s-user-menu-dropdown-item-logout .s-user-menu-dropdown-item-link {
+.account-sheet__user-menu .s-user-menu-dropdown-item-logout .s-user-menu-dropdown-item-link {
   @apply text-[#ff443a];
 
   &:hover {
@@ -419,7 +419,7 @@ body.footer-is-dark .store-footer--sheet {
   }
 }
 
-.user-menu-sheet__menu.is-in .s-user-menu-dropdown-item {
+.account-sheet__user-menu.is-in .s-user-menu-dropdown-item {
   opacity: 1;
   transform: none;
 }
@@ -427,7 +427,7 @@ body.footer-is-dark .store-footer--sheet {
 /* Same reasoning as the important-links sheet's own stagger (nth-child
    standing in for a per-item delay there's no element to set directly). */
 @for $i from 1 through 20 {
-  .user-menu-sheet__menu.is-in .s-user-menu-dropdown-item:nth-child(#{$i}) {
+  .account-sheet__user-menu.is-in .s-user-menu-dropdown-item:nth-child(#{$i}) {
     transition-delay: #{($i - 1) * 70}ms;
   }
 }
@@ -505,7 +505,7 @@ body.footer-is-dark .store-footer--sheet {
   .store-footer--sheet .store-footer__inner > .container > *,
   .store-footer--sheet .store-footer__bottom,
   .important-links-sheet__menu .s-menu-footer-item,
-  .user-menu-sheet__menu .s-user-menu-dropdown-item {
+  .account-sheet__user-menu .s-user-menu-dropdown-item {
     opacity: 1 !important;
     transform: none !important;
     transition: none !important;

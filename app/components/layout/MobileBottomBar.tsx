@@ -4,7 +4,13 @@ import { useRouterState } from '@tanstack/react-router';
 import { Link } from '@salla.sa/twilight-theme-engine/common';
 import { useTranslation } from '@salla.sa/twilight-theme-engine/i18n';
 import { useMobileViewport } from '../../hooks/useMobileViewport';
-import { DashboardSquare01Icon, HomeIcon, SearchIcon, ShoppingBagIcon } from '../icons';
+import {
+  DashboardSquare01Icon,
+  HomeIcon,
+  SearchIcon,
+  ShoppingBagIcon,
+  UserIcon,
+} from '../icons';
 
 interface MobileBottomBarProps {
   /** Whether the shared nav drawer (opened from the header) is currently open. */
@@ -18,9 +24,8 @@ interface MobileBottomBarProps {
   /** Open / close that account sheet. */
   onAccountOpenChange?: (open: boolean) => void;
   /** Whether a "child" sheet opened from a row *inside* the account sheet --
-   *  {@link ImportantLinksSheet} or {@link UserMenuSheet} -- is open (either
-   *  one; the bar doesn't need to tell them apart). Lives under the same
-   *  More tab: it lights the tab the same way accountOpen does, and closes
+   *  {@link ImportantLinksSheet} -- is open. Lives under the same
+   *  My Account tab: it lights the tab the same way accountOpen does, and closes
    *  the same way every other overlay does when a different tab opens its
    *  own. */
   secondSheetOpen?: boolean;
@@ -361,9 +366,8 @@ export function MobileBottomBar({
     // opens the main menu drawer, so it's labelled "menu", not "categories"
     categories: t('blocks.header.main_menu', 'Menu'),
     cart: t('blocks.header.cart', 'Cart'),
-    // The sheet this tab opens isn't account-specific any more (profile is one
-    // row among settings + contacts) -- "More" names what it actually is.
-    account: t('common.titles.more', 'More'),
+    // The sheet opens with the customer's own links (orders, wishlist, …).
+    account: t('common.titles.my_account', 'My Account'),
   };
 
   return (
@@ -442,7 +446,7 @@ export function MobileBottomBar({
             onClick={handleAccount}
           >
             <span className="mobile-bottom-bar__icon">
-              <i className="sicon-ellipsis" aria-hidden="true" />
+              <UserIcon aria-hidden="true" />
             </span>
             <span className="mobile-bottom-bar__label">{labels.account}</span>
           </button>
