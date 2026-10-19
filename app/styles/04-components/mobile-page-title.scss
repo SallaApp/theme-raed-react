@@ -43,8 +43,10 @@ body.product-single .mobile-page-title {
   }
 
   /* Pages that also render a breadcrumb bar right below (`.breadcrumbs` lives in
-     the page content): drop the title bar's bottom gap so the two sit flush. */
-  .app-inner:has(.breadcrumbs) .mobile-page-title {
+     the page content), or the product listing's toolbar: drop the title bar's
+     bottom gap so the two sit flush. */
+  .app-inner:has(.breadcrumbs) .mobile-page-title,
+  .app-inner:has(.s-catalog-toolbar-sticky) .mobile-page-title {
     @apply mb-0;
   }
 }
