@@ -22,6 +22,10 @@ import {
   EnhancedSquareBanners,
 } from './components/home';
 import { Blog } from './components/home/Blog';
+import {
+  FeaturedProductsSpecialOffer,
+  FeaturedProductsWithSpecialProduct,
+} from './components/home/FeaturedProducts';
 import { PhotosSliderWithText } from './components/home/PhotosSliderWithText';
 import { registerThemeHooks } from './hooks';
 import { ProductListSkeleton } from './components/product/ProductListSkeleton';
@@ -62,6 +66,9 @@ registerHomeComponents({
   'featured-products:style1': FeaturedProducts,
   'featured-products:style2': FeaturedProducts,
   'featured-products:style3': FeaturedProducts,
+  // The block's other two layouts, each its own block.
+  'featured-products-special-offer': FeaturedProductsSpecialOffer,
+  'featured-products-special-product': FeaturedProductsWithSpecialProduct,
   // Fork of the engine block so its grid renders the theme's ProductCard wrapper.
   'fixed-products': FixedProducts,
   'slider-products-with-header': SliderProductsWithHeader,
@@ -74,6 +81,8 @@ registerHomeComponents({
 // `custom-testimonials` gets `s-block--full-bg` so the gray band runs edge-to-edge.
 registerHomeComponentConfig({
   'featured-products': featuredProductsConfig,
+  'featured-products-special-offer': featuredProductsConfig,
+  'featured-products-special-product': featuredProductsConfig,
   // Gray band edge to edge; the height is a card plus the heading and controls.
   blog: {
     className: 's-block s-block--blog s-block--full-bg',
