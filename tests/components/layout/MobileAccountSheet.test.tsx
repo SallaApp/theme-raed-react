@@ -118,7 +118,7 @@ describe('MobileAccountSheet', () => {
     expect(screen.queryByTestId('account-sheet-login')).toBeNull();
   });
 
-  it("shows a login row for a guest instead of the customer's links", async () => {
+  it("shows a login card for a guest instead of the customer's links", async () => {
     user.isLoggedIn = false;
     const dispatch = vi.fn();
     (window as unknown as { salla: unknown }).salla = { event: { dispatch } };
@@ -126,7 +126,14 @@ describe('MobileAccountSheet', () => {
     await settle();
 
     expect(screen.queryByTestId('user-menu')).toBeNull();
-    fireEvent.click(screen.getByText('Login'));
+    const card = document.querySelector('.account-sheet__login-card');
+    expect(card?.textContent).toContain('Log in to your store account');
+    // The card comes first, before the settings rows.
+    expect(
+      card!.compareDocumentPosition(document.querySelector('.account-sheet__list') as Node) &
+        Node.DOCUMENT_POSITION_FOLLOWING
+    ).toBeTruthy();
+    fireEvent.click(screen.getByTestId('account-sheet-login'));
     expect(onClose).toHaveBeenCalledTimes(1);
     expect(dispatch).toHaveBeenCalledWith('login::open');
   });

@@ -15,8 +15,17 @@
   max-height: 100dvh;
 }
 
+/* A guest's first card: a prompt over a full-width login button. */
+.account-sheet__login-card {
+  @apply mb-4 flex flex-col items-center gap-4 rounded border border-gray-100 bg-white px-4 py-5 text-center;
+}
+
+.account-sheet__login-title {
+  @apply text-base font-bold text-gray-900;
+}
+
 .account-sheet__login {
-  @apply flex w-full items-center justify-center rounded bg-primary px-4 py-3 text-sm font-bold text-primary-reverse transition-opacity hover:opacity-90;
+  @apply flex w-full items-center justify-center rounded-full bg-primary px-4 py-3 text-sm font-bold text-primary-reverse transition-opacity hover:opacity-90;
 }
 
 /* Settings card: profile / language / currency / branch / important links.

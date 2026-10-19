@@ -8,7 +8,7 @@ import { Footer } from '@salla.sa/twilight-theme-engine/layout';
 import { BottomSheet } from '../common';
 import { useCloseOnDesktop } from '../../hooks/useCloseOnDesktop';
 import { ROWS_IN_DELAY_MS, useStaggeredRows } from '../../hooks/useStaggeredRows';
-import { ArrowLeftIcon, LanguagesIcon, MapPinIcon, Money01Icon, UserIcon } from '../icons';
+import { ArrowLeftIcon, LanguagesIcon, MapPinIcon, Money01Icon } from '../icons';
 import { openStoreSwitcher, type StoreSwitcher } from '../../lib/storeSwitchers';
 
 interface MobileAccountSheetProps {
@@ -97,8 +97,29 @@ function UserMenuCard({ open }: { open: boolean }) {
   );
 }
 
+/** A guest's first card, in place of the customer's links: a prompt and a login button. */
+function LoginCard({ onClose }: { onClose: () => void }) {
+  const { t } = useTranslation();
+
+  return (
+    <div className="account-sheet__login-card">
+      <p className="account-sheet__login-title">
+        {t('blocks.header.login_to_your_account', 'Log in to your store account')}
+      </p>
+      <button
+        type="button"
+        className="account-sheet__login"
+        data-testid="account-sheet-login"
+        onClick={() => openLogin(onClose)}
+      >
+        {t('blocks.header.login', 'Login')}
+      </button>
+    </div>
+  );
+}
+
 /**
- * Settings card: login (guest), language, currency, branch, important links. Each of language / currency / branch shows only
+ * Settings card: language, currency, branch, important links. Each of language / currency / branch shows only
  * when the store actually has that feature -- same condition
  * {@link HeaderNav}'s own footer triggers use, so the two never disagree
  * about what the store supports.
@@ -112,7 +133,6 @@ function SettingsList({
 }) {
   const { t, languageName } = useTranslation();
   const { store, currency } = useTwilight();
-  const { isLoggedIn } = useUser();
 
   const currencyLabel = currency?.name || currency?.symbol || currency?.code || 'SAR';
 
@@ -150,15 +170,6 @@ function SettingsList({
 
   return (
     <div className="account-sheet__list">
-      {!isLoggedIn && (
-        <ListButton
-          icon={<UserIcon aria-hidden="true" />}
-          label={t('blocks.header.login', 'Login')}
-          testId="account-sheet-login"
-          onClick={() => openLogin(onClose)}
-        />
-      )}
-
       {rows
         .filter((row) => row.show)
         .map((row) => (
@@ -270,8 +281,8 @@ function ContactsList() {
 
 /**
  * Full-height "My Account" sheet the mobile bottom bar's account tab opens.
- * The customer's own links first (logged in), then two card groups --
- * settings (login for guests, language, currency, branch, important links) then
+ * The customer's own links first (or a login card for a guest), then two card groups --
+ * settings (language, currency, branch, important links) then
  * contacts (telegram, email, mobile, phone, WhatsApp, each conditional on the
  * merchant actually having set it) -- followed by the same footer widgets
  * (logo, description, social, tax / SBC / trust badges, footer menu, app
@@ -316,7 +327,7 @@ export function MobileAccountSheet({ open, onClose, onOpenImportantLinks }: Mobi
         className={`account-sheet__content${itemsIn ? ' is-in' : ''}`}
         onClick={closeOnLink}
       >
-        {isLoggedIn && <UserMenuCard open={open} />}
+        {isLoggedIn ? <UserMenuCard open={open} /> : <LoginCard onClose={onClose} />}
         <SettingsList onClose={onClose} onOpenImportantLinks={onOpenImportantLinks} />
         <ContactsList />
         <Suspense fallback={null}>
