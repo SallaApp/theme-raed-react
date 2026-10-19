@@ -361,8 +361,207 @@
     }
   }
 
+  /* Tabs only: five in a row on desktop, three on tablets. */
   .s-products-list-wrapper.s-products-list-vertical-cards {
-    @apply lg:grid-cols-5 lg:gap-6;
+    @apply md:grid-cols-3 lg:grid-cols-5 lg:gap-6;
+  }
+
+  /* Special offer: the title at the start and compact tabs at the end of one
+     row, instead of the full-width strip. */
+  .featured-products__header {
+    @apply mb-6 flex flex-wrap items-center justify-between gap-4 lg:mb-8;
+
+    .s-block__title {
+      margin: 0;
+    }
+  }
+
+  .tabs.tabs--inline {
+    @apply m-0 h-auto w-auto justify-end px-0;
+    background-color: transparent;
+
+    .tab-trigger {
+      @apply h-9 border border-gray-200 px-4;
+    }
+
+    .tab-trigger:hover,
+    .tab-trigger.is-active {
+      @apply border-primary;
+    }
+  }
+
+  /* Special offer: the highlighted product takes half the row and its four
+     products sit beside it in a 2×2 grid. */
+  .featured-products__layout.has-special {
+    /* The offer product is the same for every tab, so it keeps its own size
+       instead of stretching to each tab's grid (which jumped on tab change). */
+    align-items: start;
+
+    .s-products-list-wrapper.s-products-list-vertical-cards {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      @apply gap-4 lg:gap-6;
+    }
+
+    .s-product-card-special .s-product-card-image {
+      @screen lg {
+        min-height: 0;
+        aspect-ratio: 4 / 5;
+        flex: 0 0 auto;
+      }
+    }
+  }
+
+  /* Featured product + products: the sections side by side, each with its
+     featured product beside three list cards. */
+  .featured-products__column .s-block__title {
+    @apply mb-4;
+  }
+
+  .featured-products__column-body {
+    align-items: stretch;
+
+    .s-products-list-wrapper.s-products-list-horizontal-cards {
+      grid-template-columns: minmax(0, 1fr);
+      @apply gap-4;
+    }
+
+    .s-products-list-wrapper {
+      margin-bottom: 0;
+    }
+  }
+
+  /* The list cards share half a column with the featured product: a small
+     image so the name and price keep most of the width. */
+  .featured-products__column-body .s-product-card-horizontal {
+    .s-product-card-image {
+      @apply w-24 self-center sm:w-28;
+      height: auto;
+      aspect-ratio: 1 / 1;
+    }
+
+    .s-product-card-content {
+      @apply min-w-0 flex-1;
+    }
+  }
+
+  /* No featured product picked: one list, its first card featured on one
+     side and the other three stacked on the other. */
+  .featured-products__column-body .s-products-list-wrapper.featured-products__column-grid {
+    grid-template-columns: minmax(0, 1fr);
+    @apply gap-4;
+
+    @screen sm {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+
+      /* descendants: ProductCard wraps each card in a display:contents div */
+      .s-product-card-special {
+        grid-column: 1;
+        grid-row: 1 / span 3;
+      }
+
+      .s-product-card-horizontal {
+        grid-column: 2;
+      }
+    }
+  }
+
+  /* Desktop: side-by-side columns end level. Each column fills the row's
+     height down to its list, whose three cards share that height equally. */
+  @screen lg {
+    .featured-products__column {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .featured-products__column-body {
+      flex: 1 1 auto;
+
+      /* SallaProductsList's root around each list */
+      > .s-products-list {
+        display: flex;
+        flex-direction: column;
+      }
+
+      .s-products-list-wrapper.s-products-list-horizontal-cards {
+        flex: 1 1 auto;
+        grid-template-rows: repeat(3, 1fr);
+      }
+
+      .s-product-card-horizontal {
+        height: 100%;
+      }
+    }
+  }
+
+  .featured-products__special {
+    /* SallaProductsList's root and grid around the fetched card */
+    > *,
+    .featured-products__special-list {
+      display: flex;
+      flex-direction: column;
+      flex: 1 1 auto;
+      min-height: 0;
+    }
+
+    .featured-products__special-list > div {
+      display: contents;
+    }
+  }
+
+  /* The engine lays the special card out as a row (square image beside its
+     content), which overflowed the column. Stack it: the image fills the
+     height left over by the content, so the card matches the grid beside it. */
+  .s-product-card-special {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    border-radius: 0.75rem;
+    background-color: white;
+
+    .s-product-card-image {
+      flex: 1 1 auto;
+      width: 100%;
+      height: auto;
+      /* stacked above the grid on small screens: a square image */
+      aspect-ratio: 1 / 1;
+
+      @screen lg {
+        min-height: 16rem;
+        aspect-ratio: auto;
+      }
+
+      /* the engine Image's own wrapper carries an inline 1:1 aspect-ratio */
+      > a,
+      > a > div:has(> img),
+      picture {
+        display: block;
+        width: 100%;
+        height: 100%;
+        aspect-ratio: auto !important;
+      }
+
+      img {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+    }
+
+    .s-product-card-content {
+      flex: 0 0 auto;
+      width: 100%;
+      height: auto;
+      padding: 1rem 1.25rem 1.25rem;
+    }
+
+    .s-product-card-content-title {
+      @apply text-lg;
+    }
   }
 }
 

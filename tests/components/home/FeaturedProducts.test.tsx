@@ -246,6 +246,63 @@ describe('single-layout blocks', () => {
     );
   });
 
+  it('FeaturedProductsSpecialOffer puts the title and tabs in one header row', () => {
+    const { container } = render(
+      <FeaturedProductsSpecialOffer
+        data={{
+          main_product_title: 'Deal',
+          main_product: { id: 9, name: 'Hero' },
+          items: [tab({ name: 'A' }), tab({ name: 'B' })],
+        }}
+      />
+    );
+    const header = container.querySelector('.featured-products__header');
+    expect(header?.querySelector('h2')?.textContent).toBe('Deal');
+    expect(header?.querySelector('.tabs.tabs--inline')).toBeTruthy();
+  });
+
+  it('FeaturedProductsWithSpecialProduct shows every section side by side, three list cards each', () => {
+    listMock.mockClear();
+    const { container } = render(
+      <FeaturedProductsWithSpecialProduct
+        data={{
+          items: [
+            tab({ name: 'A', special_product: { id: 9, name: 'Hero A' } }),
+            tab({ name: 'B', special_product: { id: 8, name: 'Hero B' } }),
+          ],
+        }}
+      />
+    );
+    const columns = container.querySelectorAll('.featured-products__column');
+    expect(columns).toHaveLength(2);
+    expect(container.querySelector('.tabs')).toBeNull();
+    expect([...columns].map((c) => c.querySelector('h2')?.textContent)).toEqual(['A', 'B']);
+    expect(
+      [...columns].map(
+        (c) => c.querySelector('[data-layout="special"]')?.textContent
+      )
+    ).toEqual(['Hero A', 'Hero B']);
+    expect(columns[0].querySelectorAll('[data-layout="horizontal"]').length).toBeGreaterThan(0);
+    expect(listMock).toHaveBeenCalledWith(expect.objectContaining({ perPage: 3 }));
+  });
+
+  it('FeaturedProductsWithSpecialProduct features a column\'s first product when none is picked', () => {
+    listMock.mockClear();
+    const { container } = render(
+      <FeaturedProductsWithSpecialProduct data={{ items: [tab({ name: 'A', special_product: [] })] }} />
+    );
+    const column = container.querySelector('.featured-products__column');
+    expect(listMock).toHaveBeenCalledWith(expect.objectContaining({ source: 'latest', perPage: 4 }));
+    expect(column?.querySelector('[data-layout="special"]')?.textContent).toBe('Full P1');
+    expect(column?.querySelector('[data-layout="horizontal"]')?.textContent).toBe('Full P2');
+  });
+
+  it('the tabs-only block loads ten products per tab', () => {
+    listMock.mockClear();
+    render(<FeaturedProducts data={{ items: [tab()] }} />);
+    expect(listMock).toHaveBeenCalledWith(expect.objectContaining({ perPage: 10 }));
+  });
+
   it('the tabs-only block ignores main_product without a special-offer show_method', () => {
     const { getAllByTestId, container } = render(
       <FeaturedProducts
