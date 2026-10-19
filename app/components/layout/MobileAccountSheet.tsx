@@ -1,12 +1,13 @@
 import { Suspense, useEffect, useState } from 'react';
 import type { MouseEvent, ReactNode } from 'react';
+import { SallaUserMenu } from '@salla.sa/twilight-components-react/user-menu';
 import { useTwilight } from '@salla.sa/twilight-theme-engine/providers';
 import { useTranslation } from '@salla.sa/twilight-theme-engine/i18n';
 import { useUser } from '@salla.sa/twilight-theme-engine/hooks/useUser';
 import { Footer } from '@salla.sa/twilight-theme-engine/layout';
 import { BottomSheet } from '../common';
 import { useCloseOnDesktop } from '../../hooks/useCloseOnDesktop';
-import { ROWS_IN_DELAY_MS } from '../../hooks/useStaggeredRows';
+import { ROWS_IN_DELAY_MS, useStaggeredRows } from '../../hooks/useStaggeredRows';
 import { ArrowLeftIcon, LanguagesIcon, MapPinIcon, Money01Icon, UserIcon } from '../icons';
 import { openStoreSwitcher, type StoreSwitcher } from '../../lib/storeSwitchers';
 
@@ -15,9 +16,6 @@ interface MobileAccountSheetProps {
   onClose: () => void;
   /** The sheet's own "Important links" row opens a second, full-screen sheet for it. */
   onOpenImportantLinks: () => void;
-  /** The sheet's own "Account" row (logged in) opens a second, full-screen
-   *  sheet mirroring the desktop header's user-menu dropdown. */
-  onOpenUserMenu: () => void;
 }
 
 /** Close the sheet, then open the Salla login modal over the page. */
@@ -76,8 +74,31 @@ function ListButton({
 }
 
 /**
- * Settings card: account (logged in) / login (guest), language, currency,
- * branch, important links. Each of language / currency / branch shows only
+ * The logged-in customer's links: `<salla-user-menu inline>`, the same items
+ * as the desktop header's dropdown (orders, notifications, pending orders,
+ * wishlist, wallet, loyalty, profile, logout). Each is gated on store features
+ * inside the component, with no equivalent check exposed to theme code, so the
+ * component renders the rows rather than a hand-built list.
+ */
+function UserMenuCard({ open }: { open: boolean }) {
+  // Its rows render asynchronously, so they get their own staggered entrance.
+  const rowsIn = useStaggeredRows(
+    open,
+    '.account-sheet__user-menu',
+    '.account-sheet__user-menu .s-user-menu-dropdown-item'
+  );
+
+  return (
+    <SallaUserMenu
+      inline
+      className={`account-sheet__user-menu${rowsIn ? ' is-in' : ''}`}
+      suppressHydrationWarning
+    />
+  );
+}
+
+/**
+ * Settings card: login (guest), language, currency, branch, important links. Each of language / currency / branch shows only
  * when the store actually has that feature -- same condition
  * {@link HeaderNav}'s own footer triggers use, so the two never disagree
  * about what the store supports.
@@ -85,11 +106,9 @@ function ListButton({
 function SettingsList({
   onClose,
   onOpenImportantLinks,
-  onOpenUserMenu,
 }: {
   onClose: () => void;
   onOpenImportantLinks: () => void;
-  onOpenUserMenu: () => void;
 }) {
   const { t, languageName } = useTranslation();
   const { store, currency } = useTwilight();
@@ -131,17 +150,11 @@ function SettingsList({
 
   return (
     <div className="account-sheet__list">
-      {isLoggedIn ? (
-        <ListButton
-          icon={<UserIcon aria-hidden="true" />}
-          label={t('common.titles.account', 'Account')}
-          testId="account-sheet-user-menu"
-          onClick={onOpenUserMenu}
-        />
-      ) : (
+      {!isLoggedIn && (
         <ListButton
           icon={<UserIcon aria-hidden="true" />}
           label={t('blocks.header.login', 'Login')}
+          testId="account-sheet-login"
           onClick={() => openLogin(onClose)}
         />
       )}
@@ -256,8 +269,9 @@ function ContactsList() {
 }
 
 /**
- * Full-height sheet the mobile bottom bar's More tab opens. Two card groups --
- * settings (account, language, currency, branch, important links) then
+ * Full-height "My Account" sheet the mobile bottom bar's account tab opens.
+ * The customer's own links first (logged in), then two card groups --
+ * settings (login for guests, language, currency, branch, important links) then
  * contacts (telegram, email, mobile, phone, WhatsApp, each conditional on the
  * merchant actually having set it) -- followed by the same footer widgets
  * (logo, description, social, tax / SBC / trust badges, footer menu, app
@@ -266,13 +280,9 @@ function ContactsList() {
  * Mounted once in {@link ThemeLayout}, which owns `open` and shares it with
  * {@link MobileBottomBar}. Styling: `04-components/mobile-account-sheet.scss`.
  */
-export function MobileAccountSheet({
-  open,
-  onClose,
-  onOpenImportantLinks,
-  onOpenUserMenu,
-}: MobileAccountSheetProps) {
+export function MobileAccountSheet({ open, onClose, onOpenImportantLinks }: MobileAccountSheetProps) {
   const { t } = useTranslation();
+  const { isLoggedIn } = useUser();
 
   useCloseOnDesktop(open, onClose);
 
@@ -298,7 +308,7 @@ export function MobileAccountSheet({
     <BottomSheet
       open={open}
       onClose={onClose}
-      title={t('common.titles.more', 'More')}
+      title={t('common.titles.my_account', 'My Account')}
       className="account-sheet"
     >
       <div
@@ -306,11 +316,8 @@ export function MobileAccountSheet({
         className={`account-sheet__content${itemsIn ? ' is-in' : ''}`}
         onClick={closeOnLink}
       >
-        <SettingsList
-          onClose={onClose}
-          onOpenImportantLinks={onOpenImportantLinks}
-          onOpenUserMenu={onOpenUserMenu}
-        />
+        {isLoggedIn && <UserMenuCard open={open} />}
+        <SettingsList onClose={onClose} onOpenImportantLinks={onOpenImportantLinks} />
         <ContactsList />
         <Suspense fallback={null}>
           <Footer inSheet />

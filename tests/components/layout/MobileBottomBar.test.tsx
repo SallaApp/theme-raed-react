@@ -54,7 +54,7 @@ vi.mock('@salla.sa/twilight-theme-engine/i18n', () => ({
       const en: Record<string, string> = {
         'common.titles.home': 'Home',
         'common.titles.categories': 'Categories',
-        'common.titles.more': 'More',
+        'common.titles.my_account': 'My Account',
         'blocks.header.cart': 'Cart',
         'blocks.header.search': 'Search',
         'blocks.header.main_menu': 'Menu',
@@ -87,15 +87,15 @@ describe('MobileBottomBar', () => {
     expect(screen.getByText('Search')).toBeTruthy();
     expect(screen.getByText('Menu')).toBeTruthy();
     expect(screen.getByText('Cart')).toBeTruthy();
-    expect(screen.getByText('More')).toBeTruthy();
+    expect(screen.getByText('My Account')).toBeTruthy();
   });
 
-  it('uses the three-dot sallaicons glyph for the More tab, not a line-icon SVG', () => {
+  it('uses the user line icon for the My Account tab', () => {
     render(<MobileBottomBar navOpen={false} onOpenNav={noop} />);
 
-    const more = screen.getByTestId('mobile-bottom-bar-account');
-    expect(more.querySelector('i.sicon-ellipsis')).toBeTruthy();
-    expect(more.querySelector('svg')).toBeNull();
+    const account = screen.getByTestId('mobile-bottom-bar-account');
+    expect(account.querySelector('svg')).toBeTruthy();
+    expect(account.querySelector('i.sicon-ellipsis')).toBeNull();
   });
 
   it('opens the Salla search modal when the Search tab is tapped', () => {
@@ -206,7 +206,7 @@ describe('MobileBottomBar', () => {
     expect(screen.getByTestId('mobile-bottom-bar-home').className).not.toContain('is-active');
   });
 
-  it('lights the Account/More tab while important links — a child of it — is open, even though accountOpen is false', () => {
+  it('lights the My Account tab while important links — a child of it — is open, even though accountOpen is false', () => {
     render(<MobileBottomBar navOpen={false} onOpenNav={noop} secondSheetOpen />);
 
     const account = screen.getByTestId('mobile-bottom-bar-account');

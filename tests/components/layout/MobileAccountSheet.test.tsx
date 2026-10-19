@@ -24,6 +24,12 @@ vi.mock('../../../app/components/common', async () => ({
   )).BottomSheet,
 }));
 
+vi.mock('@salla.sa/twilight-components-react/user-menu', () => ({
+  SallaUserMenu: ({ inline, className }: { inline?: boolean; className?: string }) => (
+    <div data-testid="user-menu" data-inline={String(!!inline)} className={className} />
+  ),
+}));
+
 vi.mock('@salla.sa/twilight-theme-engine/hooks/useUser', () => ({
   useUser: () => ({ isLoggedIn: user.isLoggedIn }),
 }));
@@ -65,16 +71,9 @@ async function settle() {
   });
 }
 
-function renderSheet(onOpenImportantLinks = () => {}, onOpenUserMenu = () => {}) {
+function renderSheet(onOpenImportantLinks = () => {}) {
   const onClose = vi.fn();
-  render(
-    <MobileAccountSheet
-      open
-      onClose={onClose}
-      onOpenImportantLinks={onOpenImportantLinks}
-      onOpenUserMenu={onOpenUserMenu}
-    />
-  );
+  render(<MobileAccountSheet open onClose={onClose} onOpenImportantLinks={onOpenImportantLinks} />);
   return onClose;
 }
 
@@ -92,46 +91,41 @@ afterEach(() => {
 
 describe('MobileAccountSheet', () => {
   it('renders nothing while closed', () => {
-    render(
-      <MobileAccountSheet
-        open={false}
-        onClose={() => {}}
-        onOpenImportantLinks={() => {}}
-        onOpenUserMenu={() => {}}
-      />
-    );
+    render(<MobileAccountSheet open={false} onClose={() => {}} onOpenImportantLinks={() => {}} />);
     expect(document.querySelector('.account-sheet')).toBeNull();
   });
 
-  it('titles the sheet "More", not "Account" — it is not account-specific any more', async () => {
+  it('titles the sheet "My Account"', async () => {
     renderSheet();
     await settle();
 
-    expect(document.querySelector('.bottom-sheet__title')?.textContent).toBe('More');
-    expect(document.querySelector('[role="dialog"]')?.getAttribute('aria-label')).toBe('More');
+    expect(document.querySelector('.bottom-sheet__title')?.textContent).toBe('My Account');
+    expect(document.querySelector('[role="dialog"]')?.getAttribute('aria-label')).toBe(
+      'My Account'
+    );
   });
 
-  it('opens the user-menu sheet from its own row for a logged-in customer, with no avatar header', async () => {
-    const onOpenUserMenu = vi.fn();
-    const onClose = renderSheet(() => {}, onOpenUserMenu);
+  it("opens with the logged-in customer's links inline, before the settings card", async () => {
+    renderSheet();
     await settle();
 
-    expect(document.querySelector('.account-sheet__user')).toBeNull();
-    fireEvent.click(screen.getByTestId('account-sheet-user-menu'));
-    expect(onOpenUserMenu).toHaveBeenCalledTimes(1);
-    // A second sheet, not a drill-in -- this one must close rather than stay
-    // open underneath it (same reasoning as the important-links row).
-    expect(onClose).not.toHaveBeenCalled();
+    const menu = screen.getByTestId('user-menu');
+    expect(menu.getAttribute('data-inline')).toBe('true');
+    const settings = document.querySelector('.account-sheet__list');
+    expect(
+      menu.compareDocumentPosition(settings as Node) & Node.DOCUMENT_POSITION_FOLLOWING
+    ).toBeTruthy();
+    expect(screen.queryByTestId('account-sheet-login')).toBeNull();
   });
 
-  it('shows a login row for a guest instead of the account row', async () => {
+  it("shows a login row for a guest instead of the customer's links", async () => {
     user.isLoggedIn = false;
     const dispatch = vi.fn();
     (window as unknown as { salla: unknown }).salla = { event: { dispatch } };
     const onClose = renderSheet();
     await settle();
 
-    expect(screen.queryByTestId('account-sheet-user-menu')).toBeNull();
+    expect(screen.queryByTestId('user-menu')).toBeNull();
     fireEvent.click(screen.getByText('Login'));
     expect(onClose).toHaveBeenCalledTimes(1);
     expect(dispatch).toHaveBeenCalledWith('login::open');

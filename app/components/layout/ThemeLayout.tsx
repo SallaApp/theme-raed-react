@@ -10,7 +10,6 @@ import { ImportantLinksSheet } from './ImportantLinksSheet';
 import { MobileAccountSheet } from './MobileAccountSheet';
 import { MobileBottomBar } from './MobileBottomBar';
 import { MobilePageTitleBar } from './MobilePageTitleBar';
-import { UserMenuSheet } from './UserMenuSheet';
 
 /**
  * Theme layout — passed to `<TwilightProvider layout={ThemeLayout}>` in
@@ -119,16 +118,13 @@ export function ThemeLayout({ children }: ThemeLayoutProps) {
   // Owned here so the header's nav drawer and the mobile bottom bar's Categories
   // tab drive the same slide-in panel.
   const [navOpen, setNavOpen] = useState(false);
-  // The mobile bottom bar's More tab opens this sheet (settings + contacts +
-  // the footer widgets, which the page footer doesn't show on mobile).
+  // The mobile bottom bar's My Account tab opens this sheet (the customer's
+  // links, settings, contacts and the footer widgets, which the page footer
+  // doesn't show on mobile).
   const [accountOpen, setAccountOpen] = useState(false);
   // Its own "Important links" row opens this one in turn -- a second
   // full-screen sheet for the footer menu, not a drill-in within the first.
   const [importantLinksOpen, setImportantLinksOpen] = useState(false);
-  // Its own "Account" row (logged in) opens this one in turn -- mirrors the
-  // desktop header's user-menu dropdown (notifications / orders / pending
-  // orders / wishlist / profile / logout).
-  const [userMenuOpen, setUserMenuOpen] = useState(false);
 
   // Close every sheet/drawer on any route change — a bottom-bar tab (Home,
   // Cart) or a link inside one of them navigates without touching their own
@@ -138,7 +134,6 @@ export function ThemeLayout({ children }: ThemeLayoutProps) {
     setNavOpen(false);
     setAccountOpen(false);
     setImportantLinksOpen(false);
-    setUserMenuOpen(false);
   }, [pathname]);
 
   const imgRatio = productImageRatio(theme?.settings?.product_card_img_ratio);
@@ -163,11 +158,8 @@ export function ThemeLayout({ children }: ThemeLayoutProps) {
           onCloseNav={() => setNavOpen(false)}
           accountOpen={accountOpen}
           onAccountOpenChange={setAccountOpen}
-          secondSheetOpen={importantLinksOpen || userMenuOpen}
-          onCloseSecondSheet={() => {
-            setImportantLinksOpen(false);
-            setUserMenuOpen(false);
-          }}
+          secondSheetOpen={importantLinksOpen}
+          onCloseSecondSheet={() => setImportantLinksOpen(false)}
         />
       </div>
 
@@ -178,15 +170,9 @@ export function ThemeLayout({ children }: ThemeLayoutProps) {
           setAccountOpen(false);
           setImportantLinksOpen(true);
         }}
-        onOpenUserMenu={() => {
-          setAccountOpen(false);
-          setUserMenuOpen(true);
-        }}
       />
 
       <ImportantLinksSheet open={importantLinksOpen} onClose={() => setImportantLinksOpen(false)} />
-
-      <UserMenuSheet open={userMenuOpen} onClose={() => setUserMenuOpen(false)} />
 
       <GlobalModals />
     </>
