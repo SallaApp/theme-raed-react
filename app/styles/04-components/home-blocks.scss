@@ -789,7 +789,7 @@
 
   &--features {
     &__item {
-      @apply cursor-pointer bg-white transition-shadow duration-500 shadow-[5px_10px_30px_rgba(43,45,52,0.12)] hover:shadow-[5px_10px_30px_rgba(43,45,52,0.2)] rounded flex-grow flex flex-col items-center px-4 py-8 md:px-8 text-center;
+      @apply cursor-pointer bg-white transition-shadow duration-500 shadow-[0_4px_16px_rgba(43,45,52,0.06)] hover:shadow-[0_6px_20px_rgba(43,45,52,0.1)] rounded flex-grow flex flex-col items-center px-4 py-8 md:px-8 text-center;
 
       &:first-child {
         @apply col-span-2 md:col-span-1;
