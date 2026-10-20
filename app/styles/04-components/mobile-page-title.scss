@@ -35,10 +35,12 @@ body.product-single .mobile-page-title {
      · `#page-main-title` — `ProductListPage` (category / offers / search / tag /
        brand routes)
      · `.main-content > h1` on the account pages (orders / profile / wallet /
-       wishlist / notifications — `body.customer-*`) */
+       wishlist / notifications). Keyed off `.profile-header`, which only the
+       engine's CustomerLayout renders: the engine sets no `customer-*` body
+       class on the /account/* routes (see user-pages.scss). */
 @media (max-width: 767px) {
   #page-main-title,
-  body[class*='customer-'] .main-content > h1 {
+  body:has(.profile-header) .main-content > h1 {
     @apply hidden;
   }
 
