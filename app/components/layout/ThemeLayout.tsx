@@ -1,6 +1,7 @@
 import { lazy, Suspense, useEffect, useState } from 'react';
 import type { ReactNode } from 'react';
 import { useRouterState } from '@tanstack/react-router';
+import themeTranslations from 'virtual:twilight/theme-translations';
 import { useTwilight } from '@salla.sa/twilight-theme-engine/providers';
 import { useTranslation } from '@salla.sa/twilight-theme-engine/i18n';
 import { useUser } from '@salla.sa/twilight-theme-engine/hooks/useUser';
@@ -137,14 +138,14 @@ export function ThemeLayout({ children }: ThemeLayoutProps) {
     setImportantLinksOpen(false);
   }, [pathname]);
 
-  // Fill the web components' strings the store's pack lacks, each time a pack
-  // loads (`subscribe` also runs at once when one already has).
+  // Fill the web components' strings the store's pack lacks from the theme's
+  // locale files, each time a pack loads (`subscribe` also runs at once when one already has).
   useEffect(() => {
     const lang = window.salla?.lang as
       | (ComponentLang & { subscribe?: (fn: () => void) => () => void })
       | undefined;
     if (typeof lang?.subscribe !== 'function' || typeof lang.add !== 'function') return;
-    return lang.subscribe(() => fillComponentTranslations(lang));
+    return lang.subscribe(() => fillComponentTranslations(lang, themeTranslations));
   }, []);
 
   const imgRatio = productImageRatio(theme?.settings?.product_card_img_ratio);

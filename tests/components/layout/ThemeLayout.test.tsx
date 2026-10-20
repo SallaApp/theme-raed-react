@@ -1,6 +1,7 @@
 import React from 'react';
 import { describe, it, expect, vi, afterEach } from 'vitest';
 import { render, cleanup } from '@testing-library/react';
+// Its theme translations are the real locale files (`tests/stubs/theme-translations.ts`).
 import { ThemeLayout } from '../../../app/components/layout/ThemeLayout';
 
 vi.mock('@tanstack/react-router', () => ({
@@ -56,7 +57,7 @@ afterEach(() => {
 });
 
 describe("ThemeLayout's component translations", () => {
-  it("adds the order options total once the store's pack loads without it", () => {
+  it("adds the order options total from the locale files once the store's pack loads without it", () => {
     const { lang, packLoaded } = installLang({});
     render(<ThemeLayout>page</ThemeLayout>);
 

@@ -77,5 +77,10 @@
   "pages.order.edit_period_ended": "The period to edit the review has ended",
   "pages.order.delete_period_ended": "The period to delete the review has ended",
   "pages.order.days_since_added": "days since it was added",
-  "blocks.home.blog": "Blog"
+  "blocks.home.blog": "Blog",
+  "blocks.order_options.title": "Order options",
+  "blocks.order_options.subtitle": "Choose from the available options.",
+  "blocks.order_options.continue": "Continue",
+  "blocks.order_options.total": "Total",
+  "blocks.order_options.required_message": "Please fill in the required fields"
 }

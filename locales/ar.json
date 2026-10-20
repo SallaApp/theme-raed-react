@@ -77,5 +77,10 @@
   "pages.order.edit_period_ended": "تم انتهاء المدة المحددة لتعديل التقييم",
   "pages.order.delete_period_ended": "تم انتهاء المدة المحددة لحذف التقييم",
   "pages.order.days_since_added": "أيام من إضافته",
-  "blocks.home.blog": "المدونة"
+  "blocks.home.blog": "المدونة",
+  "blocks.order_options.title": "خيارات الطلب",
+  "blocks.order_options.subtitle": "اختر من الخيارات المتاحة.",
+  "blocks.order_options.continue": "متابعة",
+  "blocks.order_options.total": "الإجمالي",
+  "blocks.order_options.required_message": "يرجى تعبئة الحقول المطلوبة"
 }
