@@ -358,6 +358,20 @@ body.footer-is-dark .store-footer--sheet {
   @apply mb-4 block overflow-hidden rounded border border-gray-100;
 }
 
+/* Its stand-in while the component hasn't drawn a row (`UserMenuPlaceholder`):
+   the same card, and rows as tall as the real ones (24px icon + py-3.5). */
+.account-sheet__user-menu-placeholder {
+  @apply mb-4 block overflow-hidden rounded border border-gray-100 bg-white;
+}
+
+.account-sheet__user-menu-placeholder-row {
+  @apply flex items-center gap-3 border-b border-gray-100 px-4 py-3.5 last:border-b-0;
+}
+
+.account-sheet__user-menu:has(.s-user-menu-dropdown-item) + .account-sheet__user-menu-placeholder {
+  @apply hidden;
+}
+
 .account-sheet__user-menu .s-user-menu-dropdown-item {
   @apply border-b border-gray-100 bg-white last:border-b-0;
   opacity: 0;

@@ -144,6 +144,24 @@ describe('MobileAccountSheet', () => {
     expect(screen.queryByTestId('account-sheet-login')).toBeNull();
   });
 
+  it("holds the customer's links card's place with one placeholder row per link it will list", async () => {
+    (window as unknown as { salla: unknown }).salla = {
+      config: { get: () => ['loyalty-system'] },
+    };
+    (window as unknown as { can_access_wallet: boolean }).can_access_wallet = true;
+    renderSheet();
+    await settle();
+
+    const placeholder = document.querySelector('.account-sheet__user-menu-placeholder');
+    // Right after the menu, so it stands exactly where the rows will be.
+    expect(screen.getByTestId('account-sheet-user-menu').nextElementSibling).toBe(placeholder);
+    expect(placeholder?.getAttribute('aria-hidden')).toBe('true');
+    // The six links it always lists, plus wallet and loyalty points.
+    expect(placeholder?.querySelectorAll('.account-sheet__user-menu-placeholder-row')).toHaveLength(8);
+
+    delete (window as unknown as { can_access_wallet?: boolean }).can_access_wallet;
+  });
+
   it("shows a login card for a guest instead of the customer's links", async () => {
     user.isLoggedIn = false;
     const dispatch = vi.fn();

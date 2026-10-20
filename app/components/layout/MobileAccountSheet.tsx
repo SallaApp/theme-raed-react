@@ -1,6 +1,7 @@
 import { Suspense, useEffect, useState } from 'react';
 import type { MouseEvent, ReactNode } from 'react';
 import { SallaUserMenu } from '@salla.sa/twilight-components-react/user-menu';
+import { Pulse } from '@salla.sa/twilight-components-react/skeletons';
 import { useTwilight } from '@salla.sa/twilight-theme-engine/providers';
 import { useTranslation } from '@salla.sa/twilight-theme-engine/i18n';
 import { useUser } from '@salla.sa/twilight-theme-engine/hooks/useUser';
@@ -89,11 +90,49 @@ function UserMenuCard({ open }: { open: boolean }) {
   );
 
   return (
-    <SallaUserMenu
-      inline
-      className={`account-sheet__user-menu${rowsIn ? ' is-in' : ''}`}
-      suppressHydrationWarning
-    />
+    <>
+      <SallaUserMenu
+        inline
+        className={`account-sheet__user-menu${rowsIn ? ' is-in' : ''}`}
+        suppressHydrationWarning
+      />
+      <UserMenuPlaceholder />
+    </>
+  );
+}
+
+/**
+ * The customer's links card's box while `<salla-user-menu>` waits for the SDK
+ * and its translations before drawing a row: the same card and rows, with a
+ * `Pulse` for each icon and title, so the settings and contacts below it don't
+ * jump down when the rows arrive. Hidden by CSS once a row exists.
+ *
+ * Its row count is the component's own: six it always lists (notifications,
+ * orders, pending orders, wishlist, profile, logout), plus wallet, loyalty
+ * points and account settings under the same conditions it checks.
+ */
+function UserMenuPlaceholder() {
+  const [rowCount] = useState(() => {
+    if (typeof window === 'undefined') return 6;
+    const features = (window.salla?.config?.get('store.features') as string[] | undefined) ?? [];
+    const canAccessWallet = (window as Window & { can_access_wallet?: boolean }).can_access_wallet;
+    return (
+      6 +
+      (canAccessWallet ? 1 : 0) +
+      (features.includes('loyalty-system') ? 1 : 0) +
+      (features.includes('salla-account') ? 1 : 0)
+    );
+  });
+
+  return (
+    <ul className="account-sheet__user-menu-placeholder" aria-hidden="true">
+      {Array.from({ length: rowCount }, (_, i) => (
+        <li key={i} className="account-sheet__user-menu-placeholder-row">
+          <Pulse className="h-6 w-6 shrink-0 rounded-full" />
+          <Pulse className="h-4 w-28" />
+        </li>
+      ))}
+    </ul>
   );
 }
 
