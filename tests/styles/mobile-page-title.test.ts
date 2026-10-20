@@ -51,3 +51,27 @@ describe('account pages on phones', () => {
     expect(rules.every((rule) => rule.parent?.type === 'atrule')).toBe(true);
   });
 });
+
+describe('breadcrumbs on phones', () => {
+  async function compileFile(file: string): Promise<Root> {
+    const { css } = sass.compile(`${themeRoot}app/styles/04-components/${file}`);
+    const result = await postcss([
+      tailwindcss({ ...tailwindConfig, content: [{ raw: '' }] }),
+    ]).process(css, { from: undefined });
+    return result.root;
+  }
+
+  it('hides the breadcrumb bar below md, where the title bar names the page', async () => {
+    const rules = rulesFor(await compileFile('breadcrumb.scss'), '.breadcrumbs').filter(
+      (rule) => decl(rule, 'display') === 'none'
+    );
+    expect(rules).toHaveLength(1);
+    expect((rules[0].parent as AtRule).params).toBe('(max-width: 767px)');
+  });
+
+  it("keeps the title bar's bottom gap, with no breadcrumb under it to sit flush against", async () => {
+    const root = await compile();
+    expect(rulesFor(root, '.app-inner:has(.breadcrumbs) .mobile-page-title')).toHaveLength(0);
+    expect(rulesFor(root, '.app-inner:has(.s-catalog-toolbar-sticky) .mobile-page-title')).toHaveLength(1);
+  });
+});

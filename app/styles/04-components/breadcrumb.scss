@@ -19,6 +19,14 @@
   }
 }
 
+/* Phones: the mobile title bar (`mobile-page-title.scss`, same breakpoint)
+   already names the page and has its own back button, so the trail goes. */
+@media (max-width: 767px) {
+  .breadcrumbs {
+    display: none;
+  }
+}
+
 /* Account pages (`CustomerLayout`) render the breadcrumb on the gradient
    profile-header banner with its own styling — keep it out of the new bar. */
 .profile-header .breadcrumbs {
