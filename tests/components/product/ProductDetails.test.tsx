@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeAll, beforeEach, afterEach } from 'vitest';
-import { render, waitFor, act } from '@testing-library/react';
+import { render, waitFor, act, fireEvent } from '@testing-library/react';
 import { resetWishlistStore } from '@salla.sa/twilight-theme-engine/hooks/useWishlist';
 import type { Product } from '@salla.sa/twilight-theme-engine/types';
 import { ProductDetails } from '../../../app/components/product/ProductDetails';
@@ -235,5 +235,48 @@ describe('ProductDetails description embeds', () => {
       'eager',
       'lazy',
     ]);
+  });
+});
+
+describe('ProductDetails select branch', () => {
+  afterEach(() => {
+    delete (window as unknown as { salla?: unknown }).salla;
+  });
+
+  const branchButton = (container: HTMLElement) =>
+    [...container.querySelectorAll('button')].find((b) =>
+      b.textContent?.includes('pages.products.select_branch')
+    );
+
+  it('opens the branches modal from a button that leaves the URL alone', () => {
+    const dispatch = vi.fn();
+    (window as unknown as { salla: unknown }).salla = { event: { dispatch } };
+    const { container } = render(
+      <ProductDetails product={makeProduct({ id: 333, show_availability: true })} />
+    );
+
+    const button = branchButton(container);
+    expect(button?.getAttribute('type')).toBe('button');
+    expect(container.querySelector('a[href="#!"]')).toBeNull();
+
+    fireEvent.click(button!);
+    expect(dispatch).toHaveBeenCalledWith('scopes::open', {
+      mode: 'availability',
+      product_id: '333',
+    });
+  });
+
+  it('points and nudges the arrow toward the end of the line in RTL and LTR', () => {
+    const { container } = render(
+      <ProductDetails product={makeProduct({ show_availability: true })} />
+    );
+
+    const arrow = branchButton(container)?.querySelector('.sicon-keyboard_arrow_left');
+    expect(arrow?.getAttribute('aria-hidden')).toBe('true');
+    expect(arrow?.classList).toContain('ms-2');
+    expect(arrow?.classList).toContain('ltr:rotate-180');
+    expect(arrow?.classList).toContain('rtl:group-hover:-translate-x-1');
+    expect(arrow?.classList).toContain('ltr:group-hover:translate-x-1');
+    expect(arrow?.classList).not.toContain('mr-2');
   });
 });

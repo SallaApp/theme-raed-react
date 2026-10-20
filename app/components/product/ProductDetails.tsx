@@ -152,8 +152,11 @@ export function ProductDetails({
             </span>
             <div className="mt-1 sm:mt-0 sm:col-span-2 text-end">
               <div className="flex rtl:space-x-reverse space-x-3">
-                <a
-                  href="#!"
+                {/* A button, not `<a href="#!">`: it opens the branches modal and
+                    goes nowhere. The arrow points and nudges toward the line's end
+                    in both directions (the engine original has neither). */}
+                <button
+                  type="button"
                   onClick={() =>
                     window.salla?.event?.dispatch('scopes::open', {
                       mode: 'availability',
@@ -163,8 +166,11 @@ export function ProductDetails({
                   className="group text-primary flex items-center justify-center"
                 >
                   <span>{t('pages.products.select_branch')}</span>
-                  <span className="sicon-keyboard_arrow_left mr-2 transition-transform group-hover:-translate-x-1"></span>
-                </a>
+                  <span
+                    aria-hidden="true"
+                    className="sicon-keyboard_arrow_left ms-2 ltr:rotate-180 transition-transform rtl:group-hover:-translate-x-1 ltr:group-hover:translate-x-1"
+                  ></span>
+                </button>
               </div>
             </div>
           </div>
