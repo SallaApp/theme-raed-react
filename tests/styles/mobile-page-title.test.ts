@@ -47,8 +47,22 @@ describe('account pages on phones', () => {
   });
 
   it('keeps the heading from md up, where there is no title bar', async () => {
-    const rules = rulesFor(await compile(), selector);
-    expect(rules.every((rule) => rule.parent?.type === 'atrule')).toBe(true);
+    // Every rule anywhere in the file that hides an account heading, under any
+    // selector: each must be scoped to phones, or desktop would lose it too.
+    const hiding: Rule[] = [];
+    (await compile()).walkRules((rule) => {
+      if (
+        rule.selectors.some((sel) => /\.main-content\s*>\s*h1/.test(sel)) &&
+        decl(rule, 'display') === 'none'
+      ) {
+        hiding.push(rule);
+      }
+    });
+    expect(hiding.length).toBeGreaterThan(0);
+    for (const rule of hiding) {
+      expect(rule.parent?.type).toBe('atrule');
+      expect((rule.parent as AtRule).params).toBe('(max-width: 767px)');
+    }
   });
 });
 
@@ -71,8 +85,26 @@ describe('breadcrumbs on phones', () => {
 
   it("keeps the title bar's bottom gap, with no breadcrumb under it to sit flush against", async () => {
     const root = await compile();
-    expect(rulesFor(root, '.app-inner:has(.breadcrumbs) .mobile-page-title')).toHaveLength(0);
-    expect(rulesFor(root, '.app-inner:has(.s-catalog-toolbar-sticky) .mobile-page-title')).toHaveLength(1);
+
+    // The bar's own gap above the page content.
+    const [bar] = rulesFor(root, '.mobile-page-title');
+    expect(decl(bar, 'margin-bottom')).toBe('1.25rem');
+
+    // The only rule that takes it away is the product listing's, on phones,
+    // where the filter bar sits right under it.
+    const flush: Rule[] = [];
+    root.walkRules((rule) => {
+      if (
+        rule.selectors.some((sel) => sel.endsWith('.mobile-page-title')) &&
+        ['0', '0px'].includes(decl(rule, 'margin-bottom') ?? '')
+      ) {
+        flush.push(rule);
+      }
+    });
+    expect(flush.map((rule) => rule.selector)).toEqual([
+      '.app-inner:has(.s-catalog-toolbar-sticky) .mobile-page-title',
+    ]);
+    expect((flush[0].parent as AtRule).params).toBe('(max-width: 767px)');
   });
 });
 
