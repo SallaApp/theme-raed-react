@@ -1,9 +1,15 @@
 import type { ReactNode } from 'react';
 import { SallaMenu } from '@salla.sa/twilight-components-react/menu';
-import { SallaContacts } from '@salla.sa/twilight-components-react/contacts';
 import { useTwilight } from '@salla.sa/twilight-theme-engine/providers';
 import { useTranslation } from '@salla.sa/twilight-theme-engine/i18n';
-import { ChevronDownIcon, LanguagesIcon, MapPinIcon, Money01Icon } from '../icons';
+import {
+  Call02Icon,
+  ChevronDownIcon,
+  LanguagesIcon,
+  Mail01Icon,
+  MapPinIcon,
+  Money01Icon,
+} from '../icons';
 import { openStoreSwitcher, type StoreSwitcher } from '../../lib/storeSwitchers';
 
 /** One topnav trigger: leading icon, current-selection label, caret. */
@@ -27,6 +33,34 @@ function TopnavAction({
       <span className="site-header__topnav-action-label">{label}</span>
       <ChevronDownIcon className="site-header__topnav-caret" aria-hidden="true" />
     </button>
+  );
+}
+
+/**
+ * The store's phone and email at the end of the top bar. Rendered here rather
+ * than by `<salla-contacts is-header>`, which draws nothing until the SDK has
+ * loaded and then pushed the switchers aside; these come with the page.
+ */
+function TopnavContacts({ phone, email }: { phone?: string; email?: string }) {
+  if (!phone && !email) return null;
+
+  return (
+    <div className="site-header__topnav-contacts" data-testid="store-header-contacts">
+      {phone && (
+        <a href={`tel:${phone}`} className="site-header__topnav-contact">
+          <Call02Icon className="site-header__topnav-icon" aria-hidden="true" />
+          <span className="unicode" dir="ltr">
+            {phone}
+          </span>
+        </a>
+      )}
+      {email && (
+        <a href={`mailto:${email}`} className="site-header__topnav-contact">
+          <Mail01Icon className="site-header__topnav-icon" aria-hidden="true" />
+          <span>{email}</span>
+        </a>
+      )}
+    </div>
   );
 }
 
@@ -89,12 +123,7 @@ export function HeaderTopnav() {
                 onClick={() => openStoreSwitcher(action.key)}
               />
             ))}
-          <SallaContacts
-            data-testid="store-header-contacts"
-            contacts={store?.contacts}
-            contactsTitle="N/A"
-            isHeader
-          />
+          <TopnavContacts phone={store?.contacts?.phone} email={store?.contacts?.email} />
         </div>
       </div>
     </div>
