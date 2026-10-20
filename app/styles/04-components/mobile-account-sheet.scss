@@ -6,13 +6,16 @@
    (`.store-footer--sheet`). */
 
 /* Full screen height — overrides the base sheet's `max-h-[85vh]`. `dvh` so the
-   mobile browser's collapsing toolbar doesn't push the bottom out of view. */
+   mobile browser's collapsing toolbar doesn't push the bottom out of view.
+   Reaching the top of the screen, it starts below the status bar: the Salla
+   app's reported inset (`mobile::ui.safearea`), or the notch in a browser. */
 .bottom-sheet.account-sheet {
   @apply rounded-none;
   height: 100vh;
   height: 100dvh;
   max-height: 100vh;
   max-height: 100dvh;
+  padding-top: var(--safe-top);
 }
 
 /* A guest's first card: a prompt over a full-width login button. */
@@ -344,6 +347,7 @@ body.footer-is-dark .store-footer--sheet {
   height: 100dvh;
   max-height: 100vh;
   max-height: 100dvh;
+  padding-top: var(--safe-top);
 }
 
 /* The customer's links, the sheet's first card (logged in).
