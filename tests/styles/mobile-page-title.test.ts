@@ -75,3 +75,37 @@ describe('breadcrumbs on phones', () => {
     expect(rulesFor(root, '.app-inner:has(.s-catalog-toolbar-sticky) .mobile-page-title')).toHaveLength(1);
   });
 });
+
+describe('filter bar on phones', () => {
+  it('is slimmer than the desktop bar', async () => {
+    const { css } = sass.compile(`${themeRoot}app/styles/04-components/product-list.scss`);
+    const root = (
+      await postcss([tailwindcss({ ...tailwindConfig, content: [{ raw: '' }] })]).process(css, {
+        from: undefined,
+      })
+    ).root;
+
+    const [desktop] = rulesFor(root, '.s-catalog-toolbar');
+    expect(decl(desktop, 'min-height')).toBe('3.25rem');
+
+    const [phone] = rulesFor(root, '.s-catalog-toolbar-sticky .s-catalog-toolbar');
+    expect((phone.parent as AtRule).params).toBe('(max-width: 767px)');
+    expect(decl(phone, 'min-height')).toBe('2.75rem');
+  });
+});
+
+describe('header search on phones', () => {
+  it("is hidden below md, where the bottom bar has its own search tab", async () => {
+    const { css } = sass.compile(`${themeRoot}app/styles/04-components/header.scss`);
+    const root = (
+      await postcss([tailwindcss({ ...tailwindConfig, content: [{ raw: '' }] })]).process(css, {
+        from: undefined,
+      })
+    ).root;
+
+    const rules = rulesFor(root, '.header-action.site-header__search');
+    expect(rules).toHaveLength(1);
+    expect(decl(rules[0], 'display')).toBe('none');
+    expect((rules[0].parent as AtRule).params).toBe('(max-width: 767px)');
+  });
+});
