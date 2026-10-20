@@ -1202,6 +1202,34 @@ salla-reviews:not(:has(.s-reviews-swiper-slide)) {
   }
 }
 
+/*
+  Dot navigation (app/components/common/CarouselDots.tsx) — phones only. Below
+  `md` the scroll carousels and the testimonials swap their progress bar and
+  arrows for it; from `md` up it's hidden and those controls come back. Same
+  dot → pill shape as the photos slider's own pagination above.
+*/
+.carousel-dots {
+  @apply mt-5 flex items-center justify-center gap-1.5 md:hidden;
+
+  &__dot {
+    @apply h-1.5 w-1.5 shrink-0 rounded-full bg-gray-300 p-0;
+    transition:
+      width 0.25s ease,
+      background-color 0.25s ease;
+
+    &.is-active {
+      @apply w-6 bg-gray-900;
+    }
+  }
+}
+
+@media (max-width: 767px) {
+  .scroll-carousel__controls,
+  .s-testimonials__controls {
+    display: none;
+  }
+}
+
 .s-products-carousel {
   @apply mt-4;
 

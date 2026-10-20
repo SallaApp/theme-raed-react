@@ -3,6 +3,7 @@ import type { ReactNode } from 'react';
 import { ArrowLeftIcon, ArrowRightIcon } from '../icons';
 import { useDragScroll } from '../../hooks/useDragScroll';
 import { useMotionAllowed } from '../../hooks/useMotionAllowed';
+import { CarouselDots } from './CarouselDots';
 
 export interface ScrollCarouselProps {
   children: ReactNode;
@@ -24,7 +25,8 @@ function slideStep(el: HTMLElement) {
 const AUTO_PLAY_INTERVAL_MS = 5000;
 
 /**
- * Horizontal scroller with a progress bar and prev/next arrows — the shared
+ * Horizontal scroller with a progress bar and prev/next arrows (dots on
+ * phones, {@link CarouselDots}) — the shared
  * mechanism behind the testimonials and products carousels. Mouse drag, native
  * touch momentum, RTL-aware progress.
  */
@@ -128,6 +130,8 @@ export function ScrollCarousel({
       >
         {children}
       </div>
+
+      <CarouselDots track={track} visible={thumb} progress={pos} />
 
       <div className="scroll-carousel__controls">
         <div className="scroll-carousel__progress" aria-hidden="true">
