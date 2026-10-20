@@ -368,7 +368,9 @@ body.footer-is-dark .store-footer--sheet {
   @apply flex items-center gap-3 border-b border-gray-100 px-4 py-3.5 last:border-b-0;
 }
 
-.account-sheet__user-menu:has(.s-user-menu-dropdown-item) + .account-sheet__user-menu-placeholder {
+/* Gone once the menu has a row. Matched from the shared parent: the menu sits
+   inside the wrapper's hydration `<div>`, never next to the placeholder. */
+.account-sheet__user-menu-card:has(.s-user-menu-dropdown-item) .account-sheet__user-menu-placeholder {
   @apply hidden;
 }
 

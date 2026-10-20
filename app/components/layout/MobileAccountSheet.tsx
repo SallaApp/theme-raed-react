@@ -89,15 +89,17 @@ function UserMenuCard({ open }: { open: boolean }) {
     '.account-sheet__user-menu .s-user-menu-dropdown-item'
   );
 
+  // One parent for both: the wrapper wraps the element in its own hydration
+  // `<div>`, so the placeholder is never the menu's sibling.
   return (
-    <>
+    <div className="account-sheet__user-menu-card">
       <SallaUserMenu
         inline
         className={`account-sheet__user-menu${rowsIn ? ' is-in' : ''}`}
         suppressHydrationWarning
       />
       <UserMenuPlaceholder />
-    </>
+    </div>
   );
 }
 
