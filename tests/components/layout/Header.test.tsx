@@ -63,11 +63,6 @@ vi.mock('@salla.sa/twilight-components-react/search', () => ({
 vi.mock('@salla.sa/twilight-components-react/social', () => ({
   SallaSocial: () => <salla-social />,
 }));
-vi.mock('@salla.sa/twilight-components-react/contacts', () => ({
-  SallaContacts: ({ contactsTitle }: { contactsTitle?: string }) => (
-    <salla-contacts data-contacts-title={contactsTitle} />
-  ),
-}));
 vi.mock('@salla.sa/twilight-components-react/user-menu', () => ({
   SallaUserMenu: () => <salla-user-menu />,
 }));
@@ -138,8 +133,44 @@ describe('Header', () => {
     state.routeIds = [HOME_ROUTE_ID];
     state.store = { ...state.store, contacts: { phone: '+971500000000', email: 'hi@acme.test' } };
     const { container } = render(<Header />);
-    expect(container.querySelector('.site-header__intro')).toBeTruthy();
-    expect(container.querySelector('salla-contacts')).toBeNull();
+    const intro = container.querySelector('.site-header__intro');
+    expect(intro).toBeTruthy();
+    expect(intro?.querySelector('a[href^="tel:"], a[href^="mailto:"]')).toBeNull();
+  });
+
+  it("server-renders the store's phone and email in the default layout's top bar", () => {
+    vi.stubGlobal(
+      'IntersectionObserver',
+      class {
+        observe() {}
+        unobserve() {}
+        disconnect() {}
+      }
+    );
+    state.theme = { settings: { header_layout: 'default' } };
+    state.store = { ...state.store, contacts: { phone: '8001111210', email: 'hi@acme.test' } };
+    const { container } = render(<Header />);
+    const contacts = container.querySelector('[data-testid="store-header-contacts"]')!;
+    // Plain links, not a web component that fills in after the SDK loads.
+    expect(contacts.tagName).toBe('DIV');
+    expect(contacts.querySelector('a[href="tel:8001111210"]')?.textContent).toBe('8001111210');
+    expect(contacts.querySelector('a[href="mailto:hi@acme.test"]')?.textContent).toBe('hi@acme.test');
+  });
+
+  it('leaves the contacts out of the top bar when the store has neither phone nor email', () => {
+    vi.stubGlobal(
+      'IntersectionObserver',
+      class {
+        observe() {}
+        unobserve() {}
+        disconnect() {}
+      }
+    );
+    state.theme = { settings: { header_layout: 'default' } };
+    state.store = { ...state.store, contacts: { whatsapp: '966500000000' } };
+    const { container } = render(<Header />);
+    expect(container.querySelector('.site-header__topnav')).toBeTruthy();
+    expect(container.querySelector('[data-testid="store-header-contacts"]')).toBeNull();
   });
 
   it('omits the description block when the store has none', () => {

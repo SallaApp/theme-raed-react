@@ -740,6 +740,22 @@
   }
 }
 
+/* Phone and email (`TopnavContacts`): set off from the switchers by the same
+   divider line the switchers use between themselves. */
+.site-header__topnav-contacts {
+  @apply relative flex items-center gap-1 ps-1;
+
+  .site-header__topnav-action + &::before {
+    content: '';
+    @apply absolute inset-y-1.5 w-px bg-gray-200;
+    inset-inline-start: -2px;
+  }
+}
+
+.site-header__topnav-contact {
+  @apply inline-flex items-center gap-1.5 rounded-full px-2 py-1 text-gray-600 transition-colors hover:bg-gray-50 hover:text-primary;
+}
+
 .site-header__topnav-action-label {
   @apply max-w-[10rem] truncate font-medium;
 }
@@ -758,21 +774,25 @@ body.topnav-is-dark .site-header__topnav {
 
   .site-header__topnav-menu a,
   .site-header__topnav-action,
+  .site-header__topnav-contact,
   .site-header__topnav-icon,
   .site-header__topnav-caret {
     @apply text-gray-300;
   }
 
   .site-header__topnav-menu a,
-  .site-header__topnav-action {
+  .site-header__topnav-action,
+  .site-header__topnav-contact {
     @apply hover:opacity-80;
   }
 
-  .site-header__topnav-action {
+  .site-header__topnav-action,
+  .site-header__topnav-contact {
     @apply hover:bg-gray-100/[0.15];
   }
 
-  .site-header__topnav-action + .site-header__topnav-action::before {
+  .site-header__topnav-action + .site-header__topnav-action::before,
+  .site-header__topnav-action + .site-header__topnav-contacts::before {
     @apply bg-gray-300/10;
   }
 }
