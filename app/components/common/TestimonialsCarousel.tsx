@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from '@salla.sa/twilight-theme-engine/i18n';
 import { ArrowLeftIcon, ArrowRightIcon, StarIcon } from '../icons';
+import { CarouselDots } from './CarouselDots';
 import { useDragScroll } from '../../hooks/useDragScroll';
 
 export interface TestimonialItem {
@@ -112,6 +113,10 @@ export function TestimonialsCarousel({ items, title, description }: Testimonials
           // react-doctor-disable-next-line react-doctor/no-array-index-as-key
           <TestimonialCard key={`${index}-${item.name ?? ''}`} item={item} index={index} />
         ))}
+      </div>
+
+      <div className="container">
+        <CarouselDots track={scroller} visible={thumb} progress={pos} />
       </div>
 
       <div className="container s-testimonials__controls">

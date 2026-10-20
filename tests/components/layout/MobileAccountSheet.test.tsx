@@ -47,27 +47,30 @@ vi.mock('../../../app/components/common', async () => ({
 const menuState = vi.hoisted(() => ({ hasItems: true }));
 
 vi.mock('@salla.sa/twilight-components-react/user-menu', () => ({
+  // Wrapped in a `<div>` like the real wrapper's hydration boundary.
   SallaUserMenu: ({ inline, className }: { inline?: boolean; className?: string }) => (
-    <salla-user-menu
-      data-testid="account-sheet-user-menu"
-      inline={inline ? '' : undefined}
-      class={className}
-    >
-      {menuState.hasItems && (
-        <ul className="s-user-menu-inline">
-          <li className="s-user-menu-dropdown-item">
-            <a className="s-user-menu-dropdown-item-link" href="/account/notifications">
-              Notifications
-            </a>
-          </li>
-          <li className="s-user-menu-dropdown-item s-user-menu-dropdown-item-logout">
-            <a className="s-user-menu-dropdown-item-link" href="/logout">
-              Logout
-            </a>
-          </li>
-        </ul>
-      )}
-    </salla-user-menu>
+    <div>
+      <salla-user-menu
+        data-testid="account-sheet-user-menu"
+        inline={inline ? '' : undefined}
+        class={className}
+      >
+        {menuState.hasItems && (
+          <ul className="s-user-menu-inline">
+            <li className="s-user-menu-dropdown-item">
+              <a className="s-user-menu-dropdown-item-link" href="/account/notifications">
+                Notifications
+              </a>
+            </li>
+            <li className="s-user-menu-dropdown-item s-user-menu-dropdown-item-logout">
+              <a className="s-user-menu-dropdown-item-link" href="/logout">
+                Logout
+              </a>
+            </li>
+          </ul>
+        )}
+      </salla-user-menu>
+    </div>
   ),
 }));
 
@@ -169,8 +172,10 @@ describe('MobileAccountSheet', () => {
     await settle();
 
     const placeholder = document.querySelector('.account-sheet__user-menu-placeholder');
-    // Right after the menu, so it stands exactly where the rows will be.
-    expect(screen.getByTestId('account-sheet-user-menu').nextElementSibling).toBe(placeholder);
+    // Right after the menu's wrapper, so it stands exactly where the rows will be.
+    expect(screen.getByTestId('account-sheet-user-menu').parentElement?.nextElementSibling).toBe(
+      placeholder
+    );
     expect(placeholder?.getAttribute('aria-hidden')).toBe('true');
     // The six links it always lists, plus wallet and loyalty points.
     expect(placeholder?.querySelectorAll('.account-sheet__user-menu-placeholder-row')).toHaveLength(8);

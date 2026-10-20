@@ -136,6 +136,14 @@
   }
 }
 
+/* Phones: the bottom bar (`mobile-bottom-bar.scss`, same breakpoint) has its
+   own search tab, so the header's search button goes. */
+@media (max-width: 767px) {
+  .header-action.site-header__search {
+    display: none;
+  }
+}
+
 /* CSS burger — top bar hugs the inline-end at 3/4 width, bottom bar hugs the
    inline-start at 3/4, middle bar full width. On hover or keyboard focus the
    short bars grow inward to full width (staggered cascade). Colour follows

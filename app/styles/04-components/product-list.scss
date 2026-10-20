@@ -146,6 +146,9 @@
        so its items can sit on either side. */
     .s-catalog-toolbar {
       @apply mb-0 flex-nowrap rounded-none border-0 px-0;
+      /* A slimmer bar than the desktop's 3.25rem: the 32px view buttons plus 6px
+         above and below. */
+      min-height: 2.75rem;
     }
 
     /* its divider lines went with the items it separated */
