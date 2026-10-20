@@ -1,7 +1,23 @@
 import React from 'react';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, fireEvent, screen, act, cleanup } from '@testing-library/react';
+import { createRequire } from 'node:module';
+import * as sass from 'sass';
+import postcss from 'postcss';
+import tailwindcss from 'tailwindcss';
 import { MobileAccountSheet } from '../../../app/components/layout/MobileAccountSheet';
+
+/** The sheet's real stylesheet, compiled the way the build does (Sass, then Tailwind's `@apply`). */
+async function compileSheetCss(): Promise<string> {
+  // Vitest runs from the theme root; jsdom gives `import.meta.url` an http scheme.
+  const themeRoot = `${process.cwd()}/`;
+  const tailwindConfig = createRequire(themeRoot)(`${themeRoot}tailwind.config.cjs`);
+  const { css } = sass.compile(`${themeRoot}app/styles/04-components/mobile-account-sheet.scss`);
+  const result = await postcss([
+    tailwindcss({ ...tailwindConfig, content: [{ raw: '' }] }),
+  ]).process(css, { from: undefined });
+  return result.css;
+}
 
 const user = { isLoggedIn: true };
 
@@ -160,6 +176,41 @@ describe('MobileAccountSheet', () => {
     expect(placeholder?.querySelectorAll('.account-sheet__user-menu-placeholder-row')).toHaveLength(8);
 
     delete (window as unknown as { can_access_wallet?: boolean }).can_access_wallet;
+  });
+
+  it('shows the placeholder while the menu has no rows, and hides it once they arrive', async () => {
+    const style = document.createElement('style');
+    style.textContent = await compileSheetCss();
+    document.head.appendChild(style);
+    menuState.hasItems = false;
+    renderSheet();
+    await settle();
+
+    const menu = screen.getByTestId('account-sheet-user-menu');
+    const placeholder = document.querySelector<HTMLElement>(
+      '.account-sheet__user-menu-placeholder'
+    )!;
+    expect(getComputedStyle(placeholder).display).not.toBe('none');
+
+    // Its rows are as tall as the real ones: the same vertical padding around
+    // the same 24px line, so the cards below stay put at the swap.
+    const placeholderRow = getComputedStyle(
+      placeholder.querySelector('.account-sheet__user-menu-placeholder-row')!
+    );
+
+    // `<salla-user-menu>` draws its rows into itself, outside React.
+    act(() => {
+      menu.innerHTML =
+        '<ul class="s-user-menu-inline"><li class="s-user-menu-dropdown-item">' +
+        '<a class="s-user-menu-dropdown-item-link" href="/account/orders">Orders</a></li></ul>';
+    });
+
+    expect(getComputedStyle(placeholder).display).toBe('none');
+    const realRow = getComputedStyle(menu.querySelector('.s-user-menu-dropdown-item-link')!);
+    expect(placeholderRow.paddingTop).toBe(realRow.paddingTop);
+    expect(placeholderRow.paddingBottom).toBe(realRow.paddingBottom);
+
+    style.remove();
   });
 
   it("shows a login card for a guest instead of the customer's links", async () => {
