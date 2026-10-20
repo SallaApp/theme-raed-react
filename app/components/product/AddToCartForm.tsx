@@ -348,7 +348,6 @@ function StickyProductBar({
         productStatus={product.status}
         productType={product.type}
         productId={product.id}
-        loaderPosition="center"
         type="submit"
         width="wide"
         {...(product.notify_availability
