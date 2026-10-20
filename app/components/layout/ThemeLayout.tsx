@@ -1,6 +1,7 @@
 import { lazy, Suspense, useEffect, useState } from 'react';
 import type { ReactNode } from 'react';
 import { useRouterState } from '@tanstack/react-router';
+import themeTranslations from 'virtual:twilight/theme-translations';
 import { useTwilight } from '@salla.sa/twilight-theme-engine/providers';
 import { useTranslation } from '@salla.sa/twilight-theme-engine/i18n';
 import { useUser } from '@salla.sa/twilight-theme-engine/hooks/useUser';
@@ -10,6 +11,7 @@ import { ImportantLinksSheet } from './ImportantLinksSheet';
 import { MobileAccountSheet } from './MobileAccountSheet';
 import { MobileBottomBar } from './MobileBottomBar';
 import { MobilePageTitleBar } from './MobilePageTitleBar';
+import { fillComponentTranslations, type ComponentLang } from '../../lib/componentTranslations';
 
 /**
  * Theme layout — passed to `<TwilightProvider layout={ThemeLayout}>` in
@@ -135,6 +137,16 @@ export function ThemeLayout({ children }: ThemeLayoutProps) {
     setAccountOpen(false);
     setImportantLinksOpen(false);
   }, [pathname]);
+
+  // Fill the web components' strings the store's pack lacks from the theme's
+  // locale files, each time a pack loads (`subscribe` also runs at once when one already has).
+  useEffect(() => {
+    const lang = window.salla?.lang as
+      | (ComponentLang & { subscribe?: (fn: () => void) => () => void })
+      | undefined;
+    if (typeof lang?.subscribe !== 'function' || typeof lang.add !== 'function') return;
+    return lang.subscribe(() => fillComponentTranslations(lang, themeTranslations));
+  }, []);
 
   const imgRatio = productImageRatio(theme?.settings?.product_card_img_ratio);
 
