@@ -83,28 +83,14 @@ describe('breadcrumbs on phones', () => {
     expect((rules[0].parent as AtRule).params).toBe('(max-width: 767px)');
   });
 
-  it("keeps the title bar's bottom gap, with no breadcrumb under it to sit flush against", async () => {
-    const root = await compile();
-
-    // The bar's own gap above the page content.
-    const [bar] = rulesFor(root, '.mobile-page-title');
-    expect(decl(bar, 'margin-bottom')).toBe('1.25rem');
-
-    // The only rule that takes it away is the product listing's, on phones,
-    // where the filter bar sits right under it.
-    const flush: Rule[] = [];
-    root.walkRules((rule) => {
-      if (
-        rule.selectors.some((sel) => sel.endsWith('.mobile-page-title')) &&
-        ['0', '0px'].includes(decl(rule, 'margin-bottom') ?? '')
-      ) {
-        flush.push(rule);
-      }
+  it('gives the title bar no bottom margin, so the page content sits right under it', async () => {
+    const margins: string[] = [];
+    (await compile()).walkRules((rule) => {
+      if (!rule.selectors.some((sel) => sel.endsWith('.mobile-page-title'))) return;
+      const value = decl(rule, 'margin-bottom') ?? decl(rule, 'margin');
+      if (value !== undefined) margins.push(value);
     });
-    expect(flush.map((rule) => rule.selector)).toEqual([
-      '.app-inner:has(.s-catalog-toolbar-sticky) .mobile-page-title',
-    ]);
-    expect((flush[0].parent as AtRule).params).toBe('(max-width: 767px)');
+    expect(margins).toEqual([]);
   });
 });
 
