@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import { ProductCard as EngineProductCard } from '@salla.sa/twilight-theme-engine/product';
 import { useWishlist } from '@salla.sa/twilight-theme-engine/hooks/useWishlist';
 import { useTranslation } from '@salla.sa/twilight-theme-engine/i18n';
+import { registerNativeBookingHook } from '../../lib/nativeBooking';
 import { WishlistHeartButton } from './WishlistHeartButton';
 
 type ProductCardProps = ComponentProps<typeof EngineProductCard>;
@@ -25,6 +26,8 @@ type ProductCardProps = ComponentProps<typeof EngineProductCard>;
  *    throwing `NotFoundError`. A portal keeps this button fully React-managed
  *    at its real DOM location instead.
  *  - sets `loader-position="center"` on the add-to-cart button (grid + list).
+ * Inside the Salla app, a booking product's "Book now" fires `mobile::booking.open`
+ * instead of opening the booking page (`lib/nativeBooking.ts`).
  * Styling: `04-components/product.scss`.
  */
 export function ProductCard(props: ProductCardProps) {
@@ -32,6 +35,7 @@ export function ProductCard(props: ProductCardProps) {
   const [footerEl, setFooterEl] = useState<HTMLElement | null>(null);
 
   useEffect(() => {
+    registerNativeBookingHook();
     const root = ref.current;
     if (!root) return;
 
