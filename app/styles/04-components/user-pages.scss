@@ -221,6 +221,17 @@ body:has(.profile-header) {
   @apply border border-gray-100;
 }
 
+/* The bar is `justify-end`, so the Share button sits at the row's end, but the
+   engine pins the menu to the button's start edge (`rtl:right-0 ltr:left-0`).
+   It then opened past the screen edge on phones and the second item was cut
+   off. Hang it from the end edge instead. Two classes to outrank the engine's
+   `:where()` utilities. */
+.s-wishlist-actions-dropdown .s-wishlist-actions-menu {
+  inset-inline-start: auto;
+  inset-inline-end: 0;
+  max-width: calc(100vw - 2rem);
+}
+
 /* The SDK auto-renders its own `<salla-wishlist-actions>` widget into the wishlist
    page's `customer:wishlist.items.start` hook slot (always, unconditionally -- see
    WishlistPage.tsx's own comment above that slot). It needs a sibling
