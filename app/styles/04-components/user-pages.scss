@@ -168,9 +168,17 @@ body:has(.profile-header) {
 }
 
 
-/* 
-* thank you page 
+/*
+* thank you page
 */
+/* The engine's primary-colour hero band (`ThankYouPage.tsx`) is `relative -z-1`.
+   With no stacking context above it, it painted under `.app-inner`'s white
+   background (`app.css`) and never showed. Isolating `#main-content` keeps
+   the band inside it, above that background and below the page's cards. */
+body.thank-you #main-content {
+  isolation: isolate;
+}
+
 .thankyou-block{
   @apply duration-500 hover:shadow-default flex-1 bg-white p-8 rounded mb-6 md:mb-8 flex flex-col items-center justify-center;
 
@@ -219,6 +227,17 @@ body:has(.profile-header) {
    account/wishlist/WishlistShare.tsx. */
 .s-wishlist-actions-menu {
   @apply border border-gray-100;
+}
+
+/* The bar is `justify-end`, so the Share button sits at the row's end, but the
+   engine pins the menu to the button's start edge (`rtl:right-0 ltr:left-0`).
+   It then opened past the screen edge on phones and the second item was cut
+   off. Hang it from the end edge instead. Two classes to outrank the engine's
+   `:where()` utilities. */
+.s-wishlist-actions-dropdown .s-wishlist-actions-menu {
+  inset-inline-start: auto;
+  inset-inline-end: 0;
+  max-width: calc(100vw - 2rem);
 }
 
 /* The SDK auto-renders its own `<salla-wishlist-actions>` widget into the wishlist
