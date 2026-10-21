@@ -168,9 +168,17 @@ body:has(.profile-header) {
 }
 
 
-/* 
-* thank you page 
+/*
+* thank you page
 */
+/* The engine's primary-colour hero band (`ThankYouPage.tsx`) is `relative -z-1`.
+   With no stacking context above it, it painted under `.app-inner`'s white
+   background (`app.css`) and never showed. Isolating `#main-content` keeps
+   the band inside it, above that background and below the page's cards. */
+body.thank-you #main-content {
+  isolation: isolate;
+}
+
 .thankyou-block{
   @apply duration-500 hover:shadow-default flex-1 bg-white p-8 rounded mb-6 md:mb-8 flex flex-col items-center justify-center;
 
