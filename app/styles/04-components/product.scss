@@ -692,6 +692,12 @@ salla-gifting {
       @apply h-5 w-5;
     }
 
+    /* The back button (the bar's own child, not one of `__bar-actions`) draws
+       `ArrowRightIcon`, which is "back" in Arabic; in LTR back points left. */
+    .product-gallery__bar > & svg {
+      @apply ltr:-scale-x-100;
+    }
+
     i {
       font-size: 1.15rem;
     }
