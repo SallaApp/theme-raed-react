@@ -1025,6 +1025,12 @@
     }
   }
 
+  /* The chevrons below are drawn for RTL, where prev sits on the right and
+     points right. In LTR prev sits on the left, so both point the other way. */
+  [dir='ltr'] & .s-slider-nav-arrow::before {
+    transform: scaleX(-1);
+  }
+
   .s-slider-prev::before {
     -webkit-mask-image: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2024%2024'%20fill='none'%20stroke='black'%20stroke-width='1.5'%20stroke-linecap='round'%20stroke-linejoin='round'%3E%3Cpath%20d='M9.00005%206C9.00005%206%2015%2010.4189%2015%2012C15%2013.5812%209%2018%209%2018'/%3E%3C/svg%3E");
     mask-image: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2024%2024'%20fill='none'%20stroke='black'%20stroke-width='1.5'%20stroke-linecap='round'%20stroke-linejoin='round'%3E%3Cpath%20d='M9.00005%206C9.00005%206%2015%2010.4189%2015%2012C15%2013.5812%209%2018%209%2018'/%3E%3C/svg%3E");
