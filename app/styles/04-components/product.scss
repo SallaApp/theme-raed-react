@@ -409,6 +409,25 @@ salla-gifting {
         }
       }
     }
+
+    /* Sold out with no "notify me" (`StickyProductBar`): nothing to buy, so the
+       bar is just the out-of-stock label — no stepper, no button. */
+    .sticky-product-bar--sold-out {
+      > :not(.sticky-product-bar__quantity),
+      .sticky-product-bar__quantity > :not(.out-of-stock) {
+        display: none;
+      }
+
+      /* The row is `center-between` for price + stepper; alone, the label sits in the middle. */
+      .sticky-product-bar__quantity {
+        justify-content: center;
+      }
+    }
+
+    /* …and the page only clears that one row: nav (52 + 12) + 10 + the bar (12 + 28 + 12). */
+    &.product-single:has(.sticky-product-bar--sold-out) .app-inner {
+      padding-bottom: calc(126px + var(--flow-safe-bottom));
+    }
   }
 }
 
@@ -690,6 +709,12 @@ salla-gifting {
 
     svg {
       @apply h-5 w-5;
+    }
+
+    /* The back button (the bar's own child, not one of `__bar-actions`) draws
+       `ArrowRightIcon`, which is "back" in Arabic; in LTR back points left. */
+    .product-gallery__bar > & svg {
+      @apply ltr:-scale-x-100;
     }
 
     i {
