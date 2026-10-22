@@ -701,15 +701,26 @@
   @apply min-w-0;
 
   .s-menu-topnav-list {
-    @apply flex flex-wrap items-center gap-x-5 gap-y-1;
+    @apply flex flex-wrap items-center gap-y-1;
   }
 
   a {
     @apply whitespace-nowrap text-gray-500 transition-colors hover:text-primary;
   }
 
-  .s-menu-topnav-item{
-    @apply px-1.5;
+  /* The divider is each item's inline-end border. Equal padding on both of its
+     sides, and no column gap after it, keeps it centred between two links in
+     either direction. */
+  .s-menu-topnav-item {
+    @apply px-3;
+
+    &:first-child {
+      @apply ps-0;
+    }
+
+    &:last-child {
+      @apply pe-0;
+    }
   }
 }
 
