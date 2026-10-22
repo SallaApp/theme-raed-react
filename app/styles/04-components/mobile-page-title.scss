@@ -16,8 +16,9 @@
 .mobile-page-title__back {
   @apply -ms-1 inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-gray-700;
 
+  /* `ArrowRightIcon` is "back" in Arabic; in LTR back points left. */
   svg {
-    @apply h-5 w-5;
+    @apply h-5 w-5 ltr:-scale-x-100;
   }
 }
 

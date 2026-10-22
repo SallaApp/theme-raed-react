@@ -8,6 +8,11 @@
   .sub-menu .has-children > a:after {
       content: "\e96c";
   }
+  /* The engine's breadcrumb separator is always `keyboard_arrow_left`
+     (`BreadcrumbTrail`); in LTR the trail reads left to right, so it points right. */
+  .s-breadcrumb-arrow svg {
+    transform: scaleX(-1);
+  }
   .flatpickr {
     &-months {
       .numInputWrapper {
