@@ -3,6 +3,7 @@ import type { ReactNode } from 'react';
 import { ArrowLeftIcon, ArrowRightIcon } from '../icons';
 import { useDragScroll } from '../../hooks/useDragScroll';
 import { useMotionAllowed } from '../../hooks/useMotionAllowed';
+import { forwardSign } from '../../lib/scrollDirection';
 import { CarouselDots } from './CarouselDots';
 
 export interface ScrollCarouselProps {
@@ -63,10 +64,11 @@ export function ScrollCarousel({
     return () => observer.disconnect();
   }, [sync, children]);
 
-  const step = (dir: number) => {
+  /** One slide forward (`1`) or back (`-1`), whichever way the row reads. */
+  const step = (dir: 1 | -1) => {
     const el = track.current;
     if (!el) return;
-    el.scrollBy({ left: dir * slideStep(el), behavior: 'smooth' });
+    el.scrollBy({ left: dir * forwardSign(el) * slideStep(el), behavior: 'smooth' });
   };
 
   // Autoplay waits while the visitor hovers, focuses or has just touched the row.
@@ -90,9 +92,7 @@ export function ScrollCarousel({
         el.scrollTo({ left: 0, behavior: 'smooth' });
         return;
       }
-      // Forward is towards negative scrollLeft in RTL.
-      const forward = getComputedStyle(el).direction === 'rtl' ? -1 : 1;
-      el.scrollBy({ left: forward * slideStep(el), behavior: 'smooth' });
+      el.scrollBy({ left: forwardSign(el) * slideStep(el), behavior: 'smooth' });
     }, AUTO_PLAY_INTERVAL_MS);
     return () => window.clearInterval(timer);
   }, [playing]);
@@ -145,10 +145,10 @@ export function ScrollCarousel({
         </div>
 
         <div className="scroll-carousel__nav">
-          <button type="button" aria-label={prevLabel} onClick={() => step(1)}>
+          <button type="button" aria-label={prevLabel} onClick={() => step(-1)}>
             <ArrowRightIcon aria-hidden="true" />
           </button>
-          <button type="button" aria-label={nextLabel} onClick={() => step(-1)}>
+          <button type="button" aria-label={nextLabel} onClick={() => step(1)}>
             <ArrowLeftIcon aria-hidden="true" />
           </button>
         </div>

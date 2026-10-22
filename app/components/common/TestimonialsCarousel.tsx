@@ -3,6 +3,7 @@ import { useTranslation } from '@salla.sa/twilight-theme-engine/i18n';
 import { ArrowLeftIcon, ArrowRightIcon, StarIcon } from '../icons';
 import { CarouselDots } from './CarouselDots';
 import { useDragScroll } from '../../hooks/useDragScroll';
+import { forwardSign } from '../../lib/scrollDirection';
 
 export interface TestimonialItem {
   avatar?: string;
@@ -82,12 +83,13 @@ export function TestimonialsCarousel({ items, title, description }: Testimonials
     return () => observer.disconnect();
   }, [sync, items]);
 
-  const scrollByCard = (dir: number) => {
+  /** One card forward (`1`) or back (`-1`), whichever way the row reads. */
+  const scrollByCard = (dir: 1 | -1) => {
     const el = scroller.current;
     if (!el) return;
     const card = el.querySelector<HTMLElement>('.testimonial-card');
     const step = (card?.offsetWidth || el.clientWidth * 0.8) + 24;
-    el.scrollBy({ left: dir * step, behavior: 'smooth' });
+    el.scrollBy({ left: dir * forwardSign(el) * step, behavior: 'smooth' });
   };
 
   if (!items.length) return null;
@@ -134,14 +136,14 @@ export function TestimonialsCarousel({ items, title, description }: Testimonials
           <button
             type="button"
             aria-label={t('blocks.home.reviews_prev', 'Previous')}
-            onClick={() => scrollByCard(1)}
+            onClick={() => scrollByCard(-1)}
           >
             <ArrowRightIcon aria-hidden="true" />
           </button>
           <button
             type="button"
             aria-label={t('blocks.home.reviews_next', 'Next')}
-            onClick={() => scrollByCard(-1)}
+            onClick={() => scrollByCard(1)}
           >
             <ArrowLeftIcon aria-hidden="true" />
           </button>
