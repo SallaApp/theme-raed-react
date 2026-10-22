@@ -417,6 +417,11 @@ salla-gifting {
       .sticky-product-bar__quantity > :not(.out-of-stock) {
         display: none;
       }
+
+      /* The row is `center-between` for price + stepper; alone, the label sits in the middle. */
+      .sticky-product-bar__quantity {
+        justify-content: center;
+      }
     }
 
     /* …and the page only clears that one row: nav (52 + 12) + 10 + the bar (12 + 28 + 12). */
