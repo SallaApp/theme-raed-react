@@ -324,8 +324,13 @@ function StickyProductBar({
     el?.setAttribute('width', 'wide');
     el?.setAttribute('type', 'submit');
   }, []);
+  // Sold out with nothing to sign up for: on phones the sticky bar shows only the
+  // out-of-stock label (`product.scss`). "Notify me" (`out-and-notify`) keeps its button.
+  const soldOut = product.is_out_of_stock && product.status !== 'out-and-notify';
   return (
-    <section className="sticky-product-bar bg-white">
+    <section
+      className={`sticky-product-bar bg-white${soldOut ? ' sticky-product-bar--sold-out' : ''}`}
+    >
       {/* Live price on the start side, quantity stepper on the end side
           (replaces the standalone price section and the "Quantity" label). */}
       <div className="sticky-product-bar__quantity center-between mb-5">
