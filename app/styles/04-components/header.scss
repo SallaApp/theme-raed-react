@@ -1075,6 +1075,12 @@ body.topnav-is-dark .site-header--lite .site-header__bar {
       @apply ms-1 inline-block text-base leading-none opacity-50 transition-transform;
     }
 
+    /* `\e970` points left, the way a nested panel flies out in Arabic; in LTR
+       it flies out to the right, so the caret does too. */
+    .s-menu-non-root-level.s-menu-has-children > a:where([dir='ltr'] *)::after {
+      transform: scaleX(-1);
+    }
+
     .s-menu-root-level.s-menu-has-children > a::after {
       content: '\e96e';
     }
