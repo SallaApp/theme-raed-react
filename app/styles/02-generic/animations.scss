@@ -1,22 +1,22 @@
 @keyframes fadeInDown {
   from {
-    transform: translate3d(0, -15px, 0)
+    transform: translate3d(0, -15px, 0);
   }
 
   to {
     transform: translate3d(0, 0, 0);
-    opacity: 1
+    opacity: 1;
   }
 }
 
 @-webkit-keyframes fadeInDown {
   from {
-    transform: translate3d(0, -15px, 0)
+    transform: translate3d(0, -15px, 0);
   }
 
   to {
     transform: translate3d(0, 0, 0);
-    opacity: 1
+    opacity: 1;
   }
 }
 
@@ -26,7 +26,7 @@
 }
 
 .animatedfadeInDown {
-  opacity: 0
+  opacity: 0;
 }
 
 .fadeInDown {
@@ -69,7 +69,6 @@
     opacity: 0;
   }
 }
-
 
 @keyframes rubberBand {
   from {

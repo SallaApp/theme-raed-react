@@ -105,7 +105,7 @@
      on mobile to begin with (every other route collapses it above); plain
      `display: none` is fine here, unlike the dropdown below -- nothing about
      this trigger needs to stay reachable off-screen. */
-  .site-header__nav-toggle button{
+  .site-header__nav-toggle button {
     display: none;
   }
 
@@ -851,7 +851,6 @@ body.topnav-is-dark .site-header--lite .site-header__bar {
   .site-header--default .site-header__intro {
     @apply hidden;
   }
-
 
   /* The main menu (HeaderMainMenu.tsx, rendered by the theme): a centred row
      of `.s-menu-root-level` items, each with an absolutely-positioned

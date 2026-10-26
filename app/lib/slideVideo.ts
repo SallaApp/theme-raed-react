@@ -8,14 +8,13 @@ const YOUTUBE_HOSTS = ['youtu.be', 'youtube.com', 'youtube-nocookie.com'];
 /** The video id of a YouTube link (watch, youtu.be, shorts, embed or live), if it has one. */
 function youtubeId(url: URL): string | null {
   const [, first, second] = url.pathname.split('/');
-  const id =
-    url.hostname.endsWith('youtu.be')
-      ? first
-      : first === 'watch'
-        ? url.searchParams.get('v')
-        : ['embed', 'shorts', 'live'].includes(first)
-          ? second
-          : null;
+  const id = url.hostname.endsWith('youtu.be')
+    ? first
+    : first === 'watch'
+      ? url.searchParams.get('v')
+      : ['embed', 'shorts', 'live'].includes(first)
+        ? second
+        : null;
   return id && YOUTUBE_ID.test(id) ? id : null;
 }
 

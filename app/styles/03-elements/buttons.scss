@@ -2,12 +2,12 @@
 * Buttons
 */
 salla-button {
-  &[width="wide"] {
+  &[width='wide'] {
     @apply w-full;
   }
 
   &.copied {
-    .s-button-text{
+    .s-button-text {
       @apply text-green-600;
     }
 
@@ -72,7 +72,7 @@ salla-button {
   &--wishlist {
     @apply m-0 rtl:mr-0.5 ltr:ml-0.5;
 
-    &:hover{
+    &:hover {
       @apply text-gray-600;
     }
 
@@ -171,7 +171,7 @@ button.btn--coupon {
 
 salla-button {
   &.has-not-coupon button .icon,
-  &.has-coupon button .coupon-text{
+  &.has-coupon button .coupon-text {
     @apply hidden;
   }
 
@@ -197,10 +197,9 @@ salla-button {
   }
 }
 
-
-#blog-like{
-  &.liked{
-    i{
+#blog-like {
+  &.liked {
+    i {
       width: 18px;
       height: 16px;
       background-color: var(--color-primary); /* This will show the masked area */

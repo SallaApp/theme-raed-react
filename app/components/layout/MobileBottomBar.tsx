@@ -4,13 +4,7 @@ import { useRouterState } from '@tanstack/react-router';
 import { Link } from '@salla.sa/twilight-theme-engine/common';
 import { useTranslation } from '@salla.sa/twilight-theme-engine/i18n';
 import { useMobileViewport } from '../../hooks/useMobileViewport';
-import {
-  DashboardSquare01Icon,
-  HomeIcon,
-  SearchIcon,
-  ShoppingBagIcon,
-  UserIcon,
-} from '../icons';
+import { DashboardSquare01Icon, HomeIcon, SearchIcon, ShoppingBagIcon, UserIcon } from '../icons';
 
 interface MobileBottomBarProps {
   /** Whether the shared nav drawer (opened from the header) is currently open. */

@@ -52,7 +52,10 @@ vi.mock('@salla.sa/twilight-theme-engine/i18n', () => ({
 }));
 vi.mock('@salla.sa/twilight-theme-engine/common', () => ({
   Breadcrumb: () => null,
-  NoContent: ({ message }: { message: string }) => <p data-testid="cart-empty-message">{message}</p>,
+  NoContent: ({ message }: { message: string }) => (
+    <p data-testid="cart-empty-message">{message}</p>
+  ),
+  // eslint-disable-next-line jsx-a11y/anchor-is-valid -- minimal Link mock
   Link: ({ children }: { children?: unknown }) => <a>{children as never}</a>,
   Image: () => <img alt="" />,
 }));
@@ -92,7 +95,9 @@ vi.mock('@salla.sa/twilight-theme-engine/api/cart', async (importOriginal) => {
 function renderPage() {
   return render(
     // No retries, so a failed request reaches its error state straight away.
-    <QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}>
+    <QueryClientProvider
+      client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}
+    >
       <CartPage page={{} as Page} />
     </QueryClientProvider>
   );

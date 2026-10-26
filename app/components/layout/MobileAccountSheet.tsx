@@ -332,7 +332,11 @@ function ContactsList() {
  * Mounted once in {@link ThemeLayout}, which owns `open` and shares it with
  * {@link MobileBottomBar}. Styling: `04-components/mobile-account-sheet.scss`.
  */
-export function MobileAccountSheet({ open, onClose, onOpenImportantLinks }: MobileAccountSheetProps) {
+export function MobileAccountSheet({
+  open,
+  onClose,
+  onOpenImportantLinks,
+}: MobileAccountSheetProps) {
   const { t } = useTranslation();
   const { isLoggedIn } = useUser();
 

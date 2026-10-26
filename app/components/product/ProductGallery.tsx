@@ -110,8 +110,7 @@ export function ProductGallery({ product }: ProductGalleryProps) {
   const openNativeGallery = (selected: ProductImage) => {
     if (!isNativeApp()) return false;
     const mobile = window.salla?.mobile as
-      | (NonNullable<typeof window.salla>['mobile'] & NativeGalleryBridge)
-      | undefined;
+      (NonNullable<typeof window.salla>['mobile'] & NativeGalleryBridge) | undefined;
     if (mobile?.openGallery?.(images, selected)) return true;
     window.salla?.event.dispatch('mobile::gallery.open', { images: legacyGalleryMedia(images) });
     return true;

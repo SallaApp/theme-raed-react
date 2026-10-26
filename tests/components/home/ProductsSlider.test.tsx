@@ -7,9 +7,11 @@ const listMock = vi.fn();
 
 // Only the module under test, not the whole barrel and everything it re-exports.
 vi.mock('../../../app/components/common', async () => ({
-  ScrollCarousel: (await vi.importActual<typeof import('../../../app/components/common/ScrollCarousel')>(
-    '../../../app/components/common/ScrollCarousel'
-  )).ScrollCarousel,
+  ScrollCarousel: (
+    await vi.importActual<typeof import('../../../app/components/common/ScrollCarousel')>(
+      '../../../app/components/common/ScrollCarousel'
+    )
+  ).ScrollCarousel,
 }));
 
 vi.mock('@salla.sa/twilight-theme-engine/i18n', () => ({

@@ -10,7 +10,7 @@
     transition: all 0.3s;
 
     &:after {
-      content: "";
+      content: '';
       display: block;
       position: absolute;
       z-index: -1;
@@ -38,8 +38,8 @@
         background-color: var(--color-primary);
       }
     }
-    
-    [dir="rtl"] .icon-trigger.mobile-shifted & {
+
+    [dir='rtl'] .icon-trigger.mobile-shifted & {
       transform: translate(53px, -73px);
       @media (max-width: 991px) {
         transform: translate(70px, -90px);
@@ -50,7 +50,7 @@
         }
       }
     }
-    [dir="ltr"] .icon-trigger.mobile-shifted & {
+    [dir='ltr'] .icon-trigger.mobile-shifted & {
       transform: translate(-53px, -75px);
       @media (max-width: 991px) {
         transform: translate(-70px, -90px);
@@ -66,18 +66,18 @@
       opacity: 1;
       transform: translate(82px, -110px);
     }
-    [dir="rtl"] .icon-trigger.visible & {
+    [dir='rtl'] .icon-trigger.visible & {
       transform: translate(53px, -63px);
     }
-    [dir="ltr"] .icon-trigger.visible & {
+    [dir='ltr'] .icon-trigger.visible & {
       transform: translate(-54px, -65px);
     }
-    [dir="rtl"] .icon-trigger.mobile-shifted.visible & {
+    [dir='rtl'] .icon-trigger.mobile-shifted.visible & {
       @media (max-width: 991px) {
         transform: translate(70px, -80px);
       }
-    } 
-    [dir="ltr"] .icon-trigger.mobile-shifted.visible & {
+    }
+    [dir='ltr'] .icon-trigger.mobile-shifted.visible & {
       @media (max-width: 991px) {
         transform: translate(-70px, -80px);
       }

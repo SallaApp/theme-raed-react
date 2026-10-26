@@ -31,7 +31,8 @@ describe('wishlist Share menu', () => {
     // past the screen edge on phones.
     const rules: Rule[] = [];
     (await compile('04-components/user-pages.scss')).walkRules((rule) => {
-      if (rule.selector.includes('.s-wishlist-actions-menu') && decl(rule, 'inset-inline-end')) rules.push(rule);
+      if (rule.selector.includes('.s-wishlist-actions-menu') && decl(rule, 'inset-inline-end'))
+        rules.push(rule);
     });
 
     expect(rules).toHaveLength(1);

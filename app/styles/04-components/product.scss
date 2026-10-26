@@ -336,7 +336,7 @@ salla-gifting {
 /* The option content is `overflow: auto` by default, which clips the border
     (and rounded corners) of the option pills (country / digital-card / …) at
     the container edge. Let them paint outside the box. */
-.s-product-options-option-content { 
+.s-product-options-option-content {
   overflow: visible;
 }
 

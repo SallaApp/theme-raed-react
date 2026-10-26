@@ -45,12 +45,19 @@ describe('loyalty reward cards', () => {
   it('stretches the cards in a row to one height so the action buttons line up', async () => {
     const root = await compile('04-components/loyalty.scss');
 
-    for (const container of ['.s-loyalty-program-rewards-container', '.s-loyalty-program-rewards-container-cart']) {
+    for (const container of [
+      '.s-loyalty-program-rewards-container',
+      '.s-loyalty-program-rewards-container-cart',
+    ]) {
       expect(values(root, `${container} .swiper-slide`, 'height')).toEqual(['auto']);
     }
     expect(values(root, '.s-loyalty-program-reward-host', 'height')).toEqual(['100%']);
     expect(values(root, '.s-loyalty-program-reward-container', 'display')).toEqual(['flex']);
-    expect(values(root, '.s-loyalty-program-reward-container', 'flex-direction')).toEqual(['column']);
-    expect(values(root, '.s-loyalty-program-reward-container > [role=button]', 'flex')).toEqual(['1 1 0%']);
+    expect(values(root, '.s-loyalty-program-reward-container', 'flex-direction')).toEqual([
+      'column',
+    ]);
+    expect(values(root, '.s-loyalty-program-reward-container > [role=button]', 'flex')).toEqual([
+      '1 1 0%',
+    ]);
   });
 });
