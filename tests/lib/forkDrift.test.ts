@@ -16,7 +16,10 @@ const sha = (text: string) => createHash('sha256').update(text).digest('hex').sl
 // the version the fork was synced with. After porting upstream changes into a fork, set `synced`
 // to the new hash and update the fork's Base in FORKS.md.
 const FORKS: Record<string, { source: string; synced: string }> = {
-  'product/ProductPage.tsx': { source: 'routes/product/ProductPage.tsx', synced: '9775e0159c3d35d7' },
+  'product/ProductPage.tsx': {
+    source: 'routes/product/ProductPage.tsx',
+    synced: '9775e0159c3d35d7',
+  },
   'product/ProductDetails.tsx': {
     source: 'components/product/ProductDetails.tsx',
     synced: '883af72725d44f8d',
@@ -57,7 +60,10 @@ const KNOWN_DRIFT: Record<string, string> = {
 const forksTable = readFileSync(join(root, 'FORKS.md'), 'utf8');
 const listedForks = [...forksTable.matchAll(/^\| `([^`]+\.tsx)`/gm)].map((match) => match[1]);
 const drifted = Object.entries(FORKS)
-  .filter(([, { source, synced }]) => sha(readFileSync(join(engineSource, `${source}.txt`), 'utf8')) !== synced)
+  .filter(
+    ([, { source, synced }]) =>
+      sha(readFileSync(join(engineSource, `${source}.txt`), 'utf8')) !== synced
+  )
   .map(([fork]) => fork);
 
 describe('forked engine components are in sync with the installed engine', () => {
@@ -67,7 +73,9 @@ describe('forked engine components are in sync with the installed engine', () =>
 
   it('has no fork behind the engine beyond the known, ticketed ones', () => {
     const unexpected = drifted.filter((fork) => !(fork in KNOWN_DRIFT));
-    expect(unexpected.map((fork) => `${fork} <- engine tailwind/${FORKS[fork].source}`)).toEqual([]);
+    expect(unexpected.map((fork) => `${fork} <- engine tailwind/${FORKS[fork].source}`)).toEqual(
+      []
+    );
   });
 
   it('lists no known drift that has since been synced', () => {

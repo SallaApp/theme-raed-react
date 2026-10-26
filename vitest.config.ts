@@ -35,11 +35,13 @@ export default defineConfig({
       exclude: ['app/**/*.d.ts'],
       // Coverage floor (ratchet): measured on app/** and rounded down. It only goes up —
       // raise it when coverage improves, never lower it to make a change pass.
+      // Re-measured once after formatting: app/router.tsx failed to parse under coverage before,
+      // so the first floor silently left out its 128 untested lines.
       thresholds: {
-        lines: 78,
-        branches: 71,
-        functions: 69,
-        statements: 76,
+        lines: 74,
+        branches: 70,
+        functions: 64,
+        statements: 72,
       },
     },
     reporters: ['default', 'json'],

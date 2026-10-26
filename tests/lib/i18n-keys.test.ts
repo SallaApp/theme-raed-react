@@ -35,12 +35,18 @@ export function diffLocales(arMessages: Messages, enMessages: Messages) {
 }
 
 /** Used keys that neither a locale file nor the allowlist covers, per locale. */
-export function findMissing(used: Iterable<string>, allowed: Messages, arMessages: Messages, enMessages: Messages) {
+export function findMissing(
+  used: Iterable<string>,
+  allowed: Messages,
+  arMessages: Messages,
+  enMessages: Messages
+) {
   const needed = [...new Set(used)].filter((key) => !(key in allowed));
   return { ar: missingFrom(needed, arMessages), en: missingFrom(needed, enMessages) };
 }
 
-const engine = (what: string) => `${what}: the engine's own component reads this key from the platform pack`;
+const engine = (what: string) =>
+  `${what}: the engine's own component reads this key from the platform pack`;
 const platform = (what: string) =>
   `${what}: platform pack key the theme passes with an English fallback; the engine does not read it, so unconfirmed`;
 
@@ -127,7 +133,10 @@ describe('theme translation keys', () => {
   });
 
   it('has every key used in app/ in both ar.json and en.json, or in the allowlist', () => {
-    expect(findMissing(usedKeys, ENGINE_PROVIDED, arMessages, enMessages)).toEqual({ ar: [], en: [] });
+    expect(findMissing(usedKeys, ENGINE_PROVIDED, arMessages, enMessages)).toEqual({
+      ar: [],
+      en: [],
+    });
   });
 
   it('keeps the allowlist honest: each entry is still used and not yet in a locale file', () => {
@@ -166,21 +175,32 @@ describe('failure detection', () => {
   });
 
   it('reports a used key removed from en.json only', () => {
-    expect(findMissing(['a.one', 'a.two'], {}, both, { 'a.one': 'x' })).toEqual({ ar: [], en: ['a.two'] });
+    expect(findMissing(['a.one', 'a.two'], {}, both, { 'a.one': 'x' })).toEqual({
+      ar: [],
+      en: ['a.two'],
+    });
   });
 
   it('reports a used key removed from ar.json only', () => {
-    expect(findMissing(['a.one', 'a.two'], {}, { 'a.two': 'y' }, both)).toEqual({ ar: ['a.one'], en: [] });
+    expect(findMissing(['a.one', 'a.two'], {}, { 'a.two': 'y' }, both)).toEqual({
+      ar: ['a.one'],
+      en: [],
+    });
   });
 
   it('lets an allowlisted key through', () => {
-    expect(findMissing(['a.one', 'p.sku'], { 'p.sku': 'platform' }, both, both)).toEqual({ ar: [], en: [] });
+    expect(findMissing(['a.one', 'p.sku'], { 'p.sku': 'platform' }, both, both)).toEqual({
+      ar: [],
+      en: [],
+    });
   });
 
   it('reports keys that exist in only one locale file', () => {
-    expect(diffLocales({ 'a.one': 'x', 'a.extra': 'z' }, { 'a.one': 'x', 'a.other': 'w' })).toEqual({
-      onlyInAr: ['a.extra'],
-      onlyInEn: ['a.other'],
-    });
+    expect(diffLocales({ 'a.one': 'x', 'a.extra': 'z' }, { 'a.one': 'x', 'a.other': 'w' })).toEqual(
+      {
+        onlyInAr: ['a.extra'],
+        onlyInEn: ['a.other'],
+      }
+    );
   });
 });

@@ -53,7 +53,10 @@ function sourceText(dirs: string[]): string {
 // Collection sub-fields are declared as `slides.video` but read as `slide.video`, so match the
 // last segment, as a property, a string key or a destructured name.
 function isRead(id: string, text: string): boolean {
-  const name = id.split('.').pop()!.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const name = id
+    .split('.')
+    .pop()!
+    .replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   return new RegExp(`['"\`.{,\\s]${name}\\b`).test(text);
 }
 

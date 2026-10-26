@@ -1,10 +1,12 @@
 # Design: i18n keys check (SAL-3511 / G6)
 
 ## Goal
+
 A vitest test that fails when a translation key used by the theme code is missing from
 `locales/ar.json` or `locales/en.json`, or when the two files differ in key set.
 
 ## Findings (base `feature/quality-gates-twig-parity-audit`, 22aef57)
+
 - `ar.json` and `en.json` are flat objects, 84 keys each, identical key sets.
 - Theme code translates through `const { t } = useTranslation()` from
   `@salla.sa/twilight-theme-engine/i18n`; call forms are `t('key')` and `t('key', 'Fallback')`.
@@ -23,6 +25,7 @@ A vitest test that fails when a translation key used by the theme code is missin
 - The 10 Twig keys missing from both files are not used in `app/`; do not add them (task F23).
 
 ## Decisions
+
 - New file `tests/lib/i18n-keys.test.ts`; no app code or locale change.
 - Key extraction: read every `app/**/*.{ts,tsx}` with `node:fs`, regex for `t(` / `trans(`
   call with a first argument that is a plain string literal (no template interpolation),
