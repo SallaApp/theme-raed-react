@@ -1,16 +1,16 @@
-input[type="radio"] {
+input[type='radio'] {
   &.sr-only {
     div.absolute {
       transition: all 0.3s;
     }
 
-    &:checked~div.absolute {
+    &:checked ~ div.absolute {
       border-color: var(--color-main);
     }
   }
 }
 
-input[type="text"]:disabled {
+input[type='text']:disabled {
   //background: #f9f9f9;
   color: #838383;
 }
@@ -37,20 +37,19 @@ textarea.form-input {
   @apply border-green-500 focus:border-green-600;
 }
 
-input[type="text"],
-input[type="email"],
-input[type="password"],
-input[type="tel"],
-input[type="number"],
-input[type="search"],
-input[type="url"],
+input[type='text'],
+input[type='email'],
+input[type='password'],
+input[type='tel'],
+input[type='number'],
+input[type='search'],
+input[type='url'],
 textarea,
 select {
   font-size: 16px !important;
 }
 
 @media screen and (max-width: 768px) {
-
   input,
   textarea,
   select {

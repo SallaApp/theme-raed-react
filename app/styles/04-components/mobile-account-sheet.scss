@@ -164,7 +164,7 @@
 .store-footer--sheet {
   @apply -mx-4 mt-6 mb-0 sm:mt-6;
 
-  &.store-footer{
+  &.store-footer {
     @apply bg-transparent;
   }
 
@@ -374,7 +374,8 @@ body.footer-is-dark .store-footer--sheet {
 
 /* Gone once the menu has a row. Matched from the shared parent: the menu sits
    inside the wrapper's hydration `<div>`, never next to the placeholder. */
-.account-sheet__user-menu-card:has(.s-user-menu-dropdown-item) .account-sheet__user-menu-placeholder {
+.account-sheet__user-menu-card:has(.s-user-menu-dropdown-item)
+  .account-sheet__user-menu-placeholder {
   @apply hidden;
 }
 

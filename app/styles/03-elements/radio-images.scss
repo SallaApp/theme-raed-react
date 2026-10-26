@@ -1,21 +1,21 @@
 .radio-images {
-  &__label{
+  &__label {
     @apply inline-block mb-0.5 cursor-pointer rounded overflow-hidden h-24 md:h-20 w-full;
   }
 
-  &__badge{
+  &__badge {
     @apply block absolute bottom-10 left-1/2 -translate-x-1/2 rounded-full px-1.5 bg-red-400 text-white whitespace-nowrap;
   }
 
-  input[type="radio"] {
+  input[type='radio'] {
     display: none;
 
     + label {
       position: relative;
 
       &:after {
-        content: "\ea9d";
-        font-family: "sallaicons" !important;
+        content: '\ea9d';
+        font-family: 'sallaicons' !important;
         speak: never;
         font-style: normal;
         font-weight: normal;
@@ -37,8 +37,8 @@
         align-items: center;
         position: absolute;
         opacity: 0;
-        transform: translate(-50%, -50%) scale(.4);
-        transition: transform .3s;
+        transform: translate(-50%, -50%) scale(0.4);
+        transition: transform 0.3s;
       }
 
       &:before {
@@ -50,7 +50,7 @@
         bottom: 0;
         left: 0;
         right: 0;
-        transition: opacity .3s;
+        transition: opacity 0.3s;
       }
     }
 
@@ -62,14 +62,14 @@
         }
 
         &:before {
-          opacity: .3;
+          opacity: 0.3;
         }
       }
     }
 
     &:disabled {
       + label {
-        opacity: .45;
+        opacity: 0.45;
       }
     }
   }

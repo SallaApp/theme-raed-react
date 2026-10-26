@@ -1,7 +1,6 @@
-
 // Main Menu
-.main-menu > li > a[href*="offer"]{
-  @apply text-red-800
+.main-menu > li > a[href*='offer'] {
+  @apply text-red-800;
 }
 
 @media only screen and (min-width: 1024px) {
@@ -13,12 +12,12 @@
       padding-bottom: 0;
     }
 
-    li{
-      > a{
-        @apply flex justify-between items-center transition duration-300 p-3 text-sm hover:text-primary hover:no-underline; 
+    li {
+      > a {
+        @apply flex justify-between items-center transition duration-300 p-3 text-sm hover:text-primary hover:no-underline;
       }
 
-      &.root-level{
+      &.root-level {
         @apply inline-block;
 
         /* Was `pt-0 pb-8` -- all the vertical room sat below the text, so
@@ -28,35 +27,35 @@
            Symmetric padding, matching `.s-menu-root-level > a`'s `py-2` in
            header.scss (the newer SallaMenu class names this old selector
            predates) keeps the text centered like everything else in the row. */
-        > a{
+        > a {
           @apply font-bold py-2;
         }
       }
     }
 
-    > .has-children:hover > a{
+    > .has-children:hover > a {
       color: var(--color-primary);
     }
 
-    .has-children{
+    .has-children {
       li a:hover,
-      .has-children:hover > a{
+      .has-children:hover > a {
         color: var(--color-primary);
         @apply bg-gray-200/20;
       }
 
-      > a:after{
+      > a:after {
         font-family: 'sallaicons';
-        content: "\e970";
+        content: '\e970';
         @apply inline-block transition-transform duration-300 self-end mx-0.5 text-lg opacity-50 leading-4;
       }
 
       &.root-level {
-        > a:after{
-          content: "\e96e";
+        > a:after {
+          content: '\e96e';
         }
 
-        &:hover > a:after{
+        &:hover > a:after {
           opacity: 1;
           transform: scaleY(-1);
         }
@@ -70,13 +69,13 @@
         top: -1px;
         right: 100%;
 
-        [dir="ltr"] & {
+        [dir='ltr'] & {
           left: 100%;
           right: auto;
         }
       }
 
-      .s-product-card-entry{
+      .s-product-card-entry {
         @apply border border-gray-100;
       }
 
@@ -85,17 +84,17 @@
       }
 
       li.mega-menu .container {
-        ul{
+        ul {
           @apply p-0 m-0 border-none;
         }
-  
-        > div{
+
+        > div {
           @apply hidden;
         }
       }
     }
 
-    .change-menu-dir .sub-menu  .sub-menu {
+    .change-menu-dir .sub-menu .sub-menu {
       @apply rtl:left-full rtl:right-auto ltr:right-full ltr:left-auto;
     }
 
@@ -126,7 +125,7 @@
       > .sub-menu {
         .sub-menu {
           @apply static opacity-0 invisible transform-none shadow-none border-0 m-0 p-0 bg-transparent max-h-0 overflow-hidden transition-[max-height,opacity,visibility] duration-200 ease-in;
-          transition-duration: 250ms, 200ms, 200ms; 
+          transition-duration: 250ms, 200ms, 200ms;
         }
 
         li.has-children {
@@ -150,7 +149,7 @@
     }
   }
 
-  .main-menu .sub-menu ul > li:not(:first-child) > .sub-menu{
+  .main-menu .sub-menu ul > li:not(:first-child) > .sub-menu {
     border-top-right-radius: 0.375rem;
     border-top-left-radius: 0.375rem;
     border: none;
@@ -158,19 +157,18 @@
 }
 // Mobile Slide Menu
 @media only screen and (max-width: 1024px) {
-  .filters-opened{
-    .close-filters{
+  .filters-opened {
+    .close-filters {
       display: block !important;
     }
-  } 
-  .menu-opened{
-    .btn--close-sm.close-mobile-menu{
+  }
+  .menu-opened {
+    .btn--close-sm.close-mobile-menu {
       display: block !important;
     }
   }
   .mobile-menu {
-      @apply lg:hidden overflow-hidden;
-
+    @apply lg:hidden overflow-hidden;
 
     @media (max-width: 480px) {
       .btn--close-sm {
@@ -188,24 +186,24 @@
   }
 
   .mobile-menu {
-    ul.main-menu li:before{
-      @apply w-2 h-2; 
+    ul.main-menu li:before {
+      @apply w-2 h-2;
     }
 
-    &.mobile-menu--navbar{
+    &.mobile-menu--navbar {
       &:after {
         @apply transition-all duration-300 rtl:pr-12 ltr:pl-12 text-start opacity-90 font-bold;
       }
 
-      &.mobile-menu--main{
-        &:after{
+      &.mobile-menu--main {
+        &:after {
           @apply rtl:pr-3 ltr:pl-3;
         }
       }
     }
 
     &.mobile-menu--navbar:before {
-      [dir="rtl"] & {
+      [dir='rtl'] & {
         transform: rotate(135deg) translateY(77%);
         right: var(--mm-spn-item-indent);
         left: auto;
@@ -215,19 +213,19 @@
     li {
       a,
       > span {
-		@apply flex items-center gap-4;
-	  }
+        @apply flex items-center gap-4;
+      }
 
-	  img{
-		@apply w-12 h-12 object-cover bg-[#f5f7f9] pointer-events-none;
-	  }
+      img {
+        @apply w-12 h-12 object-cover bg-[#f5f7f9] pointer-events-none;
+      }
 
-      a span{
+      a span {
         padding: 0;
       }
 
       &:before {
-        [dir="rtl"] & {
+        [dir='rtl'] & {
           width: 6px;
           height: 6px;
           top: 50%;

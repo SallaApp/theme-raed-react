@@ -51,11 +51,11 @@
   @apply bg-gray-100 shadow-none rounded;
 }
 
-#cart-gifting .s-gifting-widget .s-list-tile-item{
+#cart-gifting .s-gifting-widget .s-list-tile-item {
   @apply bg-transparent;
 }
 
-salla-list-tile.s-gifting-widget .s-list-tile-item-content::before{
+salla-list-tile.s-gifting-widget .s-list-tile-item-content::before {
   @apply max-w-[100%];
 }
 

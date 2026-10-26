@@ -29,9 +29,7 @@ const state = {
 
 vi.mock('@tanstack/react-query', () => ({
   useQuery: (options: { queryKey: unknown[] }) =>
-    options.queryKey[0] === 'menu'
-      ? { data: state.items }
-      : { data: { items: state.products } },
+    options.queryKey[0] === 'menu' ? { data: state.items } : { data: { items: state.products } },
 }));
 vi.mock('@salla.sa/twilight-theme-engine/api/menu', () => ({
   menu: { queries: { header: () => ({ queryKey: ['menu'] }) } },

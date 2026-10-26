@@ -76,10 +76,7 @@ export const PhotosSliderWithText = memo(function PhotosSliderWithText({
   const slides = data.slides || [];
   const root = useRef<HTMLDivElement>(null);
   const motionAllowed = useMotionAllowed();
-  useSlideVideos(
-    root,
-    motionAllowed && slides.some((slide) => parseSlideVideo(slide.video))
-  );
+  useSlideVideos(root, motionAllowed && slides.some((slide) => parseSlideVideo(slide.video)));
 
   if (!slides.length) return null;
 

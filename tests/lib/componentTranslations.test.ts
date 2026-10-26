@@ -7,7 +7,10 @@ import {
 } from '../../app/lib/componentTranslations';
 
 /** The theme's locale files, bundled the way `virtual:twilight/theme-translations` hands them over. */
-const theme = { 'ar.trans': ar as Record<string, string>, 'en.trans': en as Record<string, string> };
+const theme = {
+  'ar.trans': ar as Record<string, string>,
+  'en.trans': en as Record<string, string>,
+};
 
 /** A `salla.lang` stand-in: `get` returns the key itself when it's missing, as lang.js does. */
 function fakeLang(messages: Record<string, string>) {

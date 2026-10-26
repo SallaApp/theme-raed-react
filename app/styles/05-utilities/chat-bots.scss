@@ -1,14 +1,14 @@
 body.mm-ocd-opened,
 body.modal-is-open,
-body.fancybox-open{
+body.fancybox-open {
   overflow: hidden;
 
   #tidio-chat,
-  [id^="gb-widget"],
-  [class$="__feedback"],
+  [id^='gb-widget'],
+  [class$='__feedback'],
   #fb-root,
   .fb_reset,
-  #chat-widget-container{
+  #chat-widget-container {
     display: none !important;
   }
 }
@@ -23,16 +23,16 @@ body.fancybox-open{
   }
 }
 
-@media(max-width: 1024px) {
-  body.dropdown--is-opened{
+@media (max-width: 1024px) {
+  body.dropdown--is-opened {
     overflow: hidden;
 
     #tidio-chat,
-    [id^="gb-widget"],
-    [class$="__feedback"],
+    [id^='gb-widget'],
+    [class$='__feedback'],
     #fb-root,
     .fb_reset,
-    #chat-widget-container{
+    #chat-widget-container {
       display: none !important;
     }
   }
@@ -52,14 +52,14 @@ body.fancybox-open{
     }
   }
 
-  [id^="gb-widget"] {
+  [id^='gb-widget'] {
     bottom: 20px !important;
     z-index: 9999 !important;
   }
 
   #fb-root {
     .fb_dialog {
-      iframe[data-testid="bubble_iframe"] {
+      iframe[data-testid='bubble_iframe'] {
         bottom: 20px !important;
       }
     }
@@ -80,13 +80,12 @@ iframe.tawk-widget {
   bottom: 20px;
 }
 
-
-.is-sticky-product-bar{ 
-  &.product-single{
-    [id^="gb-widget"],
+.is-sticky-product-bar {
+  &.product-single {
+    [id^='gb-widget'],
     iframe.tawk-widget,
-    #fb-root .fb_dialog iframe[data-testid="bubble_iframe"],
-    iframe.tawk-widget{
+    #fb-root .fb_dialog iframe[data-testid='bubble_iframe'],
+    iframe.tawk-widget {
       bottom: 70px !important;
     }
   }

@@ -146,8 +146,7 @@ export function Header({ navOpen: navOpenProp, onNavOpenChange }: HeaderProps = 
   // when `header_show_store_info` is on, and on the home page alone unless
   // `header_store_info_home_only` is turned off.
   const introSettings = theme?.settings as
-    | { header_show_store_info?: boolean; header_store_info_home_only?: boolean }
-    | undefined;
+    { header_show_store_info?: boolean; header_store_info_home_only?: boolean } | undefined;
   const showIntro =
     !isDefaultLayout &&
     introSettings?.header_show_store_info !== false &&

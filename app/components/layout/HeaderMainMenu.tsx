@@ -161,6 +161,7 @@ function OneLineMenu({ items, moreTitle }: { items: MenuItem[]; moreTitle: strin
       {/* Sizes the "More" item before it exists, styled like a root item. */}
       <ul className="main-menu site-header__more-probe" aria-hidden="true">
         <li ref={probeRef} className="s-menu-root-level s-menu-has-children">
+          {/* eslint-disable-next-line jsx-a11y/anchor-is-valid -- hidden, aria-hidden measuring probe; never navigable */}
           <a tabIndex={-1}>
             <span>{moreTitle}</span>
           </a>
@@ -234,6 +235,7 @@ function MenuEntry({ item, root }: { item: MenuItem; root: boolean }) {
       {...(hasChildren ? { onMouseEnter: onOpen, onFocus: onOpen } : {})}
     >
       {isMore ? (
+        // eslint-disable-next-line jsx-a11y/anchor-is-valid -- "More" disclosure trigger; href="#" is kept as-is to preserve runtime behaviour
         <a href="#" role="button" aria-haspopup="true" onClick={preventJump}>
           <span>{item.title}</span>
         </a>

@@ -67,12 +67,14 @@ export function useSlideVideos(root: RefObject<HTMLElement | null>, enabled: boo
           );
     const watched = new WeakSet<HTMLVideoElement>();
     const watch = () =>
-      element.querySelectorAll<HTMLVideoElement>('video.enhanced-slider__video').forEach((video) => {
-        if (watched.has(video)) return;
-        watched.add(video);
-        if (observer) observer.observe(video);
-        else playIf(video, true);
-      });
+      element
+        .querySelectorAll<HTMLVideoElement>('video.enhanced-slider__video')
+        .forEach((video) => {
+          if (watched.has(video)) return;
+          watched.add(video);
+          if (observer) observer.observe(video);
+          else playIf(video, true);
+        });
     watch();
     const mutations = new MutationObserver(watch);
     mutations.observe(element, { childList: true, subtree: true });
@@ -149,6 +151,7 @@ function YouTubeBackground({ id }: { id: string }) {
 
   if (state === 'failed') return null;
   return (
+    // eslint-disable-next-line jsx-a11y/iframe-has-title -- decorative background video; the empty title is intentional
     <iframe
       ref={ref}
       className="enhanced-slider__video enhanced-slider__video--embed"

@@ -154,7 +154,9 @@ describe('Header', () => {
     // Plain links, not a web component that fills in after the SDK loads.
     expect(contacts.tagName).toBe('DIV');
     expect(contacts.querySelector('a[href="tel:8001111210"]')?.textContent).toBe('8001111210');
-    expect(contacts.querySelector('a[href="mailto:hi@acme.test"]')?.textContent).toBe('hi@acme.test');
+    expect(contacts.querySelector('a[href="mailto:hi@acme.test"]')?.textContent).toBe(
+      'hi@acme.test'
+    );
   });
 
   it('leaves the contacts out of the top bar when the store has neither phone nor email', () => {

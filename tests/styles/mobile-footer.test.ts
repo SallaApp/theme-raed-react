@@ -77,10 +77,7 @@ describe('account sheet footer under footer_is_dark', () => {
   it("drops the dark band behind the cards and keeps the cards' text dark", async () => {
     const root = await compile('mobile-account-sheet.scss');
 
-    const [inner] = rulesFor(
-      root,
-      'body.footer-is-dark .store-footer--sheet .store-footer__inner'
-    );
+    const [inner] = rulesFor(root, 'body.footer-is-dark .store-footer--sheet .store-footer__inner');
     expect(decl(inner, 'background-color')).toBe('transparent');
 
     // Sass may drop the attribute value's quotes, so match the selector loosely.

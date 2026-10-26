@@ -6,9 +6,11 @@ import { Blog } from '../../../app/components/home/Blog';
 
 // The common barrel loads every module in the folder; load only the carousel.
 vi.mock('../../../app/components/common', async () => ({
-  ScrollCarousel: (await vi.importActual<typeof import('../../../app/components/common/ScrollCarousel')>(
-    '../../../app/components/common/ScrollCarousel'
-  )).ScrollCarousel,
+  ScrollCarousel: (
+    await vi.importActual<typeof import('../../../app/components/common/ScrollCarousel')>(
+      '../../../app/components/common/ScrollCarousel'
+    )
+  ).ScrollCarousel,
 }));
 
 const find = vi.fn();
@@ -99,12 +101,16 @@ describe('Blog', () => {
     expect(firstLink?.getAttribute('href')).toBe('/blog/-/a-1673272609');
     const firstExcerpt = first.querySelector('.s-blog-card__excerpt');
     expect(firstExcerpt?.textContent).toBe('تخزين العطور بشكل صحيح');
-    expect(first.querySelector('.s-blog-card__meta')?.textContent).toBe('12 أكتوبر 2025خالد عبدالله');
+    expect(first.querySelector('.s-blog-card__meta')?.textContent).toBe(
+      '12 أكتوبر 2025خالد عبدالله'
+    );
 
     expect(second.querySelector('.s-blog-card__title')?.textContent).toBe('فن طبقات العطر');
     const secondExcerpt = second.querySelector('.s-blog-card__excerpt');
     expect(secondExcerpt?.textContent).toBe('يتكون كل عطر من ثلاث طبقات');
-    expect(second.querySelector('.s-blog-card__meta')?.textContent).toBe('formatted:2025-10-12سارة');
+    expect(second.querySelector('.s-blog-card__meta')?.textContent).toBe(
+      'formatted:2025-10-12سارة'
+    );
   });
 
   it('keeps each pick in its slot when a later pick loads first', async () => {
@@ -129,7 +135,9 @@ describe('Blog', () => {
     releaseFirst(articles['1673272609']);
     await waitFor(() => expect(container.querySelector('.is-loading')).toBeNull());
     cards = container.querySelectorAll('.s-blog-card');
-    expect(cards[0].querySelector('.s-blog-card__title')?.textContent).toBe('أسرار العناية بالعطور');
+    expect(cards[0].querySelector('.s-blog-card__title')?.textContent).toBe(
+      'أسرار العناية بالعطور'
+    );
     expect(cards[1].querySelector('.s-blog-card__title')?.textContent).toBe('فن طبقات العطر');
   });
 

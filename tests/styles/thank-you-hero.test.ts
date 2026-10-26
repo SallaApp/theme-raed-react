@@ -23,7 +23,8 @@ describe('thank-you page hero', () => {
     // under `.app-inner { bg-white }` and never showed.
     const isolated: string[] = [];
     (await compile('04-components/user-pages.scss')).walkDecls('isolation', (d) => {
-      if (d.value === 'isolate' && d.parent?.type === 'rule') isolated.push((d.parent as { selector: string }).selector);
+      if (d.value === 'isolate' && d.parent?.type === 'rule')
+        isolated.push((d.parent as { selector: string }).selector);
     });
     expect(isolated).toEqual(['body.thank-you #main-content']);
   });

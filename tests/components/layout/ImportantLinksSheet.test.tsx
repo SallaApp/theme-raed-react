@@ -1,13 +1,14 @@
-import React from 'react';
 import { describe, it, expect, vi, afterEach } from 'vitest';
 import { render, fireEvent, screen, act, cleanup } from '@testing-library/react';
 import { ImportantLinksSheet } from '../../../app/components/layout/ImportantLinksSheet';
 
 // Only the module under test, not the whole barrel and everything it re-exports.
 vi.mock('../../../app/components/common', async () => ({
-  BottomSheet: (await vi.importActual<typeof import('../../../app/components/common/BottomSheet')>(
-    '../../../app/components/common/BottomSheet'
-  )).BottomSheet,
+  BottomSheet: (
+    await vi.importActual<typeof import('../../../app/components/common/BottomSheet')>(
+      '../../../app/components/common/BottomSheet'
+    )
+  ).BottomSheet,
 }));
 
 vi.mock('@salla.sa/twilight-theme-engine/i18n', () => ({

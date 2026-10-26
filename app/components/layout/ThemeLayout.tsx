@@ -142,8 +142,7 @@ export function ThemeLayout({ children }: ThemeLayoutProps) {
   // locale files, each time a pack loads (`subscribe` also runs at once when one already has).
   useEffect(() => {
     const lang = window.salla?.lang as
-      | (ComponentLang & { subscribe?: (fn: () => void) => () => void })
-      | undefined;
+      (ComponentLang & { subscribe?: (fn: () => void) => () => void }) | undefined;
     if (typeof lang?.subscribe !== 'function' || typeof lang.add !== 'function') return;
     return lang.subscribe(() => fillComponentTranslations(lang, themeTranslations));
   }, []);

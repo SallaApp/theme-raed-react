@@ -2,11 +2,11 @@
   direction: ltr;
 }
 
-[dir="ltr"] {
+[dir='ltr'] {
   .with-arrow .sicon-keyboard_arrow_left:before,
   nav .sicon-keyboard_arrow_left:before,
   .sub-menu .has-children > a:after {
-      content: "\e96c";
+    content: '\e96c';
   }
   /* The engine's breadcrumb separator is always `keyboard_arrow_left`
      (`BreadcrumbTrail`); in LTR the trail reads left to right, so it points right. */
@@ -20,7 +20,7 @@
           padding: 0 0 0 15px;
         }
       }
-      [class^="arrow"] {
+      [class^='arrow'] {
         right: unset;
         left: 0;
       }

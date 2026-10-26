@@ -113,7 +113,7 @@ describe('filter bar on phones', () => {
 });
 
 describe('header search on phones', () => {
-  it("is hidden below md, where the bottom bar has its own search tab", async () => {
+  it('is hidden below md, where the bottom bar has its own search tab', async () => {
     const { css } = sass.compile(`${themeRoot}app/styles/04-components/header.scss`);
     const root = (
       await postcss([tailwindcss({ ...tailwindConfig, content: [{ raw: '' }] })]).process(css, {

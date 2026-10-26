@@ -1,4 +1,3 @@
-import React from 'react';
 import { describe, it, expect, vi, afterEach } from 'vitest';
 import { render, cleanup } from '@testing-library/react';
 // Its theme translations are the real locale files (`tests/stubs/theme-translations.ts`).

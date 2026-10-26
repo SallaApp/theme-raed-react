@@ -1,5 +1,5 @@
 .rtl,
-[dir="rtl"] {
+[dir='rtl'] {
   .rtl-range-slider {
     transform: rotateY(180deg);
   }
@@ -8,7 +8,8 @@
     flex-direction: row-reverse;
   }
 
-  .form-select, select {
+  .form-select,
+  select {
     background-position: left 0.5rem center;
     padding-right: 12px;
   }

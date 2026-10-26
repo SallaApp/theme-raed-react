@@ -64,6 +64,7 @@ export default defineConfig(async () => ({
   },
   css: {
     preprocessorOptions: {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- vite's typings lag sass's `modern-compiler` option
       scss: { api: 'modern-compiler', silenceDeprecations: ['import'] } as any,
     },
   },

@@ -180,7 +180,7 @@ describe('default layout dropdown panels', () => {
     expect(decl(capped, 'min-width')).toBe('0');
   });
 
-  it('stacks a mega panel\'s products below links laid out in columns', async () => {
+  it("stacks a mega panel's products below links laid out in columns", async () => {
     const css = await compileHeader();
     const [stacked] = rulesMatching(css, new RegExp(`${mega} > ${sub}\\.is-stacked$`));
     expect(decl(stacked, 'flex-direction')).toBe('column');

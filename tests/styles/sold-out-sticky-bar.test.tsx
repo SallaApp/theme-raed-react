@@ -26,7 +26,7 @@ const tailwindConfig = createRequire(`${themeRoot}package.json`)(`${themeRoot}ta
 const PHONE = '(max-width: 640px)';
 
 /** Selectors of the rules that hide something at phone width in `product.scss`. */
-let phoneHiders: string[] = [];
+const phoneHiders: string[] = [];
 
 beforeAll(async () => {
   const { css } = sass.compile(`${themeRoot}app/styles/04-components/product.scss`);
