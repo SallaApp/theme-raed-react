@@ -33,6 +33,14 @@ export default defineConfig({
       reporter: ['text', 'json', 'html', 'lcov'],
       include: ['app/**/*.{ts,tsx}'],
       exclude: ['app/**/*.d.ts'],
+      // Coverage floor (ratchet): measured on app/** and rounded down. It only goes up —
+      // raise it when coverage improves, never lower it to make a change pass.
+      thresholds: {
+        lines: 78,
+        branches: 71,
+        functions: 69,
+        statements: 76,
+      },
     },
     reporters: ['default', 'json'],
     outputFile: './coverage/test-results.json',
