@@ -74,9 +74,9 @@ export function splitMenu(items: MenuItem[], fit: number, moreTitle: string): Me
 }
 
 /** Rows a first-level panel shows before it adds a column. */
-export const PANEL_ROWS = 8;
+const PANEL_ROWS = 8;
 /** The most columns a first-level panel's links take. */
-export const PANEL_MAX_COLUMNS = 4;
+const PANEL_MAX_COLUMNS = 4;
 
 /**
  * How many columns a first-level panel's links take: one per {@link PANEL_ROWS}
