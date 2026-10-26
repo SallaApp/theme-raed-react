@@ -1,0 +1,13 @@
+dist
+.tanstack
+coverage
+app/routeTree.gen.ts
+theme-raed
+.notes
+node_modules
+.wrangler
+pnpm-lock.yaml
+app/styles/vendor
+# `// @auto-generated` route files are rewritten by `pnpm build` (the engine's route generator);
+# this one is emitted unformatted, so formatting it would be undone on every build.
+app/routes/blog_.$slug.c-$id.tsx
