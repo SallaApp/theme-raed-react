@@ -1,0 +1,72 @@
+name: CI
+
+on:
+  pull_request:
+    branches:
+      - master
+      - feature/quality-gates-twig-parity-audit
+  push:
+    branches:
+      - feature/quality-gates-twig-parity-audit
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  gates:
+    name: Quality gates
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # pnpm must be installed before setup-node so its store cache can resolve.
+      # No `version` input: it is read from the packageManager field.
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - name: Print versions
+        run: |
+          node -v
+          pnpm -v
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build
+        run: pnpm build
+
+      - name: Typecheck
+        run: pnpm typecheck
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Format check
+        run: pnpm format:check
+
+      - name: Test with coverage
+        run: pnpm test:coverage
+
+      - name: Check manifest
+        run: pnpm check:manifest
+
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage
+          path: coverage/
+          if-no-files-found: warn
+          retention-days: 7
