@@ -14,7 +14,9 @@
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "lint": "eslint .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "size": "pnpm build && node scripts/check-bundle.mjs",
+    "size:update": "pnpm build && node scripts/check-bundle.mjs --update"
   },
   "dependencies": {
     "@salla.sa/twilight-components-react": "^3.0.2",

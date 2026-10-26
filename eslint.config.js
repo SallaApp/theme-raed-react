@@ -35,6 +35,11 @@ export default tseslint.config(
   },
 
   {
+    files: ['scripts/**/*.mjs'],
+    languageOptions: { globals: globals.node },
+  },
+
+  {
     files: ['**/*.{jsx,tsx}'],
     ...react.configs.flat.recommended,
     languageOptions: {
