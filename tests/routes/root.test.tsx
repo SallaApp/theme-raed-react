@@ -3,7 +3,8 @@
  */
 import { describe, it, expect, vi } from 'vitest';
 import type { ComponentType } from 'react';
-import { renderToString } from 'react-dom/server';
+import { renderToString, renderToPipeableStream } from 'react-dom/server';
+import { Writable } from 'node:stream';
 import type { ThemeStylesheetProps } from '@salla.sa/twilight-theme-engine/tanstack';
 import { HOME_ROUTE_ID, PRODUCT_ROUTE_ID } from '../../app/lib/routeIds';
 
@@ -26,6 +27,9 @@ vi.mock('@salla.sa/twilight-theme-engine/tanstack', () => ({
   },
   ThemeHeadContent: () => null,
 }));
+vi.mock('@salla.sa/twilight-theme-engine/dev', () => ({
+  DevSettingsWidget: () => 'dev-settings-widget',
+}));
 vi.mock('virtual:twilight/theme-translations', () => ({ default: {} }));
 vi.mock('virtual:twilight/schema', () => ({ default: {} }));
 vi.mock('../../app/components/layout/ThemeLayout', () => ({ ThemeLayout: () => null }));
@@ -45,5 +49,48 @@ describe('root head', () => {
       [HOME_ROUTE_ID]: '.home{color:red}',
       [PRODUCT_ROUTE_ID]: '.pdp{color:blue}',
     });
+  });
+
+  it('offers the live settings editor in development', async () => {
+    const { Route } = await import('../../app/routes/__root');
+    const Shell = (Route as unknown as { shellComponent: ComponentType }).shellComponent;
+
+    let html = '';
+    const sink = new Writable({
+      write(chunk, _enc, done) {
+        html += chunk.toString();
+        done();
+      },
+    });
+    await new Promise<void>((resolve) => {
+      const stream = renderToPipeableStream(<Shell />, {
+        onAllReady: () => {
+          stream.pipe(sink);
+          sink.on('finish', resolve);
+        },
+      });
+    });
+
+    expect(html).toContain('dev-settings-widget');
+  });
+
+  it('ships no critical CSS or settings editor in the client production bundle', async () => {
+    vi.stubEnv('DEV', false);
+    vi.stubEnv('SSR', false);
+    vi.resetModules();
+    try {
+      const { Route } = await import('../../app/routes/__root');
+      const Shell = (Route as unknown as { shellComponent: ComponentType }).shellComponent;
+
+      const html = renderToString(<Shell />);
+
+      expect(rendered.stylesheet?.critical).toEqual({
+        [HOME_ROUTE_ID]: '',
+        [PRODUCT_ROUTE_ID]: '',
+      });
+      expect(html).not.toContain('dev-settings-widget');
+    } finally {
+      vi.unstubAllEnvs();
+    }
   });
 });
