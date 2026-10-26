@@ -4,6 +4,9 @@
   "description": "Raed — Salla React storefront theme starter: a TanStack Start (workerd SSR) storefront powered by @salla.sa/twilight-theme-engine",
   "type": "module",
   "packageManager": "pnpm@10.34.9",
+  "engines": {
+    "node": "22.x"
+  },
   "scripts": {
     "dev": "vite dev",
     "build": "vite build",
