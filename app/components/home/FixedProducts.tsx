@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { FixedProductsSkeleton } from '@salla.sa/twilight-components-react';
 import { Link } from '@salla.sa/twilight-theme-engine/common';
 import { useTranslation } from '@salla.sa/twilight-theme-engine/i18n';
+import { useTwilight } from '@salla.sa/twilight-theme-engine/providers';
 import { product, type ProductsListSource } from '@salla.sa/twilight-theme-engine/api/product';
 import { ProductCard } from '../product';
 import { blockLimit } from '../../lib/blockLimit';
@@ -23,23 +24,29 @@ export interface FixedProductsProps {
 /**
  * `fixed-products` home block (`s-block--fixed-products`).
  *
- * Fork of the engine block — identical markup and data flow, only swapped to the
- * theme's {@link ProductCard} wrapper so the grid here gets the same card
- * treatment as every other product list (solid add-to-cart button, wishlist
- * moved to the footer; see `04-components/product.scss`).
- * Registered in `app/router.tsx`.
+ * Fork of the engine block (synced with engine 1.0.132) — identical markup and
+ * data flow, only swapped to the theme's {@link ProductCard} wrapper so the grid
+ * here gets the same card treatment as every other product list (solid
+ * add-to-cart button, wishlist moved to the footer; see
+ * `04-components/product.scss`). Registered in `app/router.tsx`.
  *
- * Unlike the engine block, it shows as many products as the merchant's `limit`,
- * not always the first 4.
+ * The engine renders its own card and only swaps it for a `product:card`
+ * registry override, which the theme cannot register (its wrapper renders the
+ * engine card, so it would recurse) — that is why the fork stays.
+ *
+ * Cards lay out vertically unless the block's `isVertical` or the merchant's
+ * `vertical_fixed_products` theme setting says otherwise (default on, like Twig
+ * Raed's `theme.settings.get('vertical_fixed_products', true)`).
  *
  * Upgrade notes: `FORKS.md`.
  */
 export function FixedProducts({ data }: FixedProductsProps) {
   const { t } = useTranslation();
+  const { theme } = useTwilight();
 
   const title = data.title;
   const limit = blockLimit(data.limit);
-  const isVertical = data.isVertical ?? true;
+  const isVertical = data.isVertical ?? theme.settings.vertical_fixed_products ?? true;
 
   const { data: result, isLoading } = useQuery(
     product.queries.list({
@@ -79,7 +86,11 @@ export function FixedProducts({ data }: FixedProductsProps) {
         }
       >
         {products.slice(0, limit).map((product) => (
-          <ProductCard key={product.id} product={product} />
+          <ProductCard
+            key={product.id}
+            product={product}
+            layout={isVertical ? 'vertical' : 'horizontal'}
+          />
         ))}
       </div>
     </Suspense>

@@ -41,15 +41,13 @@ const FORKS: Record<string, { source: string; synced: string }> = {
   'page/PageSingle.tsx': { source: 'routes/page/PageSingle.tsx', synced: 'cb917020dbaebb01' },
   'home/FixedProducts.tsx': {
     source: 'components/home/FixedProducts.tsx',
-    synced: '01cb3a8afe501424',
+    synced: '20baf2cab1bc05ff',
   },
 };
 
 // Forks already behind the installed engine, each with the task that ports the upstream change.
 // Remove an entry once the port lands; the last test fails until you do.
 const KNOWN_DRIFT: Record<string, string> = {
-  'home/FixedProducts.tsx':
-    'F4: upstream reads the vertical_fixed_products setting and validates the limit',
   'product/ProductGallery.tsx':
     'F6: upstream adds the legacy mobile::gallery.open payload for older SDKs',
   'product/AddToCartForm.tsx': 'upstream dropped loaderPosition from the add-product button',

@@ -17,7 +17,7 @@ upstream change the fork might have taken in, not proof that it was synced then.
 | `cart/CartPage.tsx`           | `routes/cart/CartPage.tsx`                   | `app/routes/cart.tsx`                              | 1.0.78  | Column-heading row above the items; renders the `CartItem` fork; an error state with retry instead of a skeleton that never ends when the cart can't be loaded |
 | `cart/CartItem.tsx`           | `components/cart/CartItem.tsx`               | `CartPage`                                         | 1.0.64  | Flat row, no "Total:" label, trash icon at row end, React quantity stepper                                                                                     |
 | `page/PageSingle.tsx`         | `routes/page/PageSingle.tsx`                 | `app/routes/$slug.page-$id.tsx`                    | 1.0.78  | `customised` pages render only the `information_page.information_page` hook                                                                                    |
-| `home/FixedProducts.tsx`      | `components/home/FixedProducts.tsx`          | `registerHomeComponents` in `app/router.tsx`       | 1.0.47  | Same markup, uses the theme `ProductCard`, and shows the block's `limit` products instead of always 4                                                          |
+| `home/FixedProducts.tsx`      | `components/home/FixedProducts.tsx`          | `registerHomeComponents` in `app/router.tsx`       | 1.0.132 | Same markup and logic, uses the theme `ProductCard` (the engine block can't: its wrapper would recurse)                                                        |
 
 ## Upgrading the engine
 
