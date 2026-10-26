@@ -1,0 +1,19 @@
+#!/bin/sh
+# Format and lint staged files only. Skip in an emergency: git commit --no-verify
+cd "$(ghx "$(/opt/opencode-config/plugins/command-guard/bin/ghx-resolver "SAL-3523")" git rev-parse --show-toplevel)" || exit 1
+
+staged=$(mktemp) || exit 1
+trap 'rm -f "$staged" "$staged.lint"' EXIT
+
+ghx "$(/opt/opencode-config/plugins/command-guard/bin/ghx-resolver "SAL-3523")" git diff --cached --name-only --diff-filter=ACMR -z -- \
+  '*.ts' '*.tsx' '*.js' '*.json' '*.scss' '*.css' '*.md' >"$staged"
+[ -s "$staged" ] || exit 0
+
+xargs -0 pnpm exec prettier --write --ignore-unknown --no-error-on-unmatched-pattern <"$staged" || exit 1
+
+tr '\0' '\n' <"$staged" | grep -E '\.(ts|tsx|js)$' | tr '\n' '\0' >"$staged.lint"
+if [ -s "$staged.lint" ]; then
+  xargs -0 pnpm exec eslint --fix --no-warn-ignored <"$staged.lint" || exit 1
+fi
+
+xargs -0 ghx "$(/opt/opencode-config/plugins/command-guard/bin/ghx-resolver "SAL-3523")" git add -- <"$staged"
