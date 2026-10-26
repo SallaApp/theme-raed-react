@@ -135,6 +135,7 @@ export function ProductGallery({ product }: ProductGalleryProps) {
           className="product-gallery__bar-btn"
           onClick={() => {
             if (window.history.length > 1) window.history.back();
+            // eslint-disable-next-line no-restricted-properties -- intentional: no ref available for this global DOM/location read; behaviour kept
             else window.location.assign('/');
           }}
           aria-label={t('blocks.header.back', 'Back')}

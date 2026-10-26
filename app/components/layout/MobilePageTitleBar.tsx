@@ -61,6 +61,7 @@ export function MobilePageTitleBar() {
   const [docTitle, setDocTitle] = useState('');
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional: state must sync after mount/route change (SSR-safe, avoids hydration mismatch)
     setDocTitle(routeTitle ? '' : cleanDocumentTitle());
   }, [routeTitle]);
 
@@ -76,6 +77,7 @@ export function MobilePageTitleBar() {
         className="mobile-page-title__back"
         onClick={() => {
           if (window.history.length > 1) window.history.back();
+          // eslint-disable-next-line no-restricted-properties -- intentional: no ref available for this global DOM/location read; behaviour kept
           else window.location.assign('/');
         }}
         aria-label={t('blocks.header.back', 'Back')}

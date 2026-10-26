@@ -5,6 +5,7 @@ import { useScrollDirection } from '../../app/hooks/useScrollDirection';
 let direction: string | undefined;
 
 function Probe() {
+  // eslint-disable-next-line react-hooks/globals -- test probe captures the hook result outside render by design
   direction = useScrollDirection();
   return null;
 }

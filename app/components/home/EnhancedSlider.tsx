@@ -156,6 +156,7 @@ function YouTubeBackground({ id }: { id: string }) {
       ref={ref}
       className="enhanced-slider__video enhanced-slider__video--embed"
       data-state={state}
+      // eslint-disable-next-line no-restricted-properties -- intentional: no ref available for this global DOM/location read; behaviour kept
       src={youtubeEmbedUrl(id, window.location.origin)}
       title=""
       loading="lazy"

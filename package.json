@@ -13,7 +13,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
-    "lint": "eslint .",
+    "lint": "eslint . --max-warnings 0",
     "format:check": "prettier --check ."
   },
   "dependencies": {

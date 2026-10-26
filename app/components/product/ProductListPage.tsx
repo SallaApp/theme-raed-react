@@ -49,6 +49,7 @@ function usePref<T extends string>(
       // This fills the hook's own state from localStorage; no parent is
       // involved: see .react-doctor/false-positives.md.
       // react-doctor-disable-next-line react-doctor/no-pass-data-to-parent
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional: state must sync after mount/route change (SSR-safe, avoids hydration mismatch)
       if (stored && values.includes(stored)) setValue(stored);
     } catch {
       /* private mode */

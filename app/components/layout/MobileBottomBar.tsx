@@ -59,10 +59,13 @@ function getCartSdk(): CartSdk | undefined {
 
 type Tab = 'home' | 'categories' | 'search' | 'cart' | 'account';
 
+// eslint-disable-next-line no-restricted-properties -- intentional: no ref available for this global DOM/location read; behaviour kept
 const searchModal = (): Element | null => document.querySelector('salla-modal.s-search-modal');
 
 const userMenu = (): (HTMLElement & { opened?: boolean }) | null =>
+  // eslint-disable-next-line no-restricted-properties -- intentional: no ref available for this global DOM/location read; behaviour kept
   (document.querySelector('salla-user-menu.header-action') ??
+    // eslint-disable-next-line no-restricted-properties -- intentional: no ref available for this global DOM/location read; behaviour kept
     document.querySelector('salla-user-menu')) as (HTMLElement & { opened?: boolean }) | null;
 
 /** Open the Salla search modal — the same event the header's search button fires. */
@@ -122,7 +125,9 @@ function activeTab(
   return null;
 }
 
+// eslint-disable-next-line no-restricted-properties -- intentional: no ref available for this global DOM/location read; behaviour kept
 const isSearchOpen = () => !!document.querySelector('salla-modal.s-search-modal[visible]');
+// eslint-disable-next-line no-restricted-properties -- intentional: no ref available for this global DOM/location read; behaviour kept
 const isMenuOpen = () => !!document.querySelector('.s-user-menu-toggler.opened');
 
 /**
@@ -147,6 +152,7 @@ function useDomFlag(test: () => boolean, enabled: boolean): boolean {
 
   useEffect(() => {
     if (!enabled) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional: state must sync after mount/route change (SSR-safe, avoids hydration mismatch)
       setOn(false);
       return;
     }

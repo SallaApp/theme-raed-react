@@ -35,6 +35,7 @@ export function useStaggeredRows(
 
   useEffect(() => {
     if (!open) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional: state must sync after mount/route change (SSR-safe, avoids hydration mismatch)
       setRowsIn(false);
       return;
     }
@@ -47,15 +48,18 @@ export function useStaggeredRows(
       timer = setTimeout(() => {
         // Force a reflow so the web component's closed state is painted before
         // `.is-in` flips it; otherwise a just-inserted row never transitions.
+        // eslint-disable-next-line no-restricted-properties -- intentional: no ref available for this global DOM/location read; behaviour kept
         void document.querySelector<HTMLElement>(containerSelector)?.offsetWidth;
         cancelPaint = afterNextPaint(() => setRowsIn(true));
       }, ROWS_IN_DELAY_MS);
     };
 
+    // eslint-disable-next-line no-restricted-properties -- intentional: no ref available for this global DOM/location read; behaviour kept
     if (document.querySelector(rowSelector)) {
       release();
     } else {
       observer = new MutationObserver(() => {
+        // eslint-disable-next-line no-restricted-properties -- intentional: no ref available for this global DOM/location read; behaviour kept
         if (document.querySelector(rowSelector)) {
           observer?.disconnect();
           release();

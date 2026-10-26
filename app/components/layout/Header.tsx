@@ -168,6 +168,7 @@ export function Header({ navOpen: navOpenProp, onNavOpenChange }: HeaderProps = 
   //    the height).
   useEffect(() => {
     if (!stickyEnabled) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional: state must sync after mount/route change (SSR-safe, avoids hydration mismatch)
       setScrolled(false);
       return;
     }

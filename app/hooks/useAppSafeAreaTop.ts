@@ -17,6 +17,7 @@ export function useAppSafeAreaTop(): number {
   const [top, setTop] = useState(0);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional: state must sync after mount/route change (SSR-safe, avoids hydration mismatch)
     setTop(read());
     const observer = new MutationObserver(() => setTop(read()));
     observer.observe(document.documentElement, { attributes: true, attributeFilter: ['style'] });

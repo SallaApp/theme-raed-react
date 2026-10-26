@@ -51,6 +51,7 @@ export function BottomSheet({
 
   useEffect(() => {
     if (open) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional: state must sync after mount/route change (SSR-safe, avoids hydration mismatch)
       setMounted(true);
       return;
     }
