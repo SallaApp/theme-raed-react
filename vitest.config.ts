@@ -20,6 +20,8 @@ export default defineConfig({
     environment: 'jsdom',
     setupFiles: ['./tests/setup.tsx'],
     include: ['tests/**/*.test.{ts,tsx}'],
+    // The style tests compile the theme's Sass; under a full parallel run they pass alone but exceed the 5s default.
+    testTimeout: 20000,
     server: {
       deps: {
         // Vite resolves the extensionless imports in twilight-components-react's dist; Node's ESM rejects them.
