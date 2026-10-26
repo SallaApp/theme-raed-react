@@ -34,7 +34,7 @@ const FORKS: Record<string, { source: string; synced: string }> = {
   },
   'product/ProductListPage.tsx': {
     source: 'routes/product-listing/ProductListPage.tsx',
-    synced: '48be5b2e2c0e9468',
+    synced: 'b4a7ed1563a963c7',
   },
   'cart/CartPage.tsx': { source: 'routes/cart/CartPage.tsx', synced: '5cf0eaa4f7c95213' },
   'cart/CartItem.tsx': { source: 'components/cart/CartItem.tsx', synced: '47f86dd848074439' },
@@ -48,8 +48,6 @@ const FORKS: Record<string, { source: string; synced: string }> = {
 // Forks already behind the installed engine, each with the task that ports the upstream change.
 // Remove an entry once the port lands; the last test fails until you do.
 const KNOWN_DRIFT: Record<string, string> = {
-  'product/ProductListPage.tsx':
-    'F7: upstream filters sorts by availableSortIds (merchant-disabled sorts still show here)',
   'home/FixedProducts.tsx':
     'F4: upstream reads the vertical_fixed_products setting and validates the limit',
   'product/ProductGallery.tsx':
