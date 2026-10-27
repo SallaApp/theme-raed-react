@@ -18,7 +18,8 @@
     "test:coverage": "vitest run --coverage",
     "lint": "eslint .",
     "format:check": "prettier --check .",
-    "knip": "knip"
+    "knip": "knip",
+    "prepare": "node scripts/install-hooks.mjs"
   },
   "dependencies": {
     "@salla.sa/twilight-components-react": "^3.0.2",

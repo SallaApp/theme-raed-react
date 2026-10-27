@@ -37,6 +37,11 @@ store's settings don't pin a release (`theme.twilight.version`).
 | `pnpm test`           | Run the test suite (Vitest)         |
 | `pnpm check:manifest` | Validate `twilight.json`            |
 
+## Git hook
+
+`pnpm install` sets `core.hooksPath` to `.githooks`; the pre-commit hook runs Prettier and ESLint (`--fix`) on staged files only, re-stages them, and refuses the commit on remaining lint errors.
+In an emergency, skip it with `git commit --no-verify`.
+
 ## Deployment
 
 Salla builds and publishes your theme on its own infrastructure — push to your
