@@ -24,13 +24,30 @@
     "menu-images",
     "filters"
   ],
+  "groups": [
+    {
+      "id": "header",
+      "icon": "sicon-add_row_before",
+      "type": "header",
+      "label": "Header"
+    },
+    {
+      "id": "footer",
+      "icon": "sicon-add_row_after",
+      "type": "footer",
+      "label": "Footer"
+    }
+  ],
   "settings": [
     {
       "type": "static",
       "format": "title",
       "id": "static-label2",
       "value": "<div class='rounded-lg' style='background-color: #21636d; display: flex; justify-content: center; align-items: center;padding: 15px;margin-bottom: 20px !important; flex-direction: column;gap: 15px;'><h6 style='color: #ffffff;font-size: 15px; font-weight: bold;'> خيارات الهيدر</h6></div>",
-      "variant": "h6"
+      "variant": "h6",
+      "groups": [
+        "header"
+      ]
     },
     {
       "id": "header_layout",
@@ -59,6 +76,9 @@
           "value": "default",
           "key": "header-layout-default"
         }
+      ],
+      "groups": [
+        "header"
       ]
     },
     {
@@ -77,6 +97,9 @@
           "operation": "=",
           "value": "default"
         }
+      ],
+      "groups": [
+        "header"
       ]
     },
     {
@@ -95,6 +118,9 @@
           "operation": "=",
           "value": "lite"
         }
+      ],
+      "groups": [
+        "header"
       ]
     },
     {
@@ -118,6 +144,9 @@
           "operation": "=",
           "value": true
         }
+      ],
+      "groups": [
+        "header"
       ]
     },
     {
@@ -129,7 +158,10 @@
       "format": "switch",
       "required": false,
       "value": false,
-      "selected": false
+      "selected": false,
+      "groups": [
+        "header"
+      ]
     },
     {
       "type": "boolean",
@@ -140,7 +172,10 @@
       "format": "switch",
       "required": false,
       "value": true,
-      "selected": false
+      "selected": false,
+      "groups": [
+        "header"
+      ]
     },
     {
       "type": "boolean",
@@ -151,7 +186,10 @@
       "format": "switch",
       "required": false,
       "value": true,
-      "selected": true
+      "selected": true,
+      "groups": [
+        "header"
+      ]
     },
     {
       "type": "static",
@@ -215,7 +253,10 @@
       "format": "title",
       "id": "static-label4",
       "value": "<div class='rounded-lg' style='background-color: #21636d; display: flex; justify-content: center; align-items: center;padding: 15px;margin-bottom: 20px !important; flex-direction: column;gap: 15px;'><h6 style='color: #ffffff;font-size: 15px; font-weight: bold;'> خيارات أسفل الصفحة</h6></div>",
-      "variant": "h6"
+      "variant": "h6",
+      "groups": [
+        "footer"
+      ]
     },
     {
       "type": "boolean",
@@ -226,7 +267,10 @@
       "format": "switch",
       "required": false,
       "value": true,
-      "selected": false
+      "selected": false,
+      "groups": [
+        "footer"
+      ]
     },
     {
       "type": "static",
