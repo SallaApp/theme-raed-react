@@ -189,6 +189,24 @@ describe('AddToCartForm add-to-cart button', () => {
     expect(host.getAttribute('width')).toBe('wide');
     expect(host.getAttribute('type')).toBe('submit');
   });
+
+  it("spins the add button's own salla-button, not an option's (the map's \"pick location\")", async () => {
+    (window as unknown as { salla: unknown }).salla = { form: { onSubmit: vi.fn() } };
+    const { container } = render(<AddToCartForm product={makeProduct()} />);
+    await waitFor(() => expect(container.querySelector('salla-add-product-button')).toBeTruthy());
+    const form = container.querySelector('form')!;
+
+    // An option's button, earlier in the form than the add button.
+    const optionButton = Object.assign(document.createElement('salla-button'), { load: vi.fn() });
+    form.prepend(optionButton);
+    const addButton = Object.assign(document.createElement('salla-button'), { load: vi.fn() });
+    container.querySelector('salla-add-product-button')!.appendChild(addButton);
+
+    fireEvent.submit(form);
+
+    expect(addButton.load).toHaveBeenCalled();
+    expect(optionButton.load).not.toHaveBeenCalled();
+  });
 });
 
 describe('AddToCartForm sticky bar when sold out', () => {

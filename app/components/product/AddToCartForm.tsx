@@ -25,7 +25,9 @@ import { ProductOptionsPanel, type PanelOption } from '../common/ProductOptionsP
     inner `<salla-button>` spinner by hand. */
 type LoadableButton = HTMLElement & { load?: () => void; stop?: () => void };
 const addButton = (form: HTMLFormElement | null): LoadableButton | null =>
-  (form?.querySelector('salla-button') as LoadableButton | null) ?? null;
+  // Scoped to the add button: options render their own `salla-button`s (the map's
+  // "pick location") earlier in the form, and the spinner would land on those.
+  (form?.querySelector('salla-add-product-button salla-button') as LoadableButton | null) ?? null;
 
 type ProductOptionsElement = HTMLElement & { validateAndScroll?: () => Promise<boolean> };
 
