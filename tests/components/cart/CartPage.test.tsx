@@ -179,7 +179,9 @@ describe('CartPage', () => {
 
   describe('when the cart cannot be loaded', () => {
     it('shows an error with a retry instead of the skeleton when the cart request fails', async () => {
-      cartError = new Error('Request failed with status code 404');
+      cartError = Object.assign(new Error('Request failed with status code 500'), {
+        response: { status: 500 },
+      });
       const { getByText, queryByTestId, container } = renderPage();
 
       await waitFor(() => expect(getByText('common.errors.error_occurred')).toBeTruthy());
@@ -188,6 +190,21 @@ describe('CartPage', () => {
       cartError = null;
       fireEvent.click(getByText('common.elements.try_again'));
       await waitFor(() => expect(container.querySelector('.cart-item')).toBeTruthy());
+    });
+
+    it('resets the SDK cart and shows the empty cart when the cart is not found (404)', async () => {
+      const reset = vi.fn();
+      (window as unknown as { salla: { cart: { reset: () => void } } }).salla.cart.reset = reset;
+      cartError = Object.assign(new Error('Request failed with status code 404'), {
+        response: { status: 404 },
+      });
+      const { getByTestId, queryByText } = renderPage();
+
+      await waitFor(() =>
+        expect(getByTestId('cart-empty-message').textContent).toBe('pages.cart.empty_cart')
+      );
+      expect(reset).toHaveBeenCalledTimes(1);
+      expect(queryByText('common.errors.error_occurred')).toBeNull();
     });
 
     it('shows the error when the SDK fails to give the cart id', async () => {

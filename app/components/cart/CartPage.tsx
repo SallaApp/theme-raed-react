@@ -13,13 +13,19 @@ import { cart } from '@salla.sa/twilight-theme-engine/api/cart';
 import type { CartPageProps } from '@salla.sa/twilight-theme-engine/routes/cart';
 import { CartItem } from './CartItem';
 
+/** Whether a failed request was answered 404 (the engine's API client throws ky's `HTTPError`). */
+function isNotFound(error: unknown): boolean {
+  return (error as { response?: { status?: number } } | null)?.response?.status === 404;
+}
+
 /**
  * Theme fork of the engine `CartPage`.
  *
  * Same data flow as upstream, plus a column-heading row above the items
  * (Products (N) · Quantity · Total) so the flat {@link CartItem} rows read as a
  * table, and an error state with a retry when the cart can't be loaded
- * (upstream keeps its skeleton up for good). Upgrade notes: `FORKS.md`.
+ * (upstream keeps its skeleton up for good). A cart the API no longer knows
+ * (404) is dropped from the SDK and shown empty. Upgrade notes: `FORKS.md`.
  */
 function CartPageContent({ page }: CartPageProps) {
   const { store } = useTwilight();
@@ -57,11 +63,22 @@ function CartPageContent({ page }: CartPageProps) {
     };
   }, [refetchCart]);
 
+  // The SDK's cart id names a cart the API no longer has (`cart/<id>` answered 404).
+  const cartGone = isNotFound(cartQuery.error);
+
+  // Drop that cart from the SDK (its stored id and cookies), so the next add to
+  // cart starts a new one instead of failing against the old id.
+  useEffect(() => {
+    if (!cartGone) return;
+    // `reset` is on the SDK's cart, but not in the engine's `SallaCart` type.
+    (window.salla?.cart as { reset?: () => void } | undefined)?.reset?.();
+  }, [cartGone]);
+
   // A failed request leaves its data undefined, so without this the skeleton
   // stayed up for good (e.g. `cart/<id>` answering an error).
-  const failed = cartIdQuery.isError || cartQuery.isError;
-  // The SDK knew of no cart.
-  const noCart = cartIdQuery.isSuccess && cartId == null;
+  const failed = cartIdQuery.isError || (cartQuery.isError && !cartGone);
+  // The SDK knew of no cart, or the API no longer has it.
+  const noCart = (cartIdQuery.isSuccess && cartId == null) || cartGone;
 
   if (failed) {
     return (
