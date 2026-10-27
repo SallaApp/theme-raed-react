@@ -19,7 +19,7 @@
     "lint": "eslint .",
     "format:check": "prettier --check .",
     "knip": "knip",
-    "prepare": "[ -d .git ] || [ -f .git ] && git config core.hooksPath .githooks || true"
+    "prepare": "node scripts/install-hooks.mjs"
   },
   "dependencies": {
     "@salla.sa/twilight-components-react": "^3.0.2",
