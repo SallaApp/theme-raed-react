@@ -54,6 +54,7 @@
     "globals": "^17.13.0",
     "jsdom": "^30.0.1",
     "knip": "^6.43.0",
+    "msw": "^3.0.3",
     "postcss": "8.5.26",
     "prettier": "^3.9.10",
     "rollup-plugin-visualizer": "^7.1.1",
