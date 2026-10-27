@@ -4,6 +4,8 @@ import { menu } from '@salla.sa/twilight-theme-engine/api/menu';
 import { category } from '@salla.sa/twilight-theme-engine/api/category';
 import { blog } from '@salla.sa/twilight-theme-engine/api/blog';
 import { cart } from '@salla.sa/twilight-theme-engine/api/cart';
+import { createProduct } from './factories';
+import { defaultScenario } from './scenarios';
 import { installMockServer, useScenario } from './server';
 
 installMockServer();
@@ -56,5 +58,16 @@ describe('mock store API, driven through the engine api client', () => {
     expect((await blog.get()).articles).toHaveLength(2);
     const [article] = (await blog.articles.list()).data;
     expect((await blog.articles.find(article.id)).name).toBe('First post');
+  });
+
+  it('filters a tags source by source_value', async () => {
+    const data = defaultScenario();
+    const tagged = createProduct({
+      tags: [{ id: 5, name: 'Summer', url: 'https://store.test/t5' }],
+    });
+    useScenario({ ...data, products: [...data.products, tagged] });
+    const result = await product.list({ source: 'tags', sourceValue: [5] });
+    expect(result.items.map((p) => p.id)).toEqual([tagged.id]);
+    expect((await product.list({ source: 'tags', sourceValue: [6] })).items).toEqual([]);
   });
 });

@@ -40,6 +40,8 @@ const filterProducts = (products: Product[], url: URL): Product[] => {
   if (source === 'categories')
     result = products.filter((p) => ids.includes(Number(p.category?.id)));
   else if (source === 'brands') result = products.filter((p) => ids.includes(Number(p.brand?.id)));
+  else if (source === 'tags')
+    result = products.filter((p) => p.tags?.some((tag) => ids.includes(Number(tag.id))));
   else if (source === 'selected') result = products.filter((p) => ids.includes(p.id));
   else if (source === 'offers') result = products.filter((p) => p.is_on_sale);
   else if (source === 'search') {
