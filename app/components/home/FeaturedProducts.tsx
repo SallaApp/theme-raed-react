@@ -41,7 +41,7 @@ export type FeaturedProductsShowMethod =
 type PickerValue =
   string | number | { id?: unknown; value?: unknown; key?: unknown } | null | undefined;
 
-export interface FeaturedProductsSection {
+interface FeaturedProductsSection {
   name?: string;
   /** Legacy (pre-custom-component) payload: tab name and pre-hydrated stubs. */
   label?: string;
