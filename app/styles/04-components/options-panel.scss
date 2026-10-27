@@ -1,0 +1,81 @@
+/*
+  Product options as a collapsible panel (common/ProductOptionsPanel.tsx), on the
+  product page and on each cart item. Collapsed, a row of chips sums up each
+  option and its answer.
+*/
+.options-panel {
+  @apply rounded-xl border border-gray-200;
+
+  &__header {
+    @apply flex items-center gap-3 px-3 py-2.5;
+  }
+
+  &[data-expanded='true'] &__header {
+    @apply border-b border-gray-200;
+  }
+
+  &__title {
+    @apply flex-1 text-sm font-bold text-gray-900;
+  }
+
+  &__chips {
+    @apply flex flex-1 flex-wrap gap-2;
+  }
+
+  &__chip {
+    @apply inline-flex max-w-full items-center gap-2 rounded-lg bg-gray-100 px-2.5 py-1.5 text-sm text-gray-600 transition-colors hover:bg-gray-200;
+
+    &.is-missing {
+      @apply bg-red-50 text-red-700 hover:bg-red-100;
+    }
+  }
+
+  &__answer {
+    @apply inline-flex min-w-0 items-center gap-1.5 rounded-md bg-white px-1.5 py-0.5 font-bold text-gray-900;
+
+    /* a long text answer stays on one line */
+    max-width: 14rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+
+    .is-missing & {
+      @apply text-red-700;
+    }
+  }
+
+  &__swatch {
+    @apply inline-block h-3.5 w-3.5 shrink-0 rounded-full border border-gray-200;
+  }
+
+  &__icon {
+    @apply h-4 w-4 shrink-0;
+  }
+
+  &__toggle {
+    @apply ms-auto flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-gray-500 transition hover:bg-gray-100;
+
+    .options-panel[data-expanded='true'] & .options-panel__icon {
+      @apply rotate-180;
+    }
+
+    .options-panel__icon {
+      @apply h-5 w-5 transition-transform;
+    }
+  }
+
+  &__fields {
+    @apply p-4;
+  }
+
+  /* One column: each label above its field, every field full width, so the
+     dropdowns, pickers and buttons line up instead of sitting at their own widths. */
+  .s-product-options-option {
+    @apply flex flex-col items-stretch gap-2;
+  }
+
+  .s-product-options-option-label,
+  .s-product-options-option-content {
+    @apply w-full max-w-none;
+  }
+}

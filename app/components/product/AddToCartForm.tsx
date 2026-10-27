@@ -19,6 +19,7 @@ import type { Product } from '@salla.sa/twilight-theme-engine/types';
 import type { ReactNode } from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { usePriceBump } from '../../hooks/usePriceBump';
+import { ProductOptionsPanel, type PanelOption } from '../common/ProductOptionsPanel';
 
 /** The web component's `type="submit"` path skips its own loader, so drive the
     inner `<salla-button>` spinner by hand. */
@@ -466,13 +467,15 @@ export function AddToCartForm({
       {formStartSlot}
 
       {optionsReady && product.options && product.options.length > 0 && (
-        <SallaProductOptions
-          key={product.id}
-          // constructor-only options parse: push data via ref on client remount
-          ref={optionsRef}
-          options={JSON.stringify(product.options)}
-          productId={product.id}
-        />
+        <ProductOptionsPanel options={product.options as PanelOption[]}>
+          <SallaProductOptions
+            key={product.id}
+            // constructor-only options parse: push data via ref on client remount
+            ref={optionsRef}
+            options={JSON.stringify(product.options)}
+            productId={product.id}
+          />
+        </ProductOptionsPanel>
       )}
 
       {product.has_bundle_products && (
