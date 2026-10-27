@@ -80,6 +80,13 @@ export default tseslint.config(
     languageOptions: { globals: { ...globals.node } },
   },
 
+  // CI scripts run on Node.
+  {
+    files: ['scripts/**/*.ts'],
+    languageOptions: { globals: { ...globals.node } },
+    rules: { 'no-restricted-properties': 'off', 'no-restricted-globals': 'off' },
+  },
+
   // Must stay last: turns off formatting rules that conflict with Prettier.
   prettier
 );

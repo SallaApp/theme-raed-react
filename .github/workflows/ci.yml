@@ -1,70 +1,80 @@
-name: CI
+name: Theme Raed React — Quality Gates
 
+# A draft runs nothing. A pull request that is ready for review runs every gate on each push; the merge queue (when
+# enabled) runs them on the exact result it would merge. Reports are published to the shared tests-reports worker.
 on:
   pull_request:
     branches:
       - master
       - feature/quality-gates-twig-parity-audit
+    types: [opened, synchronize, reopened, ready_for_review, converted_to_draft]
+  merge_group:
+    types: [checks_requested]
   push:
     branches:
       - feature/quality-gates-twig-parity-audit
 
+# A draft run skips every job, so it gets its own group: sharing one with the real run lets a late-starting draft run
+# cancel the ready_for_review run and leave every gate failed at 0s.
+concurrency:
+  group: quality-gates-${{ github.event.pull_request.number || github.ref }}${{ github.event.pull_request.draft && '-draft' || '' }}
+  cancel-in-progress: true
+
 permissions:
   contents: read
 
-concurrency:
-  group: ci-${{ github.ref }}
-  cancel-in-progress: true
+defaults:
+  run:
+    shell: bash
 
 jobs:
-  gates:
-    name: Quality gates
-    runs-on: ubuntu-latest
+  # Required check for the "Tested & Coverage" ruleset: one verdict over every gate below.
+  testing-result:
+    name: Testing Ready
+    needs: [static, unit, build]
+    # Not on a draft: every gate is skipped there, and skipped counts as passed.
+    if: always() && (github.event_name != 'pull_request' || github.event.pull_request.draft == false)
+    runs-on: ${{ vars.RUNS_ON && fromJson(vars.RUNS_ON) || 'ubuntu-latest' }}
+    steps:
+      - uses: SallaApp/.CI/testing-ready@master
+        with:
+          needs: ${{ toJSON(needs) }}
+
+  static:
+    name: Lint, Types & Catalogue
+    if: github.event_name != 'pull_request' || github.event.pull_request.draft == false
+    runs-on: ${{ vars.RUNS_ON && fromJson(vars.RUNS_ON) || 'ubuntu-latest' }}
+    timeout-minutes: 15
+    env:
+      NODE_OPTIONS: --max-old-space-size=6144
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up pnpm and Node
+        uses: ./.github/actions/setup
+      - name: Typecheck
+        run: pnpm typecheck
+      - name: Lint
+        run: pnpm lint
+      - name: Format check
+        run: pnpm format:check
+      - name: Check manifest
+        run: pnpm check:manifest
+      - name: Dead code (knip)
+        run: pnpm knip
+
+  unit:
+    name: Unit Tests & Coverage
+    if: github.event_name != 'pull_request' || github.event.pull_request.draft == false
+    runs-on: ${{ vars.RUNS_ON && fromJson(vars.RUNS_ON) || 'ubuntu-latest' }}
     timeout-minutes: 20
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
-      # pnpm must be installed before setup-node so its store cache can resolve.
-      # No `version` input: it is read from the packageManager field.
-      - name: Set up pnpm
-        uses: pnpm/action-setup@v4
-
-      - name: Set up Node
-        uses: actions/setup-node@v4
-        with:
-          node-version-file: .nvmrc
-          cache: pnpm
-
-      - name: Print versions
-        run: |
-          node -v
-          pnpm -v
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-
-      - name: Build
-        run: pnpm build
-
-      - name: Typecheck
-        run: pnpm typecheck
-
-      - name: Lint
-        run: pnpm lint
-
-      - name: Format check
-        run: pnpm format:check
-
-      - name: Test with coverage
+      - name: Set up pnpm and Node
+        uses: ./.github/actions/setup
+      - name: Run unit tests and enforce the coverage floor
         run: pnpm test:coverage
-
-      - name: Check manifest
-        run: pnpm check:manifest
-
-      - name: Dead code (knip)
-        run: pnpm knip
-
       - name: Upload coverage report
         if: always()
         uses: actions/upload-artifact@v4
@@ -73,3 +83,95 @@ jobs:
           path: coverage/
           if-no-files-found: warn
           retention-days: 7
+      - name: Publish the coverage report
+        if: always()
+        continue-on-error: true
+        uses: SallaApp/checkout-tests-reports/publish@master
+        with:
+          name: coverage
+          title: Unit tests and coverage
+          folders: |
+            coverage:coverage
+          entry: coverage/index.html
+          vitest-json: coverage/test-results.json
+          status: ${{ job.status }}
+          access-key-id: ${{ secrets.R2_REPORTS_ACCESS_KEY_ID }}
+          secret-access-key: ${{ secrets.R2_REPORTS_SECRET_ACCESS_KEY }}
+          endpoint: ${{ secrets.R2_REPORTS_ENDPOINT }}
+
+  build:
+    name: Build & Bundle Size
+    if: github.event_name != 'pull_request' || github.event.pull_request.draft == false
+    runs-on: ${{ vars.RUNS_ON && fromJson(vars.RUNS_ON) || 'ubuntu-latest' }}
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up pnpm and Node
+        uses: ./.github/actions/setup
+      - name: Build
+        run: pnpm build
+      - name: Report the bundle size
+        run: |
+          mkdir -p bundle-report
+          {
+            echo "Build output size (dist/)"
+            du -sh dist
+            echo
+            find dist -type f \( -name '*.js' -o -name '*.css' \) -printf '%s %p\n' | sort -rn | head -40 | awk '{printf "%8.1f KB  %s\n", $1/1024, $2}'
+          } | tee bundle-report/bundle-size.txt
+      - name: Publish the bundle size
+        if: always()
+        continue-on-error: true
+        uses: SallaApp/checkout-tests-reports/publish@master
+        with:
+          name: size
+          title: Bundle size
+          folders: |
+            bundle-report
+          entry: bundle-size.txt
+          status: ${{ job.status }}
+          access-key-id: ${{ secrets.R2_REPORTS_ACCESS_KEY_ID }}
+          secret-access-key: ${{ secrets.R2_REPORTS_SECRET_ACCESS_KEY }}
+          endpoint: ${{ secrets.R2_REPORTS_ENDPOINT }}
+
+  # Not in Testing Ready's needs: a reports problem never blocks a merge. Builds the run index and posts the PR comment.
+  reports:
+    name: Test Reports
+    needs: [static, unit, build]
+    if: always() && (github.event_name != 'pull_request' || github.event.pull_request.draft == false)
+    runs-on: ${{ vars.RUNS_ON && fromJson(vars.RUNS_ON) || 'ubuntu-latest' }}
+    timeout-minutes: 15
+    continue-on-error: true
+    # One run at a time per pull request, so two runs never post the result comment at the same moment.
+    concurrency:
+      group: test-reports-${{ github.event.pull_request.number || github.ref }}
+      cancel-in-progress: false
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      # `unit` publishes the coverage row, so its own `needs` row would be a second, empty one: fold it in.
+      - name: Fold the unit verdict into the coverage row
+        id: verdicts
+        if: always()
+        continue-on-error: true
+        env:
+          NEEDS: ${{ toJSON(needs) }}
+        run: |
+          {
+            echo 'needs<<NEEDS_EOF'
+            jq -c 'if .unit then .coverage = .unit | del(.unit) else . end' <<< "$NEEDS"
+            echo 'NEEDS_EOF'
+          } >> "$GITHUB_OUTPUT"
+      - name: Build the run index and comment on the pull request
+        if: always()
+        continue-on-error: true
+        uses: SallaApp/checkout-tests-reports/finalize@master
+        with:
+          base-url: ${{ secrets.REPORTS_BASE_URL }}
+          needs: ${{ steps.verdicts.outputs.needs || toJSON(needs) }}
+          github-token: ${{ github.token }}
+          access-key-id: ${{ secrets.R2_REPORTS_ACCESS_KEY_ID }}
+          secret-access-key: ${{ secrets.R2_REPORTS_SECRET_ACCESS_KEY }}
+          endpoint: ${{ secrets.R2_REPORTS_ENDPOINT }}

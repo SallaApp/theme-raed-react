@@ -19,7 +19,7 @@ export default defineConfig({
     globals: true,
     environment: 'jsdom',
     setupFiles: ['./tests/setup.tsx'],
-    include: ['tests/**/*.test.{ts,tsx}'],
+    include: ['tests/**/*.test.{ts,tsx}', 'scripts/**/*.test.ts'],
     // The style tests compile the theme's Sass; under a full parallel run they pass alone but exceed the 5s default.
     testTimeout: 20000,
     server: {

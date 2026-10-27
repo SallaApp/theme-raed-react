@@ -1,0 +1,86 @@
+name: Theme Raed React — Merge group verification
+
+# The jobs below carry the names of the checks the repository ruleset requires and exist for the merge queue only: the group commit never
+# gets Greptile or the organisation validators, so each re-verifies the stage 1 result on the head of every pull request of the group
+# (docs/merge-queue.md). They are in their own workflow, triggered by `merge_group` alone, because a job skipped by an `if` still
+# reports a check run, and a skipped check counts as passed: on a pull request those names must belong to the real apps only.
+on:
+  merge_group:
+    types: [checks_requested]
+
+concurrency:
+  group: pr-gates-merge-group-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  pull-requests: read
+  checks: read
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  greptile-review:
+    name: Greptile Review
+    runs-on: ${{ vars.RUNS_ON && fromJson(vars.RUNS_ON) || 'ubuntu-latest' }}
+    timeout-minutes: 5
+    env:
+      CHECK_NAME: Greptile Review
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+      - name: Verify the stage 1 result
+        env:
+          EVENT: ${{ github.event_name }}
+          REPOSITORY: ${{ github.repository }}
+          GITHUB_TOKEN: ${{ github.token }}
+          MERGE_GROUP_HEAD_REF: ${{ github.event.merge_group.head_ref }}
+          MERGE_GROUP_BASE_SHA: ${{ github.event.merge_group.base_sha }}
+          MERGE_GROUP_HEAD_SHA: ${{ github.event.merge_group.head_sha }}
+        run: node scripts/ci/prGatesCli.ts
+
+  validate-pr-title:
+    name: Validate PR title
+    runs-on: ${{ vars.RUNS_ON && fromJson(vars.RUNS_ON) || 'ubuntu-latest' }}
+    timeout-minutes: 5
+    env:
+      CHECK_NAME: Validate PR title
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+      - name: Verify the stage 1 result
+        env:
+          EVENT: ${{ github.event_name }}
+          REPOSITORY: ${{ github.repository }}
+          GITHUB_TOKEN: ${{ github.token }}
+          MERGE_GROUP_HEAD_REF: ${{ github.event.merge_group.head_ref }}
+          MERGE_GROUP_BASE_SHA: ${{ github.event.merge_group.base_sha }}
+          MERGE_GROUP_HEAD_SHA: ${{ github.event.merge_group.head_sha }}
+        run: node scripts/ci/prGatesCli.ts
+
+  validate-branch-name:
+    name: Validate branch name
+    runs-on: ${{ vars.RUNS_ON && fromJson(vars.RUNS_ON) || 'ubuntu-latest' }}
+    timeout-minutes: 5
+    env:
+      CHECK_NAME: Validate branch name
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+      - name: Verify the stage 1 result
+        env:
+          EVENT: ${{ github.event_name }}
+          REPOSITORY: ${{ github.repository }}
+          GITHUB_TOKEN: ${{ github.token }}
+          MERGE_GROUP_HEAD_REF: ${{ github.event.merge_group.head_ref }}
+          MERGE_GROUP_BASE_SHA: ${{ github.event.merge_group.base_sha }}
+          MERGE_GROUP_HEAD_SHA: ${{ github.event.merge_group.head_sha }}
+        run: node scripts/ci/prGatesCli.ts
