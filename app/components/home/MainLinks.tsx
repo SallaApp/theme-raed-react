@@ -1,5 +1,6 @@
 import { memo } from 'react';
 import { Link } from '@salla.sa/twilight-theme-engine/common';
+import { getCdnImageUrl } from '@salla.sa/twilight-theme-engine/utils/cdn-image';
 import { SallaSlider } from '@salla.sa/twilight-components-react/slider';
 
 interface LinkItem {
@@ -92,7 +93,8 @@ export const MainLinks = memo(function MainLinks({ data }: MainLinksProps) {
                     <span className="slide--cat-entry__media">
                       {itemImage ? (
                         <img
-                          src={itemImage}
+                          // The CDN's 128px copy (sharp at 64px on 2x screens), not the original upload.
+                          src={getCdnImageUrl(itemImage, { width: 128 }) ?? itemImage}
                           width="64"
                           height="64"
                           alt={itemTitle || ''}

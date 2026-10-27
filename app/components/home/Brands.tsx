@@ -1,6 +1,7 @@
 import { memo } from 'react';
 import type { Brand } from '@salla.sa/twilight-theme-engine/types';
 import { Link } from '@salla.sa/twilight-theme-engine/common';
+import { getCdnImageUrl } from '@salla.sa/twilight-theme-engine/utils/cdn-image';
 import { useTranslation } from '@salla.sa/twilight-theme-engine/i18n';
 import { useTwilight } from '@salla.sa/twilight-theme-engine/providers';
 
@@ -60,7 +61,13 @@ export const Brands = memo(function Brands({ data }: BrandsProps) {
                   className="max-h-full"
                   width="400"
                   height="300"
-                  src={brand.logo}
+                  // The CDN's 400px (and 800px for sharp screens) copy, not the original upload.
+                  src={getCdnImageUrl(brand.logo, { width: 400 }) ?? brand.logo}
+                  srcSet={
+                    brand.logo
+                      ? `${getCdnImageUrl(brand.logo, { width: 400 })} 1x, ${getCdnImageUrl(brand.logo, { width: 800 })} 2x`
+                      : undefined
+                  }
                   alt={brand.name}
                   loading={index === 0 ? 'eager' : 'lazy'}
                   decoding={index === 0 ? 'sync' : 'async'}

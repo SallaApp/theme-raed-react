@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeAll, beforeEach, afterEach } from 'vitest';
-import { render, waitFor, act } from '@testing-library/react';
+import { render, waitFor, act, fireEvent } from '@testing-library/react';
 import { resetWishlistStore } from '@salla.sa/twilight-theme-engine/hooks/useWishlist';
 import type { Product } from '@salla.sa/twilight-theme-engine/types';
 import { ProductDetails } from '../../../app/components/product/ProductDetails';
@@ -235,5 +235,24 @@ describe('ProductDetails description embeds', () => {
       'eager',
       'lazy',
     ]);
+  });
+
+  it('shows a YouTube video as a thumbnail and loads the player only once it is played', async () => {
+    const description =
+      '<p>Intro</p><iframe src="https://www.youtube.com/embed/dQw4w9WgXcQ"></iframe>';
+    const { container } = render(<ProductDetails product={makeProduct({ description })} />);
+
+    const facade = await waitFor(() => {
+      const element = container.querySelector<HTMLButtonElement>('.product__description .video-facade');
+      expect(element).toBeTruthy();
+      return element!;
+    });
+    expect(container.querySelector('.product__description iframe')).toBeNull();
+    expect(facade.getAttribute('aria-label')).toBe('pages.products.play_video');
+
+    fireEvent.click(facade.querySelector('img')!);
+    const frame = container.querySelector('.product__description iframe');
+    expect(frame?.getAttribute('src')).toBe('https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1');
+    expect(container.querySelector('.video-facade')).toBeNull();
   });
 });
