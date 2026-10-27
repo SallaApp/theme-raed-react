@@ -6,8 +6,8 @@
   },
   "totals": {
     "js": {
-      "gzip": 446581,
-      "brotli": 385005
+      "gzip": 449837,
+      "brotli": 390723
     },
     "css": {
       "gzip": 73485,
@@ -19,45 +19,49 @@
       "gzip": 73485,
       "brotli": 54761
     },
-    "chunk-RSKVPOMJ.js": {
-      "gzip": 11520,
-      "brotli": 10305
+    "chunk.js": {
+      "gzip": 19663,
+      "brotli": 17321
     },
     "fslightbox.js": {
       "gzip": 10532,
       "brotli": 9332
     },
     "hydrate.js": {
-      "gzip": 41887,
-      "brotli": 36005
+      "gzip": 44368,
+      "brotli": 38659
     },
     "index.client.js": {
       "gzip": 30733,
-      "brotli": 27520
+      "brotli": 27528
     },
-    "OrderSinglePage-HGEECI7Q.js": {
-      "gzip": 6103,
-      "brotli": 5441
+    "OrderSinglePage.js": {
+      "gzip": 6113,
+      "brotli": 5460
     },
     "product-listing.js": {
-      "gzip": 5232,
-      "brotli": 4662
+      "gzip": 5231,
+      "brotli": 4661
     },
     "shared-home.js": {
-      "gzip": 165106,
-      "brotli": 139116
+      "gzip": 151357,
+      "brotli": 129188
     },
-    "ThankYouPage-DAZOZH6Y.js": {
-      "gzip": 6219,
-      "brotli": 5176
+    "shared-product.js": {
+      "gzip": 8778,
+      "brotli": 7808
+    },
+    "ThankYouPage.js": {
+      "gzip": 6215,
+      "brotli": 5178
     },
     "vendor-react.js": {
       "gzip": 58600,
-      "brotli": 50755
+      "brotli": 50727
     },
     "vendor-router.js": {
-      "gzip": 30817,
-      "brotli": 27904
+      "gzip": 30816,
+      "brotli": 27888
     }
   }
 }

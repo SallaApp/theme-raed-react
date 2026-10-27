@@ -5,7 +5,7 @@ import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { gzipSync, brotliCompressSync } from 'node:zlib';
 
-const root = join(dirname(fileURLToPath(import.meta.url)), '..');
+const root = process.env.BUNDLE_ROOT ?? join(dirname(fileURLToPath(import.meta.url)), '..');
 const assetsDir = join(root, 'dist/client/assets');
 const budgetPath = join(root, 'size-budget.json');
 const reportPath = join(root, 'dist/size-report.json');
@@ -22,6 +22,9 @@ function measure() {
   } catch {
     throw new Error(`No client build at ${assetsDir}. Run "pnpm build" first.`);
   }
+  if (!files.some((f) => f.endsWith('.js'))) {
+    throw new Error(`No JS assets in ${assetsDir}; the build layout may have changed.`);
+  }
   const chunks = {};
   const totals = { js: { gzip: 0, brotli: 0 }, css: { gzip: 0, brotli: 0 } };
   for (const file of files) {
@@ -31,8 +34,8 @@ function measure() {
     const kind = file.endsWith('.css') ? 'css' : 'js';
     totals[kind].gzip += gzip;
     totals[kind].brotli += brotli;
-    // Drop the content hash so a chunk keeps one budget across builds.
-    const name = file.replace(/-[A-Za-z0-9_-]{8}(\.(?:js|css))$/, '$1');
+    // Drop every embedded content hash so a chunk keeps one budget across builds.
+    const name = file.replace(/(-[A-Za-z0-9_-]{8})+(\.(?:js|css))$/, '$2');
     const prev = chunks[name] ?? { gzip: 0, brotli: 0 };
     chunks[name] = { gzip: prev.gzip + gzip, brotli: prev.brotli + brotli };
   }
