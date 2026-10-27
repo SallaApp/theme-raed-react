@@ -58,13 +58,24 @@ describe('ProductOptionsPanel', () => {
     expect(fieldsHidden(container)).toBe(true);
     expect(chipTexts(container)).toEqual([
       'SizeM',
-      'ColorRed',
+      'Color',
       'NoteHappy birthday',
       'Locationblocks.product_options.added',
     ]);
-    expect(container.querySelector('.options-panel__swatch')?.getAttribute('style')).toContain(
-      'background-color'
+  });
+
+  it('shows a picked color as its circle alone, named for screen readers', () => {
+    const picker: PanelOption = { id: 5, name: 'Ink', type: 'color_picker', value: '#00ff00' };
+    const { container } = render(
+      <ProductOptionsPanel options={[color, picker]}>
+        <OptionFields ids={[]} />
+      </ProductOptionsPanel>
     );
+
+    expect(chipTexts(container)).toEqual(['Color', 'Ink']);
+    const swatches = [...container.querySelectorAll('.options-panel__swatch')];
+    expect(swatches.map((swatch) => swatch.getAttribute('aria-label'))).toEqual(['Red', '#00ff00']);
+    expect(swatches[0].getAttribute('style')).toContain('background-color');
   });
 
   it('stays collapsed, and flags the chip, while a required option is unanswered', () => {

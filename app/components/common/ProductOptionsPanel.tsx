@@ -36,22 +36,33 @@ const OPTION_FIELD = /^options\[([^\]]+)\](?:\[\])?$/;
 const isSelected = (detail: NonNullable<PanelOption['details']>[number]) =>
   detail.is_selected ?? Number(detail.is_default) === 1;
 
+/** A picked color as a circle alone, without its name or code. */
+function ColorSwatch({ color, label }: { color: string; label: string }) {
+  return (
+    <span
+      className="options-panel__swatch"
+      style={{ backgroundColor: color }}
+      role="img"
+      aria-label={label}
+      title={label}
+    />
+  );
+}
+
 /** What the chip shows for an option's current answer; `null` when it has none. */
 function optionAnswer(option: PanelOption, added: string): ReactNode | null {
   const selected = option.details?.filter(isSelected) ?? [];
   if (selected.length) {
-    return selected.map((detail, index) => (
-      <span key={index} className="options-panel__answer">
-        {detail.color && (
-          <span
-            className="options-panel__swatch"
-            style={{ backgroundColor: detail.color }}
-            aria-hidden="true"
-          />
-        )}
-        {detail.name}
-      </span>
-    ));
+    return selected.map((detail, index) =>
+      // A color shows as its circle alone; its name stays for screen readers and on hover.
+      detail.color ? (
+        <ColorSwatch key={index} color={detail.color} label={detail.name ?? detail.color} />
+      ) : (
+        <span key={index} className="options-panel__answer">
+          {detail.name}
+        </span>
+      )
+    );
   }
 
   const value = typeof option.value === 'number' ? String(option.value) : option.value;
@@ -65,12 +76,7 @@ function optionAnswer(option: PanelOption, added: string): ReactNode | null {
     );
   }
   if (COLOR_VALUE_TYPES.has(option.type ?? '')) {
-    return (
-      <span className="options-panel__answer">
-        <span className="options-panel__swatch" style={{ backgroundColor: value }} aria-hidden="true" />
-        {value}
-      </span>
-    );
+    return <ColorSwatch color={value} label={value} />;
   }
   return <span className="options-panel__answer">{value}</span>;
 }
