@@ -153,7 +153,9 @@ jobs:
     name: Test Reports
     needs: [static, unit, build]
     if: always() && github.event_name == 'pull_request' && github.event.pull_request.draft == false
-    runs-on: ubuntu-latest
+    # The organization's API IP allow list rejects calls from GitHub-hosted runners, so the comment is posted from the
+    # organization runner when the RUNS_ON variable is set (a JSON runner label or group), else from ubuntu-latest.
+    runs-on: ${{ vars.RUNS_ON && fromJson(vars.RUNS_ON) || 'ubuntu-latest' }}
     timeout-minutes: 10
     continue-on-error: true
     concurrency:
@@ -171,6 +173,8 @@ jobs:
           merge-multiple: true
         continue-on-error: true
       - name: Comment on the pull request
+        # The report is always in the job summary too, so a comment the API refuses does not fail the run.
+        continue-on-error: true
         env:
           GH_TOKEN: ${{ github.token }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
@@ -188,6 +192,7 @@ jobs:
               if [ -f "$f" ]; then echo; cat "$f"; fi
             done
           } > comment.md
+          cat comment.md >> "$GITHUB_STEP_SUMMARY"
           existing="$(gh api "repos/$GITHUB_REPOSITORY/issues/$PR_NUMBER/comments" --paginate --jq ".[] | select(.body | contains(\"$marker\")) | .id" | head -n 1)"
           if [ -n "$existing" ]; then
             gh api --method PATCH "repos/$GITHUB_REPOSITORY/issues/comments/$existing" -F body=@comment.md
