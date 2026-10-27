@@ -62,6 +62,9 @@ jobs:
       - name: Check manifest
         run: pnpm check:manifest
 
+      - name: Dead code (knip)
+        run: pnpm knip
+
       - name: Upload coverage report
         if: always()
         uses: actions/upload-artifact@v4
