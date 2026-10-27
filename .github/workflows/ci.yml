@@ -119,7 +119,7 @@ jobs:
               echo "Largest JS and CSS files:"
               echo
               echo '```'
-              find dist -type f \( -name '*.js' -o -name '*.css' \) -printf '%s %p\n' | sort -rn | head -15 | awk '{printf "%8.1f KB  %s\n", $1/1024, $2}'
+              find dist -type f \( -name '*.js' -o -name '*.css' \) -printf '%s %p\n' | sort -rn | awk 'NR<=15 {printf "%8.1f KB  %s\n", $1/1024, $2}'
               echo '```'
             else
               echo
