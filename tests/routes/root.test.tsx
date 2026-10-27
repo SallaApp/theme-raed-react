@@ -37,6 +37,25 @@ vi.mock('../../app/styles/app.css?url', () => ({ default: '/app.css' }));
 vi.mock('../../app/styles/critical.scss?inline', () => ({ default: '.home{color:red}' }));
 vi.mock('../../app/styles/critical-product.scss?inline', () => ({ default: '.pdp{color:blue}' }));
 
+const renderWhenReady = async (Shell: ComponentType) => {
+  let html = '';
+  const sink = new Writable({
+    write(chunk, _enc, done) {
+      html += chunk.toString();
+      done();
+    },
+  });
+  await new Promise<void>((resolve) => {
+    const stream = renderToPipeableStream(<Shell />, {
+      onAllReady: () => {
+        stream.pipe(sink);
+        sink.on('finish', resolve);
+      },
+    });
+  });
+  return html;
+};
+
 describe('root head', () => {
   it('paints the home and product pages from their own critical CSS', async () => {
     const { Route } = await import('../../app/routes/__root');
@@ -55,21 +74,7 @@ describe('root head', () => {
     const { Route } = await import('../../app/routes/__root');
     const Shell = (Route as unknown as { shellComponent: ComponentType }).shellComponent;
 
-    let html = '';
-    const sink = new Writable({
-      write(chunk, _enc, done) {
-        html += chunk.toString();
-        done();
-      },
-    });
-    await new Promise<void>((resolve) => {
-      const stream = renderToPipeableStream(<Shell />, {
-        onAllReady: () => {
-          stream.pipe(sink);
-          sink.on('finish', resolve);
-        },
-      });
-    });
+    const html = await renderWhenReady(Shell);
 
     expect(html).toContain('dev-settings-widget');
   });
@@ -82,7 +87,7 @@ describe('root head', () => {
       const { Route } = await import('../../app/routes/__root');
       const Shell = (Route as unknown as { shellComponent: ComponentType }).shellComponent;
 
-      const html = renderToString(<Shell />);
+      const html = await renderWhenReady(Shell);
 
       expect(rendered.stylesheet?.critical).toEqual({
         [HOME_ROUTE_ID]: '',
