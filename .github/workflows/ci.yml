@@ -1,0 +1,201 @@
+name: CI
+
+# Quality gates. A draft runs nothing; a pull request that is ready for review runs every gate on each push.
+# Results are summarised in one comment on the pull request (no external services involved).
+on:
+  pull_request:
+    branches:
+      - master
+      - feature/quality-gates-twig-parity-audit
+    types: [opened, synchronize, reopened, ready_for_review, converted_to_draft]
+  push:
+    branches:
+      - feature/quality-gates-twig-parity-audit
+
+# A draft run skips every job, so it gets its own group: sharing one with the real run could cancel the
+# ready_for_review run.
+concurrency:
+  group: quality-gates-${{ github.event.pull_request.number || github.ref }}${{ github.event.pull_request.draft && '-draft' || '' }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  static:
+    name: Lint & Static Checks
+    if: github.event_name != 'pull_request' || github.event.pull_request.draft == false
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      NODE_OPTIONS: --max-old-space-size=6144
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up pnpm and Node
+        uses: ./.github/actions/setup
+      - name: Lint
+        run: pnpm lint
+      - name: Format check
+        run: pnpm format:check
+      - name: Check manifest
+        run: pnpm check:manifest
+      - name: Dead code (knip)
+        run: pnpm knip
+
+  unit:
+    name: Unit Tests & Coverage
+    if: github.event_name != 'pull_request' || github.event.pull_request.draft == false
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up pnpm and Node
+        uses: ./.github/actions/setup
+      - name: Run unit tests and enforce the coverage floor
+        run: pnpm test:coverage
+      - name: Write the coverage report
+        if: always()
+        run: |
+          mkdir -p report
+          {
+            echo "### Unit tests and coverage"
+            if [ -f coverage/coverage-summary.json ]; then
+              echo
+              echo "| Metric | Covered | Total | % |"
+              echo "| --- | --- | --- | --- |"
+              jq -r '.total | to_entries[] | select(.key | IN("lines","statements","functions","branches")) | "| \(.key) | \(.value.covered) | \(.value.total) | \(.value.pct) |"' coverage/coverage-summary.json
+            else
+              echo
+              echo "No coverage summary was produced."
+            fi
+          } > report/coverage.md
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage
+          path: coverage/
+          if-no-files-found: warn
+          retention-days: 7
+      - name: Upload the report section
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: report-coverage
+          path: report/coverage.md
+          retention-days: 1
+
+  build:
+    name: Build, Types & Bundle Size
+    if: github.event_name != 'pull_request' || github.event.pull_request.draft == false
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up pnpm and Node
+        uses: ./.github/actions/setup
+      - name: Build
+        run: pnpm build
+      # Typecheck needs app/routeTree.gen.ts, which the build generates on a clean checkout.
+      - name: Typecheck
+        run: pnpm typecheck
+      - name: Write the bundle size report
+        if: always()
+        run: |
+          mkdir -p report
+          {
+            echo "### Bundle size"
+            if [ -d dist ]; then
+              echo
+              echo "Total build output: $(du -sh dist | cut -f1)"
+              echo
+              echo "Largest JS and CSS files:"
+              echo
+              echo '```'
+              find dist -type f \( -name '*.js' -o -name '*.css' \) -printf '%s %p\n' | sort -rn | awk 'NR<=15 {printf "%8.1f KB  %s\n", $1/1024, $2}'
+              echo '```'
+            else
+              echo
+              echo "The build produced no output."
+            fi
+          } > report/size.md
+      - name: Upload the report section
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: report-size
+          path: report/size.md
+          retention-days: 1
+
+  # One verdict over every gate above: the single check to require in a branch ruleset.
+  testing-result:
+    name: Testing Ready
+    needs: [static, unit, build]
+    if: always() && (github.event_name != 'pull_request' || github.event.pull_request.draft == false)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Every gate passed
+        env:
+          NEEDS: ${{ toJSON(needs) }}
+        run: |
+          echo "$NEEDS" | jq -r 'to_entries[] | "\(.key): \(.value.result)"'
+          echo "$NEEDS" | jq -e 'all(.[]; .result == "success")' > /dev/null
+
+  # Not part of Testing Ready: a comment problem never blocks a merge.
+  reports:
+    name: Test Reports
+    needs: [static, unit, build]
+    if: always() && github.event_name == 'pull_request' && github.event.pull_request.draft == false
+    # The organization's API IP allow list rejects calls from GitHub-hosted runners, so the comment is posted from the
+    # organization runner when the RUNS_ON variable is set (a JSON runner label or group), else from ubuntu-latest.
+    runs-on: ${{ vars.RUNS_ON && fromJson(vars.RUNS_ON) || 'ubuntu-latest' }}
+    timeout-minutes: 10
+    continue-on-error: true
+    concurrency:
+      group: test-reports-${{ github.event.pull_request.number }}
+      cancel-in-progress: false
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - name: Download the report sections
+        uses: actions/download-artifact@v4
+        with:
+          path: report
+          pattern: report-*
+          merge-multiple: true
+        continue-on-error: true
+      - name: Comment on the pull request
+        # The report is always in the job summary too, so a comment the API refuses does not fail the run.
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          NEEDS: ${{ toJSON(needs) }}
+        run: |
+          marker='<!-- ci-test-report -->'
+          {
+            echo "$marker"
+            echo "## Test report"
+            echo
+            echo "| Gate | Result |"
+            echo "| --- | --- |"
+            echo "$NEEDS" | jq -r 'to_entries[] | "| \(.key) | \(.value.result) |"'
+            for f in report/coverage.md report/size.md; do
+              if [ -f "$f" ]; then echo; cat "$f"; fi
+            done
+          } > comment.md
+          cat comment.md >> "$GITHUB_STEP_SUMMARY"
+          existing="$(gh api "repos/$GITHUB_REPOSITORY/issues/$PR_NUMBER/comments" --paginate --jq ".[] | select(.body | contains(\"$marker\")) | .id" | head -n 1)"
+          if [ -n "$existing" ]; then
+            gh api --method PATCH "repos/$GITHUB_REPOSITORY/issues/comments/$existing" -F body=@comment.md
+          else
+            gh api --method POST "repos/$GITHUB_REPOSITORY/issues/$PR_NUMBER/comments" -F body=@comment.md
+          fi

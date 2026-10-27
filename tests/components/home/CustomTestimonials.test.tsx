@@ -4,9 +4,11 @@ import { CustomTestimonials } from '../../../app/components/home/CustomTestimoni
 
 // Only the module under test, not the whole barrel and everything it re-exports.
 vi.mock('../../../app/components/common', async () => ({
-  TestimonialsCarousel: (await vi.importActual<typeof import('../../../app/components/common/TestimonialsCarousel')>(
-    '../../../app/components/common/TestimonialsCarousel'
-  )).TestimonialsCarousel,
+  TestimonialsCarousel: (
+    await vi.importActual<typeof import('../../../app/components/common/TestimonialsCarousel')>(
+      '../../../app/components/common/TestimonialsCarousel'
+    )
+  ).TestimonialsCarousel,
 }));
 
 vi.mock('@salla.sa/twilight-theme-engine/i18n', () => ({

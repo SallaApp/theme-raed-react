@@ -1,7 +1,7 @@
 import { type ComponentRef, type RefObject, useCallback, useEffect, useRef, useState } from 'react';
 import { SallaSlider } from '@salla.sa/twilight-components-react/slider';
 import { SallaSocialShare } from '@salla.sa/twilight-components-react/social-share';
-import { useTwilight } from '@salla.sa/twilight-theme-engine/providers';
+import { useNavigate, useTwilight } from '@salla.sa/twilight-theme-engine/providers';
 import { useTranslation } from '@salla.sa/twilight-theme-engine/i18n';
 import { useWishlist } from '@salla.sa/twilight-theme-engine/hooks/useWishlist';
 import { Image } from '@salla.sa/twilight-theme-engine/common';
@@ -16,11 +16,14 @@ export interface ProductGalleryProps {
   product: Product;
 }
 
-type GalleryMedia = { url: string; type: 'image' | 'video' | '3d-image' };
+interface GalleryMedia {
+  url: string;
+  type: 'image' | 'video' | '3d-image';
+}
 // The engine's `SallaMobile` type lists `openGallery` only from twilight-platform #439.
-type NativeGalleryBridge = {
+interface NativeGalleryBridge {
   openGallery?: (images: ProductImage[], selected?: ProductImage) => boolean;
-};
+}
 
 /**
  * The engine's own `mobile::gallery.open` payload from before `salla.mobile.openGallery`: a video's
@@ -61,6 +64,7 @@ export function ProductGallery({ product }: ProductGalleryProps) {
   const sliderRef = useRef<ComponentRef<typeof SallaSlider>>(null);
   const objectFit = theme.settings.slider_background_size ?? 'cover';
   const hydrated = useHydrated();
+  const navigate = useNavigate();
   const isMobile = useMobileViewport();
   // `onAfterInit` fires once Swiper actually finishes laying the slider out —
   // later than `hydrated` (which only means React has mounted; the slider web
@@ -110,8 +114,7 @@ export function ProductGallery({ product }: ProductGalleryProps) {
   const openNativeGallery = (selected: ProductImage) => {
     if (!isNativeApp()) return false;
     const mobile = window.salla?.mobile as
-      | (NonNullable<typeof window.salla>['mobile'] & NativeGalleryBridge)
-      | undefined;
+      (NonNullable<typeof window.salla>['mobile'] & NativeGalleryBridge) | undefined;
     if (mobile?.openGallery?.(images, selected)) return true;
     window.salla?.event.dispatch('mobile::gallery.open', { images: legacyGalleryMedia(images) });
     return true;
@@ -136,7 +139,7 @@ export function ProductGallery({ product }: ProductGalleryProps) {
           className="product-gallery__bar-btn"
           onClick={() => {
             if (window.history.length > 1) window.history.back();
-            else window.location.assign('/');
+            else navigate('/');
           }}
           aria-label={t('blocks.header.back', 'Back')}
         >

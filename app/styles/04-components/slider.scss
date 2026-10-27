@@ -1,56 +1,56 @@
-salla-slider{ 
+salla-slider {
   @apply block;
-  
-  &.details-slider{
+
+  &.details-slider {
     @apply mb-2.5 md:mb-0;
 
     /* Before Stencil upgrades this element (adds its own `hydrated` class)
        and Swiper lays the track out, `.swiper-slide` is just a plain block —
        every slide stacks vertically instead of only the first one showing.
        Hide the rest until then. */
-    &:not(.hydrated) .swiper-slide:not(:first-child){
+    &:not(.hydrated) .swiper-slide:not(:first-child) {
       display: none;
     }
 
-    .s-slider-container{
+    .s-slider-container {
       @apply bg-white border-[1px] rounded;
     }
 
-    .swiper-slide{
+    .swiper-slide {
       @apply relative rounded bg-white ring-1 ring-inset ring-gray-100;
     }
 
     /* Fixed 80×80 thumbnails. The theme `ProductGallery` fork runs the thumbs
        swiper with `slidesPerView: 'auto'` so it measures this width instead of
        laying the track out for quarter-width slides. */
-    .s-slider-thumbs .s-slider-thumbs-container .swiper-slide{
+    .s-slider-thumbs .s-slider-thumbs-container .swiper-slide {
       width: 80px !important;
       height: 80px !important;
       max-width: 80px;
       flex: 0 0 80px;
     }
 
-    .s-slider-thumbs .slide--one-fourth{
+    .s-slider-thumbs .slide--one-fourth {
       @apply w-full h-full max-w-none;
     }
 
-    salla-button.btn--wishlist{
+    salla-button.btn--wishlist {
       @apply absolute rtl:right-4 ltr:left-4 bottom-4 z-[2] sm:hidden;
     }
 
-    .s-slider-block__title-nav{
+    .s-slider-block__title-nav {
       @apply hidden sm:flex;
     }
 
     /* Desktop keeps the thumb strip; the auto-rendered dots are for mobile. */
-    .swiper-pagination{
+    .swiper-pagination {
       @apply hidden;
     }
 
     /* Mobile: no thumbs — a frosted pill of dots over the image instead.
        The active dot elongates. */
-    @media (max-width: 767px){
-      .s-slider-thumbs{
+    @media (max-width: 767px) {
+      .s-slider-thumbs {
         @apply hidden;
       }
 
@@ -58,15 +58,15 @@ salla-slider{
       .s-slider-container,
       .swiper-slide,
       .swiper-slide img,
-      .swiper-slide picture{
+      .swiper-slide picture {
         @apply rounded-none;
       }
 
-      .swiper-slide{
+      .swiper-slide {
         @apply ring-0;
       }
 
-      .swiper-pagination.swiper-pagination-bullets{
+      .swiper-pagination.swiper-pagination-bullets {
         @apply absolute inset-x-0 bottom-4 z-[3] mx-auto flex w-max items-center justify-center gap-1.5;
         padding: 5px 12px;
         border-radius: 9999px;
@@ -74,7 +74,7 @@ salla-slider{
         backdrop-filter: blur(4px);
       }
 
-      .swiper-pagination-bullet{
+      .swiper-pagination-bullet {
         @apply block h-1.5 w-1.5 rounded-full opacity-100;
         margin: 0 !important;
         background: rgba(0, 0, 0, 0.25);
@@ -83,33 +83,32 @@ salla-slider{
           background-color 0.25s ease;
       }
 
-      .swiper-pagination-bullet-active{
+      .swiper-pagination-bullet-active {
         @apply w-5 bg-gray-900;
       }
     }
   }
 
-  .slide--one-fourth{
+  .slide--one-fourth {
     @apply h-auto w-full sm:w-1/2 md:w-1/3 lg:w-1/4 max-w-[250px] sm:max-w-[320px];
   }
 
-  .slide--one-sixth{
+  .slide--one-sixth {
     @apply w-1/2 sm:w-2/6 md:w-1/4 lg:w-1/6;
   }
 
-  .slide--one-eighth{
+  .slide--one-eighth {
     @apply w-1/2 sm:w-2/6 md:w-1/4 lg:w-[12.5%];
   }
 
-
-  // Fix Flickering in Safari 
-  .swiper-slide{
+  // Fix Flickering in Safari
+  .swiper-slide {
     -webkit-transform: translateZ(0);
     -webkit-backface-visibility: hidden;
   }
 }
 
-.promotion-title{
+.promotion-title {
   @apply absolute z-10 top-4 rtl:right-0 ltr:left-0 font-bold text-sm bg-red-800 text-white rtl:rounded-l ltr:rounded-r;
   @apply w-auto m-0 px-3 py-2 #{!important};
 }
@@ -135,24 +134,23 @@ salla-slider{
 }
 
 // testimonials-slider
-.s-block--testimonials{
-  &.container{
+.s-block--testimonials {
+  &.container {
     @apply p-0 lg:px-2.5;
   }
 
-  .s-slider-block__title{
+  .s-slider-block__title {
     @apply px-2.5 lg:px-0;
 
-    &-nav{
+    &-nav {
       @apply hidden lg:flex max-w-[88%] top-[65%] #{!important};
 
-      button{ 
+      button {
         @apply border-gray-100 shadow-gray-300 #{!important};
       }
     }
   }
 }
-
 
 .best-products-slider {
   .swiper-wrapper {
@@ -172,7 +170,7 @@ salla-slider{
 }
 
 // bullet pagination -------
-salla-slider{
+salla-slider {
   .swiper-pagination-bullet {
     width: 20px;
     @apply rounded;
@@ -185,27 +183,26 @@ salla-slider{
     }
   }
 
-  .swiper-pagination-bullets.swiper-pagination-horizontal{
-    @apply bottom-3 sm:bottom-6; 
+  .swiper-pagination-bullets.swiper-pagination-horizontal {
+    @apply bottom-3 sm:bottom-6;
   }
 }
 
-
 // Offer slider
-.offer-slider .s-slider-block__title{
-  @apply mb-5 relative; 
+.offer-slider .s-slider-block__title {
+  @apply mb-5 relative;
 
-  &:before{
+  &:before {
     @apply text-5xl font-normal text-red-50 absolute leading-none top-4 rtl:right-0 ltr:left-0;
-    content: "\ee30";
+    content: '\ee30';
     font-family: 'sallaicons';
   }
 
-  h2{
+  h2 {
     @apply text-lg text-red-400;
   }
 
-  p{
+  p {
     @apply mt-1 leading-6 line-clamp-none;
   }
 }
@@ -215,14 +212,13 @@ salla-slider{
 }
 
 // move to slider component
-model-viewer[style*="width"]:before{
+model-viewer[style*='width']:before {
   @apply hidden;
 }
 
-
 // Blog slider
-.blog-slider{
-  .swiper-slide img{
+.blog-slider {
+  .swiper-slide img {
     @apply min-h-[380px] max-h-[480px] md:max-h-[680px];
   }
 }

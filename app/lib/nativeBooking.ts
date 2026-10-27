@@ -57,11 +57,16 @@ export function registerNativeBookingHook(): void {
   if (registered) return;
   registered = true;
   whenSallaLoaded((sdk) => {
-    sdk.hooks?.registerHook?.('salla-add-product-button', 'componentDidLoad', (button: AddProductButton) => {
-      if (button.productType !== 'booking' || !button.host?.closest('.s-product-card-entry')) return;
-      const addBookingProduct = button.addBookingProduct;
-      button.addBookingProduct = () =>
-        isNativeApp() ? openNativeBooking(button) : addBookingProduct.call(button);
-    });
+    sdk.hooks?.registerHook?.(
+      'salla-add-product-button',
+      'componentDidLoad',
+      (button: AddProductButton) => {
+        if (button.productType !== 'booking' || !button.host?.closest('.s-product-card-entry'))
+          return;
+        const addBookingProduct = button.addBookingProduct;
+        button.addBookingProduct = () =>
+          isNativeApp() ? openNativeBooking(button) : addBookingProduct.call(button);
+      }
+    );
   });
 }

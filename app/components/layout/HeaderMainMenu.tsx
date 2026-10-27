@@ -161,7 +161,7 @@ function OneLineMenu({ items, moreTitle }: { items: MenuItem[]; moreTitle: strin
       {/* Sizes the "More" item before it exists, styled like a root item. */}
       <ul className="main-menu site-header__more-probe" aria-hidden="true">
         <li ref={probeRef} className="s-menu-root-level s-menu-has-children">
-          <a tabIndex={-1}>
+          <a href="#main-menu-more" tabIndex={-1}>
             <span>{moreTitle}</span>
           </a>
         </li>
@@ -234,7 +234,7 @@ function MenuEntry({ item, root }: { item: MenuItem; root: boolean }) {
       {...(hasChildren ? { onMouseEnter: onOpen, onFocus: onOpen } : {})}
     >
       {isMore ? (
-        <a href="#" role="button" aria-haspopup="true" onClick={preventJump}>
+        <a href="#main-menu-more" role="button" aria-haspopup="true" onClick={preventJump}>
           <span>{item.title}</span>
         </a>
       ) : (

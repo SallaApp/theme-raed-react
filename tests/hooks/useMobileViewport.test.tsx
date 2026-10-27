@@ -53,7 +53,7 @@ describe('useMobileViewport', () => {
     const mql = new FakeMediaQueryList('(max-width: 767px)', true);
     window.matchMedia = vi.fn(() => mql) as unknown as typeof window.matchMedia;
 
-    const { getByTestId } = render(<Probe onRender={() => {}} />);
+    const { getByTestId } = render(<Probe onRender={() => undefined} />);
     expect(getByTestId('value').textContent).toBe('true');
   });
 
@@ -62,7 +62,7 @@ describe('useMobileViewport', () => {
     const mql = new FakeMediaQueryList('(max-width: 767px)', false);
     window.matchMedia = vi.fn(() => mql) as unknown as typeof window.matchMedia;
 
-    const { getByTestId } = render(<Probe onRender={() => {}} />);
+    const { getByTestId } = render(<Probe onRender={() => undefined} />);
     expect(getByTestId('value').textContent).toBe('false');
   });
 
@@ -71,7 +71,7 @@ describe('useMobileViewport', () => {
     const mql = new FakeMediaQueryList('(max-width: 767px)', false);
     window.matchMedia = vi.fn(() => mql) as unknown as typeof window.matchMedia;
 
-    const { getByTestId } = render(<Probe onRender={() => {}} />);
+    const { getByTestId } = render(<Probe onRender={() => undefined} />);
     expect(getByTestId('value').textContent).toBe('false');
 
     act(() => mql.setMatches(true));
@@ -86,7 +86,7 @@ describe('useMobileViewport', () => {
     const mql = new FakeMediaQueryList('(max-width: 767px)', false);
     window.matchMedia = vi.fn(() => mql) as unknown as typeof window.matchMedia;
 
-    const { unmount } = render(<Probe onRender={() => {}} />);
+    const { unmount } = render(<Probe onRender={() => undefined} />);
     expect(mql.listenerCount).toBe(1);
 
     unmount();

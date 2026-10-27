@@ -132,18 +132,19 @@ export function ThemeLayout({ children }: ThemeLayoutProps) {
   // Cart) or a link inside one of them navigates without touching their own
   // state, so they would otherwise stay open over the new page.
   const pathname = useRouterState({ select: (s) => s.location.pathname });
-  useEffect(() => {
+  const [prevPathname, setPrevPathname] = useState(pathname);
+  if (prevPathname !== pathname) {
+    setPrevPathname(pathname);
     setNavOpen(false);
     setAccountOpen(false);
     setImportantLinksOpen(false);
-  }, [pathname]);
+  }
 
   // Fill the web components' strings the store's pack lacks from the theme's
   // locale files, each time a pack loads (`subscribe` also runs at once when one already has).
   useEffect(() => {
     const lang = window.salla?.lang as
-      | (ComponentLang & { subscribe?: (fn: () => void) => () => void })
-      | undefined;
+      (ComponentLang & { subscribe?: (fn: () => void) => () => void }) | undefined;
     if (typeof lang?.subscribe !== 'function' || typeof lang.add !== 'function') return;
     return lang.subscribe(() => fillComponentTranslations(lang, themeTranslations));
   }, []);

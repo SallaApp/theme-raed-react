@@ -1,6 +1,7 @@
 import { memo, useCallback, useEffect, useRef, useState, type RefObject } from 'react';
 import { SallaSlider } from '@salla.sa/twilight-components-react/slider';
 import { Link } from '@salla.sa/twilight-theme-engine/common';
+import { useTranslation } from '@salla.sa/twilight-theme-engine/i18n';
 import { parseSlideVideo, youtubeEmbedUrl } from '../../lib/slideVideo';
 import { useMotionAllowed } from '../../hooks/useMotionAllowed';
 
@@ -67,12 +68,14 @@ export function useSlideVideos(root: RefObject<HTMLElement | null>, enabled: boo
           );
     const watched = new WeakSet<HTMLVideoElement>();
     const watch = () =>
-      element.querySelectorAll<HTMLVideoElement>('video.enhanced-slider__video').forEach((video) => {
-        if (watched.has(video)) return;
-        watched.add(video);
-        if (observer) observer.observe(video);
-        else playIf(video, true);
-      });
+      element
+        .querySelectorAll<HTMLVideoElement>('video.enhanced-slider__video')
+        .forEach((video) => {
+          if (watched.has(video)) return;
+          watched.add(video);
+          if (observer) observer.observe(video);
+          else playIf(video, true);
+        });
     watch();
     const mutations = new MutationObserver(watch);
     mutations.observe(element, { childList: true, subtree: true });
@@ -97,6 +100,7 @@ const YOUTUBE_PLAYING = 1;
  * the page says it is listening, and the frame answers with its state.
  */
 function YouTubeBackground({ id }: { id: string }) {
+  const { t } = useTranslation();
   const ref = useRef<HTMLIFrameElement>(null);
   const [state, setState] = useState<'loading' | 'playing' | 'failed'>('loading');
 
@@ -153,8 +157,8 @@ function YouTubeBackground({ id }: { id: string }) {
       ref={ref}
       className="enhanced-slider__video enhanced-slider__video--embed"
       data-state={state}
-      src={youtubeEmbedUrl(id, window.location.origin)}
-      title=""
+      src={youtubeEmbedUrl(id, window.origin)}
+      title={t('blocks.slider.background_video', 'Background video')}
       loading="lazy"
       allow="autoplay; encrypted-media"
       referrerPolicy="strict-origin-when-cross-origin"

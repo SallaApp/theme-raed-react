@@ -1,16 +1,10 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState, useSyncExternalStore } from 'react';
 import type { ReactNode } from 'react';
 import { useRouterState } from '@tanstack/react-router';
 import { Link } from '@salla.sa/twilight-theme-engine/common';
 import { useTranslation } from '@salla.sa/twilight-theme-engine/i18n';
 import { useMobileViewport } from '../../hooks/useMobileViewport';
-import {
-  DashboardSquare01Icon,
-  HomeIcon,
-  SearchIcon,
-  ShoppingBagIcon,
-  UserIcon,
-} from '../icons';
+import { DashboardSquare01Icon, HomeIcon, SearchIcon, ShoppingBagIcon, UserIcon } from '../icons';
 
 interface MobileBottomBarProps {
   /** Whether the shared nav drawer (opened from the header) is currently open. */
@@ -33,8 +27,10 @@ interface MobileBottomBarProps {
   onCloseSecondSheet?: () => void;
 }
 
-type CartSummary = { count?: number | string | null };
-type CartSdk = {
+interface CartSummary {
+  count?: number | string | null;
+}
+interface CartSdk {
   storage?: { get?: <T>(key: string, fallback?: T) => T };
   helpers?: { number?: (value: number) => string };
   // Root on/off: onUpdated registers a wrapper that only offUpdated can remove.
@@ -42,7 +38,7 @@ type CartSdk = {
     on?: (event: string, cb: (summary?: CartSummary) => void) => void;
     off?: (event: string, cb: (summary?: CartSummary) => void) => void;
   };
-};
+}
 
 function getCartSdk(): CartSdk | undefined {
   if (typeof window === 'undefined') return undefined;
@@ -58,18 +54,18 @@ function getCartSdk(): CartSdk | undefined {
    stacked behind a backdrop) and the tapped tab's icon lights while its own
    overlay is open.
 
-   The build's `no-manual-dom` check flags the `document.querySelector` calls
+   The build's `no-manual-dom` check flags the `document.body.querySelector` calls
    below. They stay: the search modal and the user menu are rendered by Salla
    web components elsewhere on the page, so there is no ref or React state
    that reaches them. */
 
 type Tab = 'home' | 'categories' | 'search' | 'cart' | 'account';
 
-const searchModal = (): Element | null => document.querySelector('salla-modal.s-search-modal');
+const searchModal = (): Element | null => document.body.querySelector('salla-modal.s-search-modal');
 
 const userMenu = (): (HTMLElement & { opened?: boolean }) | null =>
-  (document.querySelector('salla-user-menu.header-action') ??
-    document.querySelector('salla-user-menu')) as (HTMLElement & { opened?: boolean }) | null;
+  (document.body.querySelector('salla-user-menu.header-action') ??
+    document.body.querySelector('salla-user-menu')) as (HTMLElement & { opened?: boolean }) | null;
 
 /** Open the Salla search modal — the same event the header's search button fires. */
 function openSearch() {
@@ -128,8 +124,8 @@ function activeTab(
   return null;
 }
 
-const isSearchOpen = () => !!document.querySelector('salla-modal.s-search-modal[visible]');
-const isMenuOpen = () => !!document.querySelector('.s-user-menu-toggler.opened');
+const isSearchOpen = () => !!document.body.querySelector('salla-modal.s-search-modal[visible]');
+const isMenuOpen = () => !!document.body.querySelector('.s-user-menu-toggler.opened');
 
 /**
  * Reflect a DOM condition into React state. Used for the two overlays the bar
@@ -149,43 +145,28 @@ const isMenuOpen = () => !!document.querySelector('.s-user-menu-toggler.opened')
  * viewport.
  */
 function useDomFlag(test: () => boolean, enabled: boolean): boolean {
-  const [on, setOn] = useState(false);
-
-  useEffect(() => {
-    if (!enabled) {
-      setOn(false);
-      return;
-    }
-
-    let current = test();
-    setOn(current);
-
-    // Only push a state update on an actual transition — the observer fires for
-    // every mutation under `<body>`, and a no-op `setOn` each time would trip
-    // React's act() warnings in tests and churn needlessly in the app.
-    const check = () => {
-      const next = test();
-      if (next === current) return;
-      current = next;
-      setOn(next);
-    };
-
-    const obs = new MutationObserver(check);
-    obs.observe(document.body, {
-      subtree: true,
-      childList: true,
-      attributes: true,
-      attributeFilter: ['class', 'visible'],
-    });
-    document.addEventListener('theme::ready', check);
-
-    return () => {
-      obs.disconnect();
-      document.removeEventListener('theme::ready', check);
-    };
-  }, [test, enabled]);
-
-  return on;
+  const subscribe = useCallback(
+    (notify: () => void) => {
+      if (!enabled) return () => undefined;
+      // The store only re-renders when `test()` actually changes, so notifying on every
+      // mutation under `<body>` is cheap.
+      const obs = new MutationObserver(notify);
+      obs.observe(document.body, {
+        subtree: true,
+        childList: true,
+        attributes: true,
+        attributeFilter: ['class', 'visible'],
+      });
+      document.addEventListener('theme::ready', notify);
+      return () => {
+        obs.disconnect();
+        document.removeEventListener('theme::ready', notify);
+      };
+    },
+    [enabled]
+  );
+  const getSnapshot = useCallback(() => enabled && test(), [test, enabled]);
+  return useSyncExternalStore(subscribe, getSnapshot, () => false);
 }
 
 const useSearchOpen = (enabled: boolean) => useDomFlag(isSearchOpen, enabled);

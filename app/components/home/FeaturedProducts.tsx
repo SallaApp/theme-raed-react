@@ -38,14 +38,15 @@ export type FeaturedProductsShowMethod =
   | 'products_with_special_product';
 
 /** A dropdown-list value as the backend may send it: scalar, `{value|key|id}`, or an array of those. */
-type PickerValue = string | number | { id?: unknown; value?: unknown; key?: unknown } | null | undefined;
+type PickerValue =
+  string | number | { id?: unknown; value?: unknown; key?: unknown } | null | undefined;
 
-export interface FeaturedProductsSection {
+interface FeaturedProductsSection {
   name?: string;
   /** Legacy (pre-custom-component) payload: tab name and pre-hydrated stubs. */
   label?: string;
   title?: string;
-  products?: Array<{ id?: unknown }>;
+  products?: { id?: unknown }[];
   type?: PickerValue | PickerValue[];
   category?: PickerValue | PickerValue[];
   tag?: PickerValue | PickerValue[];
@@ -181,7 +182,16 @@ function TabProductGrid({
 /** Highlighted product: used as-is when hydrated, otherwise fetched by id. */
 function SpecialProduct({ value }: { value: FeaturedProductsData['main_product'] }) {
   const ids = isFullProduct(value) ? [] : toIds(value);
-  const loader = useCallback(() => product.list({ source: 'selected', sourceValue: ids, perPage: 1 }), [ids.join(',')]); // eslint-disable-line react-hooks/exhaustive-deps
+  const idsKey = ids.join(',');
+  const loader = useCallback(
+    () =>
+      product.list({
+        source: 'selected',
+        sourceValue: idsKey ? idsKey.split(',').map(Number) : [],
+        perPage: 1,
+      }),
+    [idsKey]
+  );
 
   if (isFullProduct(value)) return <ProductCard product={value} layout="special" withShadow />;
   if (!ids.length) return null;
@@ -233,7 +243,10 @@ export function FeaturedProducts({
     return <SpecialProductColumns sections={sections} tabs={tabs} />;
   }
 
-  const activeIndex = Math.max(0, tabs.findIndex((tab) => tab.key === active));
+  const activeIndex = Math.max(
+    0,
+    tabs.findIndex((tab) => tab.key === active)
+  );
   const specialValue =
     legacySpecial ?? (showMethod === 'special_offer_with_products' ? data.main_product : null);
   const hasSpecial = isFullProduct(specialValue) || toIds(specialValue).length > 0;

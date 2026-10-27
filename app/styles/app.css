@@ -1,10 +1,10 @@
-@import "tailwindcss/base";
-@import "tailwindcss/components";
-@import "tailwindcss/utilities";
-@import "./app.scss";
+@import 'tailwindcss/base';
+@import 'tailwindcss/components';
+@import 'tailwindcss/utilities';
+@import './app.scss';
 
 /* RTL-specific font */
-[dir="rtl"] {
+[dir='rtl'] {
   --font-main: var(--font-ar);
 }
 

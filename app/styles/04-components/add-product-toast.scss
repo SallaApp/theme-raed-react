@@ -5,7 +5,9 @@
   right: 0;
   opacity: 0;
   transform: translateY(-100%);
-  transition: opacity 0.3s ease-out, transform 0.3s ease-out;
+  transition:
+    opacity 0.3s ease-out,
+    transform 0.3s ease-out;
 
   &.s-add-product-toast--visible {
     opacity: 1;
@@ -18,7 +20,7 @@
     left: auto;
     right: auto;
 
-    [dir="rtl"] & {
+    [dir='rtl'] & {
       left: 1rem;
       transform: translateX(-100%);
 
@@ -27,7 +29,7 @@
       }
     }
 
-    [dir="ltr"] & {
+    [dir='ltr'] & {
       right: 1rem;
       transform: translateX(100%);
 

@@ -1,0 +1,16 @@
+name: Set up workspace
+description: pnpm through corepack (the packageManager field), Node from .nvmrc, a pnpm store cache and a frozen install.
+runs:
+  using: composite
+  steps:
+    # Corepack reads the exact pnpm version from package.json's packageManager field.
+    - name: Enable corepack
+      shell: bash
+      run: corepack enable
+    - uses: actions/setup-node@v4
+      with:
+        node-version-file: .nvmrc
+        cache: pnpm
+    - name: Install dependencies
+      shell: bash
+      run: pnpm install --frozen-lockfile

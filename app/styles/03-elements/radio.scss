@@ -3,7 +3,7 @@
     display: inline-block;
   }
 
-  input[type="radio"] {
+  input[type='radio'] {
     display: none;
 
     + label {
@@ -29,7 +29,7 @@
           display: inline-block;
           transform: scale(0.4);
           transition: all 0.3s ease;
-          font-family: "sallaicons" !important;
+          font-family: 'sallaicons' !important;
           // speak: never;
           font-style: normal;
           font-weight: normal;
@@ -37,7 +37,7 @@
           text-transform: none;
           line-height: 1;
           -webkit-font-smoothing: antialiased;
-          content: "\ea9d";
+          content: '\ea9d';
           color: #fff;
           font-size: 20px;
           font-weight: bold;
@@ -51,12 +51,12 @@
     }
 
     &:disabled + label {
-      opacity: .45;
+      opacity: 0.45;
     }
   }
 
   &--rounded {
-    input[type="radio"] {
+    input[type='radio'] {
       + label {
         span {
           border-radius: 50%;
@@ -68,7 +68,7 @@
           background-color: #ddd;
 
           &::after {
-            content: "";
+            content: '';
             width: 14px;
             height: 14px;
             background-color: #f1f1f1;
@@ -83,11 +83,12 @@
     font-size: 40px;
     line-height: 42px;
 
-    input[type="radio"] {
+    input[type='radio'] {
       + label {
-        transition: transform 0.2s, color 0.3s;
+        transition:
+          transform 0.2s,
+          color 0.3s;
         filter: grayscale(1);
-
 
         &:hover {
           filter: grayscale(0);

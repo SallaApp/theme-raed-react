@@ -4,9 +4,11 @@ import { render } from '@testing-library/react';
 
 // Only the module under test, not the whole barrel and everything it re-exports.
 vi.mock('../../../app/components/product', async () => ({
-  ProductCard: (await vi.importActual<typeof import('../../../app/components/product/ProductCard')>(
-    '../../../app/components/product/ProductCard'
-  )).ProductCard,
+  ProductCard: (
+    await vi.importActual<typeof import('../../../app/components/product/ProductCard')>(
+      '../../../app/components/product/ProductCard'
+    )
+  ).ProductCard,
 }));
 
 vi.mock('@salla.sa/twilight-theme-engine/api/product', () => ({

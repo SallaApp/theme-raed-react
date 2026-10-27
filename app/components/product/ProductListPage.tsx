@@ -1,9 +1,19 @@
-import { useState, useRef, useEffect, useMemo, useCallback, type ReactNode } from 'react';
+import {
+  useState,
+  useRef,
+  useEffect,
+  useMemo,
+  useCallback,
+  useSyncExternalStore,
+  type ReactNode,
+} from 'react';
 import { HookSlot } from '@salla.sa/twilight-theme-engine/hooks';
 import { useStore } from '@salla.sa/twilight-theme-engine/hooks/useStore';
 import { useTranslation } from '@salla.sa/twilight-theme-engine/i18n';
 import { useNavigate, useLocation, useTwilight } from '@salla.sa/twilight-theme-engine/providers';
-import { sortOptions, onSallaEvent } from '@salla.sa/twilight-theme-engine/utils';
+import { onSallaEvent } from '@salla.sa/twilight-theme-engine/utils';
+// `availableSortIds` is only exported from this subpath, not from `/utils`.
+import { sortOptions, availableSortIds } from '@salla.sa/twilight-theme-engine/utils/sort-options';
 import {
   Breadcrumb,
   NoContent,
@@ -42,22 +52,28 @@ function usePref<T extends string>(
   values: readonly T[],
   initial: T
 ): [T, (v: T) => void] {
-  const [value, setValue] = useState<T>(initial);
-  useEffect(() => {
-    try {
-      const stored = window.localStorage.getItem(key) as T | null;
-      // This fills the hook's own state from localStorage; no parent is
-      // involved: see .react-doctor/false-positives.md.
-      // react-doctor-disable-next-line react-doctor/no-pass-data-to-parent
-      if (stored && values.includes(stored)) setValue(stored);
-    } catch {
-      /* private mode */
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [key]);
+  const subscribe = useCallback((notify: () => void) => {
+    window.addEventListener('storage', notify);
+    return () => window.removeEventListener('storage', notify);
+  }, []);
+  const stored = useSyncExternalStore(
+    subscribe,
+    () => {
+      try {
+        const saved = window.localStorage.getItem(key) as T | null;
+        return saved && values.includes(saved) ? saved : null;
+      } catch {
+        return null; // private mode
+      }
+    },
+    () => null
+  );
+  // Set once the shopper picks; covers private mode, where storage can't hold it.
+  const [picked, setPicked] = useState<T | null>(null);
+  const value = picked ?? stored ?? initial;
   const set = useCallback(
     (v: T) => {
-      setValue(v);
+      setPicked(v);
       try {
         window.localStorage.setItem(key, v);
       } catch {
@@ -99,7 +115,12 @@ function useCatalogLoader(
   }, [source.type, source.value, selectedSort, filters]);
 }
 
-type BrandEntity = { name: string; banner?: string; logo?: string; description?: string };
+interface BrandEntity {
+  name: string;
+  banner?: string;
+  logo?: string;
+  description?: string;
+}
 
 /** Banner + logo + description above the listing, for a `/brands/{id}` page. Renders
  * nothing for any other source type. */
@@ -120,7 +141,8 @@ function BrandHeader({ source }: { source: ProductListLoaderData['source'] }) {
       />
       <header className="flex flex-col md:flex-row items-center md:items-start text-center rtl:md:text-right ltr:md:text-left mt-2 mb-8">
         <Image
-          className="rounded w-40 h-24 object-contain shadow-md p-4 bg-white shrink-0"
+          className="rounded w-40 h-24 shadow-md p-4 bg-white shrink-0"
+          objectFit="contain"
           src={brand.logo || undefined}
           alt={brand.name}
           aspectRatio="5/3"
@@ -196,7 +218,7 @@ function CatalogToolbar({
   productsCount,
   view,
   onViewChange,
-  selectedSort,
+  shownSort,
   sortOptionsWithTrans,
   currentSortLabel,
   onSortChange,
@@ -211,7 +233,8 @@ function CatalogToolbar({
   productsCount: number | undefined;
   view: View;
   onViewChange: (view: View) => void;
-  selectedSort: string;
+  /** The selected sort, or `''` when the current one is disabled by the merchant (nothing selected). */
+  shownSort: string;
   sortOptionsWithTrans: ReturnType<typeof sortOptions>;
   currentSortLabel: string | undefined;
   onSortChange: (event: React.ChangeEvent<HTMLSelectElement>) => void;
@@ -278,10 +301,20 @@ function CatalogToolbar({
         {sortOptionsWithTrans.length > 0 && (
           <label className="s-catalog-toolbar__sort">
             <span className="s-catalog-toolbar__sort-label">
-              {t('pages.categories.sorting', 'Sort By')}: <b>{currentSortLabel}</b>
+              {t('pages.categories.sorting', 'Sort By')}
+              {currentSortLabel && (
+                <>
+                  : <b>{currentSortLabel}</b>
+                </>
+              )}
             </span>
             <ChevronDownIcon aria-hidden="true" />
-            <select value={selectedSort} onChange={onSortChange}>
+            <select value={shownSort} onChange={onSortChange}>
+              {shownSort === '' && (
+                <option value="" disabled hidden>
+                  {t('pages.categories.sorting', 'Sort By')}
+                </option>
+              )}
               {sortOptionsWithTrans.map((option) => (
                 <option key={option.id} value={option.id}>
                   {option.name}
@@ -488,9 +521,16 @@ export function ProductListPage({
   const isReorder = source.type === 'reorder';
   useReorderButtons(isReorder);
 
-  const sortOptionsWithTrans = useMemo(() => sortOptions(selectedSort, t), [selectedSort, t]);
-  const currentSortLabel =
-    sortOptionsWithTrans.find((o) => o.id === selectedSort)?.name ?? sortOptionsWithTrans[0]?.name;
+  // Only the sorts the merchant enabled (none where the source cannot sort). When the current
+  // sort is not among them the select shows no selection rather than naming one that does not
+  // describe the list; `selectedSort` still drives the loader and the list keys, as upstream.
+  const sortIds = availableSortIds(source.type, store?.settings?.product?.sort_options);
+  const sortOptionsWithTrans = useMemo(
+    () => sortOptions(selectedSort, t, sortIds),
+    [selectedSort, t, sortIds]
+  );
+  const shownSort = sortOptionsWithTrans.some((o) => o.is_selected) ? selectedSort : '';
+  const currentSortLabel = sortOptionsWithTrans.find((o) => o.is_selected)?.name;
 
   useEffect(() => {
     const handleFiltersChanged = () => setFiltersOpen(false);
@@ -564,7 +604,7 @@ export function ProductListPage({
           productsCount={shownNext ? undefined : shownProducts.length}
           view={view}
           onViewChange={setView}
-          selectedSort={selectedSort}
+          shownSort={shownSort}
           sortOptionsWithTrans={sortOptionsWithTrans}
           currentSortLabel={currentSortLabel}
           onSortChange={handleSortChange}

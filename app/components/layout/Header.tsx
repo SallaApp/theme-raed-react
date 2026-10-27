@@ -146,8 +146,7 @@ export function Header({ navOpen: navOpenProp, onNavOpenChange }: HeaderProps = 
   // when `header_show_store_info` is on, and on the home page alone unless
   // `header_store_info_home_only` is turned off.
   const introSettings = theme?.settings as
-    | { header_show_store_info?: boolean; header_store_info_home_only?: boolean }
-    | undefined;
+    { header_show_store_info?: boolean; header_store_info_home_only?: boolean } | undefined;
   const showIntro =
     !isDefaultLayout &&
     introSettings?.header_show_store_info !== false &&
@@ -168,10 +167,7 @@ export function Header({ navOpen: navOpenProp, onNavOpenChange }: HeaderProps = 
   //    place when the bar goes `position: fixed`, since `__bar-outer` reserves
   //    the height).
   useEffect(() => {
-    if (!stickyEnabled) {
-      setScrolled(false);
-      return;
-    }
+    if (!stickyEnabled) return;
 
     if (!isDefaultLayout) {
       const onScroll = () => setScrolled(window.scrollY > 4);
@@ -226,7 +222,7 @@ export function Header({ navOpen: navOpenProp, onNavOpenChange }: HeaderProps = 
       )}
 
       <div className="site-header__bar-outer">
-        <div className={`site-header__bar${scrolled ? ' is-scrolled' : ''}`}>
+        <div className={`site-header__bar${stickyEnabled && scrolled ? ' is-scrolled' : ''}`}>
           <div className="container site-header__bar-inner">
             <div className="site-header__nav-toggle">
               <button

@@ -42,7 +42,7 @@ vi.mock('@salla.sa/twilight-components-react/cart-item-offers', () => ({
 
 vi.mock('@salla.sa/twilight-theme-engine/hooks', () => ({
   HookSlot: () => null,
-  usePageConfig: () => {},
+  usePageConfig: () => undefined,
 }));
 vi.mock('@salla.sa/twilight-theme-engine/hooks/useMoney', () => ({
   useMoney: () => ({ format: (amount: unknown) => String(amount) }),
@@ -52,8 +52,10 @@ vi.mock('@salla.sa/twilight-theme-engine/i18n', () => ({
 }));
 vi.mock('@salla.sa/twilight-theme-engine/common', () => ({
   Breadcrumb: () => null,
-  NoContent: ({ message }: { message: string }) => <p data-testid="cart-empty-message">{message}</p>,
-  Link: ({ children }: { children?: unknown }) => <a>{children as never}</a>,
+  NoContent: ({ message }: { message: string }) => (
+    <p data-testid="cart-empty-message">{message}</p>
+  ),
+  Link: ({ children }: { children?: unknown }) => <a href="/">{children as never}</a>,
   Image: () => <img alt="" />,
 }));
 vi.mock('@salla.sa/twilight-theme-engine/cart', () => ({
@@ -92,7 +94,9 @@ vi.mock('@salla.sa/twilight-theme-engine/api/cart', async (importOriginal) => {
 function renderPage() {
   return render(
     // No retries, so a failed request reaches its error state straight away.
-    <QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}>
+    <QueryClientProvider
+      client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}
+    >
       <CartPage page={{} as Page} />
     </QueryClientProvider>
   );

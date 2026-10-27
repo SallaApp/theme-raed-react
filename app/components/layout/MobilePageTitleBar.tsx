@@ -1,11 +1,17 @@
-import { useEffect, useState } from 'react';
+import { useSyncExternalStore } from 'react';
 import { useRouterState } from '@tanstack/react-router';
+import { useNavigate } from '@salla.sa/twilight-theme-engine/providers';
 import { useTranslation } from '@salla.sa/twilight-theme-engine/i18n';
 import { ArrowRightIcon } from '../icons';
 import { HOME_ROUTE_ID, PRODUCT_ROUTE_ID } from '../../lib/routeIds';
 
-type MaybePage = { page?: { title?: string } };
-type Match = { routeId: string; loaderData?: unknown };
+interface MaybePage {
+  page?: { title?: string };
+}
+interface Match {
+  routeId: string;
+  loaderData?: unknown;
+}
 
 /** Deepest matched route that carries a `page.title` in its loader data. */
 function routePageTitle(state: { matches: Match[] }): string | undefined {
@@ -35,6 +41,12 @@ function cleanDocumentTitle(): string {
   return document.title.split(/\s+[|–—-]\s+/)[0].trim();
 }
 
+function subscribeDocumentTitle(notify: () => void): () => void {
+  const observer = new MutationObserver(notify);
+  observer.observe(document.head, { childList: true, subtree: true, characterData: true });
+  return () => observer.disconnect();
+}
+
 /**
  * Mobile page-title bar — shown at the top of every route except the home page
  * and the product page (which run their own headers). The site header is
@@ -53,16 +65,17 @@ function cleanDocumentTitle(): string {
  */
 export function MobilePageTitleBar() {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const {
     title: routeTitle,
     isProductPage,
     isHomePage,
   } = useRouterState({ select: pageTitleState });
-  const [docTitle, setDocTitle] = useState('');
-
-  useEffect(() => {
-    setDocTitle(routeTitle ? '' : cleanDocumentTitle());
-  }, [routeTitle]);
+  const docTitle = useSyncExternalStore(
+    subscribeDocumentTitle,
+    () => (routeTitle ? '' : cleanDocumentTitle()),
+    () => ''
+  );
 
   if (isProductPage || isHomePage) return null;
 
@@ -76,7 +89,7 @@ export function MobilePageTitleBar() {
         className="mobile-page-title__back"
         onClick={() => {
           if (window.history.length > 1) window.history.back();
-          else window.location.assign('/');
+          else navigate('/');
         }}
         aria-label={t('blocks.header.back', 'Back')}
       >

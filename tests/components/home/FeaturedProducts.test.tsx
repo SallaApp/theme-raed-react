@@ -9,9 +9,11 @@ import {
 
 // Only the module under test, not the whole barrel and everything it re-exports.
 vi.mock('../../../app/components/product', async () => ({
-  ProductCard: (await vi.importActual<typeof import('../../../app/components/product/ProductCard')>(
-    '../../../app/components/product/ProductCard'
-  )).ProductCard,
+  ProductCard: (
+    await vi.importActual<typeof import('../../../app/components/product/ProductCard')>(
+      '../../../app/components/product/ProductCard'
+    )
+  ).ProductCard,
 }));
 
 vi.mock('@salla.sa/twilight-theme-engine/i18n', () => ({
@@ -278,21 +280,23 @@ describe('single-layout blocks', () => {
     expect(container.querySelector('.tabs')).toBeNull();
     expect([...columns].map((c) => c.querySelector('h2')?.textContent)).toEqual(['A', 'B']);
     expect(
-      [...columns].map(
-        (c) => c.querySelector('[data-layout="special"]')?.textContent
-      )
+      [...columns].map((c) => c.querySelector('[data-layout="special"]')?.textContent)
     ).toEqual(['Hero A', 'Hero B']);
     expect(columns[0].querySelectorAll('[data-layout="horizontal"]').length).toBeGreaterThan(0);
     expect(listMock).toHaveBeenCalledWith(expect.objectContaining({ perPage: 3 }));
   });
 
-  it('FeaturedProductsWithSpecialProduct features a column\'s first product when none is picked', () => {
+  it("FeaturedProductsWithSpecialProduct features a column's first product when none is picked", () => {
     listMock.mockClear();
     const { container } = render(
-      <FeaturedProductsWithSpecialProduct data={{ items: [tab({ name: 'A', special_product: [] })] }} />
+      <FeaturedProductsWithSpecialProduct
+        data={{ items: [tab({ name: 'A', special_product: [] })] }}
+      />
     );
     const column = container.querySelector('.featured-products__column');
-    expect(listMock).toHaveBeenCalledWith(expect.objectContaining({ source: 'latest', perPage: 4 }));
+    expect(listMock).toHaveBeenCalledWith(
+      expect.objectContaining({ source: 'latest', perPage: 4 })
+    );
     expect(column?.querySelector('[data-layout="special"]')?.textContent).toBe('Full P1');
     expect(column?.querySelector('[data-layout="horizontal"]')?.textContent).toBe('Full P2');
   });

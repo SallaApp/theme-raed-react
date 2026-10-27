@@ -10,7 +10,7 @@ function installSalla({ guest = false, add = vi.fn(), inApp = true } = {}) {
   const setAfterLoginEvent = vi.fn();
   const registerHook = vi.fn<(tag: string, hook: string, callback: HookCallback) => void>();
   (window as unknown as { salla: unknown }).salla = {
-    init: () => {},
+    init: () => undefined,
     hooks: { registerHook },
     mobile: { isEnabled: () => inApp },
     config: { isGuest: () => guest },

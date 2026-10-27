@@ -1,31 +1,35 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, fireEvent, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { http, HttpResponse } from 'msw';
 import { ProductsSlider } from '../../../app/components/home/ProductsSlider';
+import { STORE_API } from '../../mocks/handlers';
+import { createProduct } from '../../mocks/factories';
+import { installMockServer, server, useScenario } from '../../mocks/server';
 
-const listMock = vi.fn();
+installMockServer();
+
+// Every `GET /products` the block makes, so a test can assert what it asked the API for.
+let requests: URL[] = [];
+const respondWith = (resolver: Parameters<typeof http.get>[1]) =>
+  server.use(
+    http.get(`${STORE_API}/products`, (info) => {
+      requests.push(new URL(info.request.url));
+      return resolver(info);
+    })
+  );
 
 // Only the module under test, not the whole barrel and everything it re-exports.
 vi.mock('../../../app/components/common', async () => ({
-  ScrollCarousel: (await vi.importActual<typeof import('../../../app/components/common/ScrollCarousel')>(
-    '../../../app/components/common/ScrollCarousel'
-  )).ScrollCarousel,
+  ScrollCarousel: (
+    await vi.importActual<typeof import('../../../app/components/common/ScrollCarousel')>(
+      '../../../app/components/common/ScrollCarousel'
+    )
+  ).ScrollCarousel,
 }));
 
 vi.mock('@salla.sa/twilight-theme-engine/i18n', () => ({
   useTranslation: () => ({ t: (_k: string, fb?: string) => fb ?? _k }),
-}));
-
-vi.mock('@salla.sa/twilight-theme-engine/api/product', () => ({
-  product: {
-    list: (...args: unknown[]) => listMock(...args),
-    queries: {
-      list: (params: { source: string; sourceValue?: unknown }) => ({
-        queryKey: ['products', 'list', params],
-        queryFn: () => listMock(params),
-      }),
-    },
-  },
 }));
 
 vi.mock('@salla.sa/twilight-theme-engine/common', () => ({
@@ -52,14 +56,14 @@ function renderWithClient(ui: React.ReactElement) {
 }
 
 beforeEach(() => {
-  listMock.mockReset();
-  listMock.mockResolvedValue({
-    items: [
-      { id: 1, name: 'P1' },
-      { id: 2, name: 'P2' },
-      { id: 3, name: 'P3' },
-    ],
-  });
+  requests = [];
+  useScenario('default');
+  respondWith(() =>
+    HttpResponse.json({
+      data: [1, 2, 3].map((id) => createProduct({ id, name: `P${id}` })),
+      cursor: { current: 1, next: null, previous: null },
+    })
+  );
   Element.prototype.scrollBy = vi.fn();
 });
 
@@ -73,28 +77,30 @@ describe('ProductsSlider', () => {
     const { getAllByTestId } = renderWithClient(
       <ProductsSlider data={{ products: { source: 'related', source_value: 99 } }} />
     );
-    await waitFor(() =>
-      expect(listMock).toHaveBeenCalledWith(
-        expect.objectContaining({ source: 'related', sourceValue: 99 })
-      )
-    );
+    await waitFor(() => expect(requests).toHaveLength(1));
+    expect(requests[0].searchParams.get('source')).toBe('related');
+    expect(requests[0].searchParams.getAll('source_value[]')).toEqual(['99']);
     await waitFor(() => expect(getAllByTestId('product-card')).toHaveLength(3));
     expect(getAllByTestId('product-card')[0].textContent).toBe('P1');
   });
 
   it('asks for the block limit and never shows more, even when the API sends more', async () => {
-    listMock.mockResolvedValue({
-      items: Array.from({ length: 12 }, (_, index) => ({ id: index + 1, name: `P${index + 1}` })),
-    });
+    respondWith(() =>
+      HttpResponse.json({
+        data: Array.from({ length: 12 }, (_, index) =>
+          createProduct({ id: index + 1, name: `P${index + 1}` })
+        ),
+      })
+    );
     const { getAllByTestId } = renderWithClient(
       <ProductsSlider data={{ products: { source: 'latest' }, limit: 8 }} />
     );
     await waitFor(() => expect(getAllByTestId('product-card')).toHaveLength(8));
-    expect(listMock).toHaveBeenCalledWith(expect.objectContaining({ perPage: 8 }));
+    expect(requests[0].searchParams.get('per_page')).toBe('8');
   });
 
   it('shows the skeleton until the products resolve', () => {
-    listMock.mockReturnValue(new Promise(() => {}));
+    respondWith(() => new Promise(() => undefined));
     const { getByTestId } = renderWithClient(
       <ProductsSlider data={{ products: { source: 'related', source_value: 1 } }} />
     );
@@ -102,7 +108,7 @@ describe('ProductsSlider', () => {
   });
 
   it('removes the whole block (title included) when the source resolves empty', async () => {
-    listMock.mockResolvedValue({ items: [] });
+    respondWith(() => HttpResponse.json({ data: [] }));
     const { container } = renderWithClient(
       <ProductsSlider
         data={{ products: { source: 'related', source_value: 1 }, title: 'Similar products' }}
@@ -112,7 +118,7 @@ describe('ProductsSlider', () => {
   });
 
   it('hides the block on a fetch error, without reporting a false onResolve(0)', async () => {
-    listMock.mockRejectedValue(new Error('network error'));
+    respondWith(() => HttpResponse.error());
     const onResolve = vi.fn();
     const { container } = renderWithClient(
       <ProductsSlider

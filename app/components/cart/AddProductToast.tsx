@@ -15,7 +15,7 @@ interface ToastProduct {
   isOnSale?: boolean;
   quantity: number;
   url: string;
-  options: Array<{ name: string; value: string; hideValue?: boolean }>;
+  options: { name: string; value: string; hideValue?: boolean }[];
 }
 
 interface ProductAddedEntry {
@@ -25,7 +25,7 @@ interface ProductAddedEntry {
 
 interface AddItemResponse {
   data?: {
-    cart?: { items?: Array<{ id: string | number; product_id?: string | number }> };
+    cart?: { items?: { id: string | number; product_id?: string | number }[] };
     events?: { 'twilight::api'?: { events?: { 'Product Added'?: ProductAddedEntry[] } } };
   };
 }
@@ -194,10 +194,10 @@ export function AddProductToast() {
 
   // `Product Added` lists every cart line; `cart::item.added` names the product that was added.
   useEffect(() => {
-    type EventBus = {
+    interface EventBus {
       on?: (name: string, cb: (...args: unknown[]) => void) => void;
       off?: (name: string, cb: (...args: unknown[]) => void) => void;
-    };
+    }
     // The emitter the listeners were added to. Cleanup removes them from this
     // one, not from whatever `window.salla.event` is by then — after an SDK
     // re-init a fresh lookup would `off` a different emitter and leave these bound.

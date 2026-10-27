@@ -1,12 +1,11 @@
-
-.loyalty{
+.loyalty {
   .breadcrumbs {
     @apply pb-0 pt-4;
 
-    ol{
+    ol {
       @apply justify-center lg:justify-start;
     }
-    
+
     a,
     span,
     .arrow {

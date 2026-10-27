@@ -1,13 +1,14 @@
-import React from 'react';
 import { describe, it, expect, vi, afterEach } from 'vitest';
 import { render, fireEvent, screen, act, cleanup } from '@testing-library/react';
 import { ImportantLinksSheet } from '../../../app/components/layout/ImportantLinksSheet';
 
 // Only the module under test, not the whole barrel and everything it re-exports.
 vi.mock('../../../app/components/common', async () => ({
-  BottomSheet: (await vi.importActual<typeof import('../../../app/components/common/BottomSheet')>(
-    '../../../app/components/common/BottomSheet'
-  )).BottomSheet,
+  BottomSheet: (
+    await vi.importActual<typeof import('../../../app/components/common/BottomSheet')>(
+      '../../../app/components/common/BottomSheet'
+    )
+  ).BottomSheet,
 }));
 
 vi.mock('@salla.sa/twilight-theme-engine/i18n', () => ({
@@ -57,12 +58,12 @@ afterEach(() => {
 
 describe('ImportantLinksSheet', () => {
   it('renders nothing while closed', () => {
-    render(<ImportantLinksSheet open={false} onClose={() => {}} />);
+    render(<ImportantLinksSheet open={false} onClose={() => undefined} />);
     expect(document.querySelector('.important-links-sheet')).toBeNull();
   });
 
   it('is a second full-screen sheet, titled "Important links", showing the footer menu', async () => {
-    render(<ImportantLinksSheet open onClose={() => {}} />);
+    render(<ImportantLinksSheet open onClose={() => undefined} />);
     await settle();
 
     expect(document.querySelector('.bottom-sheet.important-links-sheet')).toBeTruthy();
@@ -128,7 +129,7 @@ describe('ImportantLinksSheet', () => {
     it('does not release the row stagger while the sheet is still sliding in', async () => {
       vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
       try {
-        render(<ImportantLinksSheet open onClose={() => {}} />);
+        render(<ImportantLinksSheet open onClose={() => undefined} />);
         expect(document.querySelector('.important-links-sheet__menu')?.className).not.toContain(
           'is-in'
         );
@@ -146,7 +147,7 @@ describe('ImportantLinksSheet', () => {
     it('releases the row stagger once the sheet has fully settled', async () => {
       vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
       try {
-        render(<ImportantLinksSheet open onClose={() => {}} />);
+        render(<ImportantLinksSheet open onClose={() => undefined} />);
 
         await advanceAndSettle(450);
         expect(document.querySelector('.important-links-sheet__menu')?.className).toContain(
@@ -160,13 +161,13 @@ describe('ImportantLinksSheet', () => {
     it('resets the stagger immediately on close, so it replays from the top next time', async () => {
       vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
       try {
-        const { rerender } = render(<ImportantLinksSheet open onClose={() => {}} />);
+        const { rerender } = render(<ImportantLinksSheet open onClose={() => undefined} />);
         await advanceAndSettle(450);
         expect(document.querySelector('.important-links-sheet__menu')?.className).toContain(
           'is-in'
         );
 
-        rerender(<ImportantLinksSheet open={false} onClose={() => {}} />);
+        rerender(<ImportantLinksSheet open={false} onClose={() => undefined} />);
         expect(document.querySelector('.important-links-sheet__menu')?.className).not.toContain(
           'is-in'
         );
@@ -186,7 +187,7 @@ describe('ImportantLinksSheet', () => {
       menuState.hasItem = false;
       vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
       try {
-        render(<ImportantLinksSheet open onClose={() => {}} />);
+        render(<ImportantLinksSheet open onClose={() => undefined} />);
 
         // Well past the normal settle delay -- nothing to stagger yet, so it must stay out.
         await advanceAndSettle(1000);
@@ -228,10 +229,10 @@ describe('ImportantLinksSheet', () => {
     it('still releases the stagger when the sheet starts closed and opens later', async () => {
       vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
       try {
-        const { rerender } = render(<ImportantLinksSheet open={false} onClose={() => {}} />);
+        const { rerender } = render(<ImportantLinksSheet open={false} onClose={() => undefined} />);
         expect(document.querySelector('.important-links-sheet__menu')).toBeNull();
 
-        rerender(<ImportantLinksSheet open onClose={() => {}} />);
+        rerender(<ImportantLinksSheet open onClose={() => undefined} />);
         // BottomSheet's own `mounted` flip is itself deferred to an effect --
         // let that (and the mutation it causes) settle before advancing.
         await act(async () => {

@@ -59,8 +59,8 @@ const CART_ITEMS = [OLDER, ADDED];
 
 // The add-item response: `Product Added` lists every cart line, oldest first.
 const addResponse = (
-  entries: Array<{ id: number; cart_item_id?: string }>,
-  items?: Array<{ id: string; product_id: number }>
+  entries: { id: number; cart_item_id?: string }[],
+  items?: { id: string; product_id: number }[]
 ) => ({
   data: {
     ...(items ? { cart: { items } } : {}),

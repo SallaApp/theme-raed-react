@@ -332,7 +332,11 @@ function ContactsList() {
  * Mounted once in {@link ThemeLayout}, which owns `open` and shares it with
  * {@link MobileBottomBar}. Styling: `04-components/mobile-account-sheet.scss`.
  */
-export function MobileAccountSheet({ open, onClose, onOpenImportantLinks }: MobileAccountSheetProps) {
+export function MobileAccountSheet({
+  open,
+  onClose,
+  onOpenImportantLinks,
+}: MobileAccountSheetProps) {
   const { t } = useTranslation();
   const { isLoggedIn } = useUser();
 
@@ -343,12 +347,12 @@ export function MobileAccountSheet({ open, onClose, onOpenImportantLinks }: Mobi
   // replays from the top next time the sheet opens.
   const [itemsIn, setItemsIn] = useState(false);
   useEffect(() => {
-    if (!open) {
-      setItemsIn(false);
-      return;
-    }
+    if (!open) return;
     const stagger = setTimeout(() => setItemsIn(true), ROWS_IN_DELAY_MS);
-    return () => clearTimeout(stagger);
+    return () => {
+      clearTimeout(stagger);
+      setItemsIn(false);
+    };
   }, [open]);
 
   // A link to the current page doesn't change the route, which is what closes the sheet otherwise.

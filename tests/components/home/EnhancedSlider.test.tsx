@@ -287,7 +287,9 @@ describe('EnhancedSlider', () => {
           observe(element: Element) {
             observed.push(element);
           }
-          disconnect() {}
+          disconnect() {
+            return undefined;
+          }
         }
       );
       return {
@@ -318,7 +320,10 @@ describe('EnhancedSlider', () => {
       const fromFrame = (data: unknown) =>
         act(() => {
           window.dispatchEvent(
-            new MessageEvent('message', { data: JSON.stringify(data), source: iframe.contentWindow })
+            new MessageEvent('message', {
+              data: JSON.stringify(data),
+              source: iframe.contentWindow,
+            })
           );
         });
       return { ...utils, iframe, fromFrame };
@@ -331,9 +336,7 @@ describe('EnhancedSlider', () => {
 
     it('covers the slide with a muted, looping video file over the image', async () => {
       setReducedMotion(false);
-      const play = vi
-        .spyOn(HTMLMediaElement.prototype, 'play')
-        .mockResolvedValue(undefined);
+      const play = vi.spyOn(HTMLMediaElement.prototype, 'play').mockResolvedValue(undefined);
       const { container } = render(
         <EnhancedSlider
           data={{ slider_banner: [{ ...mockSlides[0], video: 'https://cdn.salla.sa/hero.mp4' }] }}
@@ -357,7 +360,9 @@ describe('EnhancedSlider', () => {
       setReducedMotion(false);
       const io = stubIntersectionObserver();
       const play = vi.spyOn(HTMLMediaElement.prototype, 'play').mockResolvedValue(undefined);
-      const pause = vi.spyOn(HTMLMediaElement.prototype, 'pause').mockImplementation(() => {});
+      const pause = vi
+        .spyOn(HTMLMediaElement.prototype, 'pause')
+        .mockImplementation(() => undefined);
       const { container } = render(
         <EnhancedSlider
           data={{
