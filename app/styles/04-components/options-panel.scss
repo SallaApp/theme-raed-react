@@ -78,4 +78,23 @@
   .s-product-options-option-content {
     @apply w-full max-w-none;
   }
+
+  /* The picked color follows its frame's rounded corners: the frame's radius,
+     less its padding and border. */
+  .s-color-picker-widget-canvas {
+    border-radius: max(2px, calc(var(--s-radius, 0.25rem) - 0.25rem - 1px));
+  }
+
+  /* The picker's popup is placed 95px before the field (an inline `left`), past
+     the edge of the product column, which clips it (`overflow: hidden`). Hang it
+     from the field's own edge instead: the fields are full width, so it opens
+     into the column. */
+  salla-color-picker {
+    @apply relative;
+  }
+
+  .picker_wrapper.popup {
+    inset-inline-start: 0 !important;
+    inset-inline-end: auto !important;
+  }
 }

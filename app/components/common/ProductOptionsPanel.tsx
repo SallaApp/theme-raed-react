@@ -122,6 +122,87 @@ function withFormAnswers(options: PanelOption[], form: HTMLFormElement): PanelOp
 const FOCUSABLE =
   'input:not([type="hidden"]):not([disabled]), select:not([disabled]), textarea:not([disabled]), button:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
+/** How long to wait for a smooth scroll to end where `scrollend` never fires. */
+const SCROLL_FALLBACK_MS = 600;
+
+type ColorPickerElement = HTMLElement & { openPicker?: () => Promise<void> };
+type MapElement = HTMLElement & { open?: () => Promise<void> };
+
+/**
+ * Opens an option's field the way pressing it would: the color picker's popup, the
+ * map's modal, the date picker's calendar, the file browser, the dropdown's list.
+ * Any other field (text, radios, swatches) takes focus.
+ */
+function activateField(container: HTMLElement) {
+  const colorPicker = container.querySelector<ColorPickerElement>('salla-color-picker');
+  if (colorPicker?.openPicker) {
+    void colorPicker.openPicker();
+    return;
+  }
+  const map = container.querySelector<MapElement>('salla-map');
+  if (map?.open) {
+    void map.open();
+    return;
+  }
+  // flatpickr opens on a click on its input.
+  const dateInput = container.querySelector<HTMLInputElement>('salla-datetime-picker input');
+  if (dateInput) {
+    dateInput.focus({ preventScroll: true });
+    dateInput.click();
+    return;
+  }
+  const fileInput = container.querySelector<HTMLInputElement>('input[type="file"]');
+  if (fileInput) {
+    fileInput.click();
+    return;
+  }
+
+  const field = container.querySelector<HTMLElement>(FOCUSABLE);
+  field?.focus({ preventScroll: true });
+  if (field instanceof HTMLSelectElement) {
+    try {
+      field.showPicker();
+    } catch {
+      // Not supported for a select (older Safari): focus is the next best thing.
+    }
+  }
+}
+
+const prefersReducedMotion = () =>
+  typeof window.matchMedia === 'function' &&
+  window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+const inViewport = (element: HTMLElement) => {
+  const { top, bottom } = element.getBoundingClientRect();
+  return top >= 0 && bottom <= window.innerHeight;
+};
+
+/**
+ * Scrolls `element` smoothly to the middle of the screen, then runs `then`, so a
+ * popup opens where the field has settled, not where it was mid-scroll. A field
+ * already on screen doesn't move, and `then` runs at once.
+ */
+function scrollToThen(element: HTMLElement, then: () => void) {
+  if (inViewport(element)) {
+    then();
+    return;
+  }
+  const smooth = !prefersReducedMotion();
+  element.scrollIntoView({ block: 'center', behavior: smooth ? 'smooth' : 'auto' });
+  if (!smooth) {
+    then();
+    return;
+  }
+  let timer = 0;
+  const done = () => {
+    window.removeEventListener('scrollend', done);
+    window.clearTimeout(timer);
+    then();
+  };
+  window.addEventListener('scrollend', done, { once: true });
+  timer = window.setTimeout(done, SCROLL_FALLBACK_MS);
+}
+
 /**
  * Product options as a collapsible panel, collapsed at first. A row of chips sums
  * up each option and its answer, following the shopper's picks as they make
@@ -163,14 +244,14 @@ export function ProductOptionsPanel({
   }, [options]);
 
   // A chip opens the panel on its option: shown at once (a hidden field can't take
-  // focus), then scrolled to and focused.
+  // focus), scrolled to the middle of the screen, then its field opened, so the
+  // shopper doesn't press it a second time.
   const openOn = (id: PanelOption['id']) => {
     flushSync(() => setExpanded(true));
     const container = fields.current?.querySelector<HTMLElement>(
       `[data-option-id="${CSS.escape(String(id))}"]`
     );
-    container?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
-    container?.querySelector<HTMLElement>(FOCUSABLE)?.focus({ preventScroll: true });
+    if (container) scrollToThen(container, () => activateField(container));
   };
 
   const added = t('blocks.product_options.added', 'Added');

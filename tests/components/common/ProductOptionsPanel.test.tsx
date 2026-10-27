@@ -131,6 +131,75 @@ describe('ProductOptionsPanel', () => {
     expect(document.activeElement).toBe(screen.getByLabelText('field-3'));
   });
 
+  it("opens a picker option's picker from its chip, without a second press", () => {
+    Element.prototype.scrollIntoView = vi.fn();
+    const ink: PanelOption = { id: 5, name: 'Ink', type: 'color_picker', value: '#00ff00' };
+    const place: PanelOption = { id: 6, name: 'Place', type: 'map' };
+    const { container } = render(
+      <ProductOptionsPanel options={[ink, place]}>
+        <div data-option-id="5">
+          <salla-color-picker />
+        </div>
+        <div data-option-id="6">
+          <salla-map />
+        </div>
+      </ProductOptionsPanel>
+    );
+    const openPicker = vi.fn(() => Promise.resolve());
+    const openMap = vi.fn(() => Promise.resolve());
+    Object.assign(container.querySelector('salla-color-picker')!, { openPicker });
+    Object.assign(container.querySelector('salla-map')!, { open: openMap });
+
+    fireEvent.click(screen.getByText('Ink').closest('button')!);
+    expect(openPicker).toHaveBeenCalledOnce();
+
+    fireEvent.click(screen.getByLabelText('blocks.product_options.title'));
+    fireEvent.click(screen.getByText('Place').closest('button')!);
+    expect(openMap).toHaveBeenCalledOnce();
+  });
+
+  it("opens a dropdown's list from its chip", () => {
+    Element.prototype.scrollIntoView = vi.fn();
+    const showPicker = vi.fn();
+    HTMLSelectElement.prototype.showPicker = showPicker;
+    render(
+      <ProductOptionsPanel options={[size]}>
+        <div data-option-id="1">
+          <select aria-label="size" name="options[1]">
+            <option value="11">S</option>
+          </select>
+        </div>
+      </ProductOptionsPanel>
+    );
+
+    fireEvent.click(screen.getByText('Size').closest('button')!);
+
+    expect(document.activeElement).toBe(screen.getByLabelText('size'));
+    expect(showPicker).toHaveBeenCalledOnce();
+  });
+
+  it('scrolls an off-screen field to the middle, and opens it once the scroll ends', () => {
+    const scrollIntoView = vi.fn();
+    Element.prototype.scrollIntoView = scrollIntoView;
+    vi.spyOn(window, 'matchMedia').mockReturnValue({ matches: false } as MediaQueryList);
+    render(
+      <ProductOptionsPanel options={[note]}>
+        <OptionFields ids={[3]} />
+      </ProductOptionsPanel>
+    );
+    const field = screen.getByLabelText('field-3');
+    const container = field.closest<HTMLElement>('[data-option-id]')!;
+    container.getBoundingClientRect = () =>
+      ({ top: window.innerHeight + 200, bottom: window.innerHeight + 260 }) as DOMRect;
+
+    fireEvent.click(screen.getByText('Note').closest('button')!);
+    expect(scrollIntoView).toHaveBeenCalledWith({ block: 'center', behavior: 'smooth' });
+    expect(document.activeElement).not.toBe(field);
+
+    fireEvent(window, new Event('scrollend'));
+    expect(document.activeElement).toBe(field);
+  });
+
   it('toggles open and closed with the chevron', () => {
     const { container } = render(
       <ProductOptionsPanel options={[size]}>
