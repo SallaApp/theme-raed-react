@@ -3,10 +3,10 @@ import { act, render, screen } from '@testing-library/react';
 import { useScrollDirection } from '../../app/hooks/useScrollDirection';
 
 function Probe() {
-  return <output data-testid="direction">{useScrollDirection()}</output>;
+  return <output data-testid="scroll-direction-probe-value">{useScrollDirection()}</output>;
 }
 
-const direction = () => screen.getByTestId('direction').textContent;
+const direction = () => screen.getByTestId('scroll-direction-probe-value').textContent;
 
 /** Scroll the window to `y` and run the frame the hook waits for. */
 function scrollTo(y: number) {
