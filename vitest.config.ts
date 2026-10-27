@@ -30,7 +30,7 @@ export default defineConfig({
     },
     coverage: {
       provider: 'v8',
-      reporter: ['text', 'json', 'html', 'lcov'],
+      reporter: ['text', 'json', 'json-summary', 'html', 'lcov'],
       include: ['app/**/*.{ts,tsx}'],
       exclude: ['app/**/*.d.ts'],
       // Coverage floor (ratchet): measured on app/** and rounded down. It only goes up —
