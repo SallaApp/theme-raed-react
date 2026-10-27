@@ -1,7 +1,7 @@
 name: CI
 
 # Quality gates. A draft runs nothing; a pull request that is ready for review runs every gate on each push.
-# Results are summarised in one comment on the pull request (no external services involved).
+# Reports (coverage, bundle size) are printed in the job log and shown in the run summary: no API calls, no extra credentials.
 on:
   pull_request:
     branches:
@@ -75,6 +75,8 @@ jobs:
               echo "No coverage summary was produced."
             fi
           } > report/coverage.md
+          cat report/coverage.md
+          cat report/coverage.md >> "$GITHUB_STEP_SUMMARY"
       - name: Upload coverage report
         if: always()
         uses: actions/upload-artifact@v4
@@ -83,13 +85,6 @@ jobs:
           path: coverage/
           if-no-files-found: warn
           retention-days: 7
-      - name: Upload the report section
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: report-coverage
-          path: report/coverage.md
-          retention-days: 1
 
   build:
     name: Build, Types & Bundle Size
@@ -126,13 +121,8 @@ jobs:
               echo "The build produced no output."
             fi
           } > report/size.md
-      - name: Upload the report section
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: report-size
-          path: report/size.md
-          retention-days: 1
+          cat report/size.md
+          cat report/size.md >> "$GITHUB_STEP_SUMMARY"
 
   # One verdict over every gate above: the single check to require in a branch ruleset.
   testing-result:
@@ -145,57 +135,11 @@ jobs:
         env:
           NEEDS: ${{ toJSON(needs) }}
         run: |
-          echo "$NEEDS" | jq -r 'to_entries[] | "\(.key): \(.value.result)"'
-          echo "$NEEDS" | jq -e 'all(.[]; .result == "success")' > /dev/null
-
-  # Not part of Testing Ready: a comment problem never blocks a merge.
-  reports:
-    name: Test Reports
-    needs: [static, unit, build]
-    if: always() && github.event_name == 'pull_request' && github.event.pull_request.draft == false
-    # The organization's API IP allow list rejects calls from GitHub-hosted runners, so the comment is posted from the
-    # organization runner when the RUNS_ON variable is set (a JSON runner label or group), else from ubuntu-latest.
-    runs-on: ${{ vars.RUNS_ON && fromJson(vars.RUNS_ON) || 'ubuntu-latest' }}
-    timeout-minutes: 10
-    continue-on-error: true
-    concurrency:
-      group: test-reports-${{ github.event.pull_request.number }}
-      cancel-in-progress: false
-    permissions:
-      contents: read
-      pull-requests: write
-    steps:
-      - name: Download the report sections
-        uses: actions/download-artifact@v4
-        with:
-          path: report
-          pattern: report-*
-          merge-multiple: true
-        continue-on-error: true
-      - name: Comment on the pull request
-        # The report is always in the job summary too, so a comment the API refuses does not fail the run.
-        continue-on-error: true
-        env:
-          GH_TOKEN: ${{ github.token }}
-          PR_NUMBER: ${{ github.event.pull_request.number }}
-          NEEDS: ${{ toJSON(needs) }}
-        run: |
-          marker='<!-- ci-test-report -->'
           {
-            echo "$marker"
-            echo "## Test report"
+            echo "### Gate results"
             echo
             echo "| Gate | Result |"
             echo "| --- | --- |"
             echo "$NEEDS" | jq -r 'to_entries[] | "| \(.key) | \(.value.result) |"'
-            for f in report/coverage.md report/size.md; do
-              if [ -f "$f" ]; then echo; cat "$f"; fi
-            done
-          } > comment.md
-          cat comment.md >> "$GITHUB_STEP_SUMMARY"
-          existing="$(gh api "repos/$GITHUB_REPOSITORY/issues/$PR_NUMBER/comments" --paginate --jq ".[] | select(.body | contains(\"$marker\")) | .id" | head -n 1)"
-          if [ -n "$existing" ]; then
-            gh api --method PATCH "repos/$GITHUB_REPOSITORY/issues/comments/$existing" -F body=@comment.md
-          else
-            gh api --method POST "repos/$GITHUB_REPOSITORY/issues/$PR_NUMBER/comments" -F body=@comment.md
-          fi
+          } | tee -a "$GITHUB_STEP_SUMMARY"
+          echo "$NEEDS" | jq -e 'all(.[]; .result == "success")' > /dev/null
