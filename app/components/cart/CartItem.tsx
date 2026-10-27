@@ -5,6 +5,7 @@ import { useMoney } from '@salla.sa/twilight-theme-engine/hooks/useMoney';
 import { Link, Image } from '@salla.sa/twilight-theme-engine/common';
 import { SallaCartItemOffers } from '@salla.sa/twilight-components-react/cart-item-offers';
 import { Delete01Icon, MinusIcon, PlusIcon } from '../icons';
+import { ProductOptionsPanel, type PanelOption } from '../common/ProductOptionsPanel';
 
 interface CartItemProps {
   item: CartItemType;
@@ -356,16 +357,19 @@ export function CartItem({ item, isFirst = false, onMutated }: CartItemProps) {
         </div>
 
         {item.options && item.options.length > 0 && (
-          // Raw element, not the React wrapper: the wrapper assigns `options` after the
-          // element's constructor has run, so it falls back to fetching the product's
-          // default options (nothing selected) instead of showing the cart item's
-          // selection. As an attribute it is set before connect. The element also
-          // parses `options` once, so key on the data to remount when it changes.
-          <salla-product-options
-            key={JSON.stringify(item.options)}
-            options={JSON.stringify(item.options)}
-            product-id={item.product_id}
-          />
+          // The cart API sends the full option objects `<salla-product-options>` renders.
+          <ProductOptionsPanel options={item.options as unknown as PanelOption[]}>
+            {/* Raw element, not the React wrapper: the wrapper assigns `options` after the
+                element's constructor has run, so it falls back to fetching the product's
+                default options (nothing selected) instead of showing the cart item's
+                selection. As an attribute it is set before connect. The element also
+                parses `options` once, so key on the data to remount when it changes. */}
+            <salla-product-options
+              key={JSON.stringify(item.options)}
+              options={JSON.stringify(item.options)}
+              product-id={item.product_id}
+            />
+          </ProductOptionsPanel>
         )}
       </section>
     </form>

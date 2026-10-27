@@ -34,10 +34,16 @@
   /* per-item product options render inside the flat row — drop the wrapper's
      card padding (mirrors the product page's `.product-form` treatment) */
   .s-product-options-wrapper {
-    @apply p-0 rtl:lg:pr-[112px] ltr:lg:pl-[112px];
+    @apply p-0;
     border-radius: 0;
     margin: 0;
   }
+}
+
+/* A cart item's options panel (ProductOptionsPanel, options-panel.scss) lines up
+   with the item's name: image 96px + 16px gap. */
+.cart-item .options-panel {
+  @apply lg:ms-[112px];
 }
 
 /*
