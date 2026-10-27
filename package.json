@@ -19,7 +19,9 @@
     "lint": "eslint . --max-warnings 0",
     "format:check": "prettier --check .",
     "knip": "knip",
-    "prepare": "node scripts/install-hooks.mjs"
+    "prepare": "node scripts/install-hooks.mjs",
+    "size": "pnpm build && node scripts/check-bundle.mjs",
+    "size:update": "pnpm build && node scripts/check-bundle.mjs --update"
   },
   "dependencies": {
     "@salla.sa/twilight-components-react": "^3.0.2",
