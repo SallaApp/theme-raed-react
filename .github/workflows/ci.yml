@@ -41,7 +41,7 @@ jobs:
           needs: ${{ toJSON(needs) }}
 
   static:
-    name: Lint, Types & Catalogue
+    name: Lint & Static Checks
     if: github.event_name != 'pull_request' || github.event.pull_request.draft == false
     runs-on: ${{ vars.RUNS_ON && fromJson(vars.RUNS_ON) || 'ubuntu-latest' }}
     timeout-minutes: 15
@@ -52,8 +52,6 @@ jobs:
         uses: actions/checkout@v4
       - name: Set up pnpm and Node
         uses: ./.github/actions/setup
-      - name: Typecheck
-        run: pnpm typecheck
       - name: Lint
         run: pnpm lint
       - name: Format check
@@ -100,7 +98,7 @@ jobs:
           endpoint: ${{ secrets.R2_REPORTS_ENDPOINT }}
 
   build:
-    name: Build & Bundle Size
+    name: Build, Types & Bundle Size
     if: github.event_name != 'pull_request' || github.event.pull_request.draft == false
     runs-on: ${{ vars.RUNS_ON && fromJson(vars.RUNS_ON) || 'ubuntu-latest' }}
     timeout-minutes: 15
@@ -111,6 +109,9 @@ jobs:
         uses: ./.github/actions/setup
       - name: Build
         run: pnpm build
+      # Typecheck needs app/routeTree.gen.ts, which the build generates on a clean checkout.
+      - name: Typecheck
+        run: pnpm typecheck
       - name: Report the bundle size
         run: |
           mkdir -p bundle-report

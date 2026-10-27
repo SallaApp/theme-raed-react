@@ -41,12 +41,17 @@ async function request(
       authorization: `Bearer ${client.token}`,
       accept: 'application/vnd.github+json',
       'x-github-api-version': '2022-11-28',
+      'user-agent': 'theme-raed-react-pr-gates',
     },
     body: body === undefined ? undefined : JSON.stringify(body),
   });
   if (!response.ok) {
+    const detail = await response.json().then(
+      (reason) => String(recordOf(reason)['message'] ?? ''),
+      () => ''
+    );
     throw new Error(
-      `GitHub answered ${String(response.status)} to ${method} ${new URL(url).pathname}`
+      `GitHub answered ${String(response.status)} to ${method} ${new URL(url).pathname}${detail ? `: ${detail}` : ''}`
     );
   }
   return response.json();
