@@ -132,12 +132,13 @@ export function ThemeLayout({ children }: ThemeLayoutProps) {
   // Cart) or a link inside one of them navigates without touching their own
   // state, so they would otherwise stay open over the new page.
   const pathname = useRouterState({ select: (s) => s.location.pathname });
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional: state must sync after mount/route change (SSR-safe, avoids hydration mismatch)
+  const [prevPathname, setPrevPathname] = useState(pathname);
+  if (prevPathname !== pathname) {
+    setPrevPathname(pathname);
     setNavOpen(false);
     setAccountOpen(false);
     setImportantLinksOpen(false);
-  }, [pathname]);
+  }
 
   // Fill the web components' strings the store's pack lacks from the theme's
   // locale files, each time a pack loads (`subscribe` also runs at once when one already has).

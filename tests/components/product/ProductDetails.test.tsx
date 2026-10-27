@@ -26,8 +26,12 @@ beforeAll(() => {
         this as unknown as IntersectionObserver
       );
     }
-    unobserve() {}
-    disconnect() {}
+    unobserve() {
+      return undefined;
+    }
+    disconnect() {
+      return undefined;
+    }
     takeRecords() {
       return [];
     }
@@ -119,7 +123,7 @@ describe('ProductDetails description hooks', () => {
 });
 
 describe('ProductDetails wishlist heart', () => {
-  const onAdded: Array<(e: unknown, id: number) => void> = [];
+  const onAdded: ((e: unknown, id: number) => void)[] = [];
 
   beforeEach(() => {
     resetWishlistStore();

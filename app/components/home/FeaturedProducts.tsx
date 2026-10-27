@@ -41,12 +41,12 @@ export type FeaturedProductsShowMethod =
 type PickerValue =
   string | number | { id?: unknown; value?: unknown; key?: unknown } | null | undefined;
 
-export interface FeaturedProductsSection {
+interface FeaturedProductsSection {
   name?: string;
   /** Legacy (pre-custom-component) payload: tab name and pre-hydrated stubs. */
   label?: string;
   title?: string;
-  products?: Array<{ id?: unknown }>;
+  products?: { id?: unknown }[];
   type?: PickerValue | PickerValue[];
   category?: PickerValue | PickerValue[];
   tag?: PickerValue | PickerValue[];
@@ -182,10 +182,15 @@ function TabProductGrid({
 /** Highlighted product: used as-is when hydrated, otherwise fetched by id. */
 function SpecialProduct({ value }: { value: FeaturedProductsData['main_product'] }) {
   const ids = isFullProduct(value) ? [] : toIds(value);
+  const idsKey = ids.join(',');
   const loader = useCallback(
-    () => product.list({ source: 'selected', sourceValue: ids, perPage: 1 }),
-    // eslint-disable-next-line react-hooks/exhaustive-deps, react-hooks/use-memo
-    [ids.join(',')]
+    () =>
+      product.list({
+        source: 'selected',
+        sourceValue: idsKey ? idsKey.split(',').map(Number) : [],
+        perPage: 1,
+      }),
+    [idsKey]
   );
 
   if (isFullProduct(value)) return <ProductCard product={value} layout="special" withShadow />;

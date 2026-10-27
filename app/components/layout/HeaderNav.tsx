@@ -46,7 +46,7 @@ interface HeaderNavProps {
 const TRANSITION_MS = 320;
 
 /** Nothing to subscribe to: `document.body` only ever differs between server and client. */
-const subscribeNothing = () => () => {};
+const subscribeNothing = () => () => undefined;
 
 /** A menu item opens a sub-column only when its children are actually present. */
 const hasChildren = (item: MenuItem): boolean =>
@@ -225,7 +225,10 @@ function NavHead({ canGoBack, onBack, onClose }: NavHeadProps) {
   );
 }
 
-type Column = { parent: MenuItem | null; items: MenuItem[] };
+interface Column {
+  parent: MenuItem | null;
+  items: MenuItem[];
+}
 
 interface NavColumnsProps {
   columns: Column[];
@@ -366,14 +369,10 @@ function useDrawerTransition(open: boolean) {
 
   useScrollLock(open);
 
+  if (open && !mounted) setMounted(true);
+
   useEffect(() => {
-    if (open) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional: state must sync after mount/route change (SSR-safe, avoids hydration mismatch)
-      setMounted(true);
-      return;
-    }
-    setEntered(false);
-    setItemsIn(false);
+    if (open) return;
     const unmount = setTimeout(() => setMounted(false), TRANSITION_MS);
     return () => clearTimeout(unmount);
   }, [open]);
@@ -386,6 +385,8 @@ function useDrawerTransition(open: boolean) {
     return () => {
       cancelEnter();
       clearTimeout(stagger);
+      setEntered(false);
+      setItemsIn(false);
     };
   }, [mounted, open]);
 

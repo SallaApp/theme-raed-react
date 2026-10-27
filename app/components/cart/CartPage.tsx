@@ -34,7 +34,7 @@ function CartPageContent({ page }: CartPageProps) {
   const cartId = cartIdQuery.data;
 
   const cartQuery = useQuery({
-    ...cart.queries.detail(cartId!),
+    ...cart.queries.detail(cartId ?? 0),
     enabled: !!cartId,
   });
   const cartData = cartQuery.data;

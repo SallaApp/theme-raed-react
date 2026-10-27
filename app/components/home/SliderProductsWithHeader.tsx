@@ -9,7 +9,7 @@ interface ProductsSourceConfig {
   source_value?: number | number[] | null;
 }
 
-export interface SliderProductsWithHeaderData {
+interface SliderProductsWithHeaderData {
   background?: string;
   title?: string;
   description?: string;

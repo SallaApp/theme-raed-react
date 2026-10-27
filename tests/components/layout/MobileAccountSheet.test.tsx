@@ -117,7 +117,7 @@ async function settle() {
   });
 }
 
-function renderSheet(onOpenImportantLinks = () => {}) {
+function renderSheet(onOpenImportantLinks = () => undefined) {
   const onClose = vi.fn();
   render(<MobileAccountSheet open onClose={onClose} onOpenImportantLinks={onOpenImportantLinks} />);
   return onClose;
@@ -138,7 +138,13 @@ afterEach(() => {
 
 describe('MobileAccountSheet', () => {
   it('renders nothing while closed', () => {
-    render(<MobileAccountSheet open={false} onClose={() => {}} onOpenImportantLinks={() => {}} />);
+    render(
+      <MobileAccountSheet
+        open={false}
+        onClose={() => undefined}
+        onOpenImportantLinks={() => undefined}
+      />
+    );
     expect(document.querySelector('.account-sheet')).toBeNull();
   });
 
@@ -458,7 +464,7 @@ describe('MobileAccountSheet', () => {
       try {
         const onClose = vi.fn();
         const { rerender } = render(
-          <MobileAccountSheet open onClose={onClose} onOpenImportantLinks={() => {}} />
+          <MobileAccountSheet open onClose={onClose} onOpenImportantLinks={() => undefined} />
         );
         act(() => {
           vi.advanceTimersByTime(350);
@@ -466,7 +472,11 @@ describe('MobileAccountSheet', () => {
         expect(document.querySelector('.account-sheet__content')?.className).toContain('is-in');
 
         rerender(
-          <MobileAccountSheet open={false} onClose={onClose} onOpenImportantLinks={() => {}} />
+          <MobileAccountSheet
+            open={false}
+            onClose={onClose}
+            onOpenImportantLinks={() => undefined}
+          />
         );
         expect(document.querySelector('.account-sheet__content')?.className).not.toContain('is-in');
       } finally {
@@ -518,13 +528,21 @@ describe('MobileAccountSheet', () => {
       vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
       try {
         const { rerender } = render(
-          <MobileAccountSheet open onClose={() => {}} onOpenImportantLinks={() => {}} />
+          <MobileAccountSheet
+            open
+            onClose={() => undefined}
+            onOpenImportantLinks={() => undefined}
+          />
         );
         await advanceAndSettle(450);
         expect(menuClass()).toContain('is-in');
 
         rerender(
-          <MobileAccountSheet open={false} onClose={() => {}} onOpenImportantLinks={() => {}} />
+          <MobileAccountSheet
+            open={false}
+            onClose={() => undefined}
+            onOpenImportantLinks={() => undefined}
+          />
         );
         expect(menuClass()).not.toContain('is-in');
       } finally {
@@ -561,11 +579,21 @@ describe('MobileAccountSheet', () => {
       vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
       try {
         const { rerender } = render(
-          <MobileAccountSheet open={false} onClose={() => {}} onOpenImportantLinks={() => {}} />
+          <MobileAccountSheet
+            open={false}
+            onClose={() => undefined}
+            onOpenImportantLinks={() => undefined}
+          />
         );
         expect(document.querySelector('.account-sheet__user-menu')).toBeNull();
 
-        rerender(<MobileAccountSheet open onClose={() => {}} onOpenImportantLinks={() => {}} />);
+        rerender(
+          <MobileAccountSheet
+            open
+            onClose={() => undefined}
+            onOpenImportantLinks={() => undefined}
+          />
+        );
         await act(async () => {
           await Promise.resolve();
         });

@@ -347,13 +347,12 @@ export function MobileAccountSheet({
   // replays from the top next time the sheet opens.
   const [itemsIn, setItemsIn] = useState(false);
   useEffect(() => {
-    if (!open) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional: state must sync after mount/route change (SSR-safe, avoids hydration mismatch)
-      setItemsIn(false);
-      return;
-    }
+    if (!open) return;
     const stagger = setTimeout(() => setItemsIn(true), ROWS_IN_DELAY_MS);
-    return () => clearTimeout(stagger);
+    return () => {
+      clearTimeout(stagger);
+      setItemsIn(false);
+    };
   }, [open]);
 
   // A link to the current page doesn't change the route, which is what closes the sheet otherwise.

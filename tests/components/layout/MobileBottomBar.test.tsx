@@ -78,7 +78,7 @@ afterEach(() => {
 });
 
 describe('MobileBottomBar', () => {
-  const noop = () => {};
+  const noop = () => undefined;
 
   it('renders all five tabs with their labels', () => {
     render(<MobileBottomBar navOpen={false} onOpenNav={noop} />);
@@ -254,10 +254,10 @@ describe('MobileBottomBar', () => {
       matches: false,
       media: query,
       onchange: null,
-      addListener: () => {},
-      removeListener: () => {},
-      addEventListener: () => {},
-      removeEventListener: () => {},
+      addListener: () => undefined,
+      removeListener: () => undefined,
+      addEventListener: () => undefined,
+      removeEventListener: () => undefined,
       dispatchEvent: () => false,
     })) as typeof window.matchMedia;
 

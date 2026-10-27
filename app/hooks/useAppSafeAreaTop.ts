@@ -1,10 +1,16 @@
-import { useEffect, useState } from 'react';
+import { useSyncExternalStore } from 'react';
 
 const VAR = '--app-safe-area-top';
 
 function read(): number {
   const value = parseFloat(document.documentElement.style.getPropertyValue(VAR));
   return Number.isFinite(value) ? value : 0;
+}
+
+function subscribe(notify: () => void): () => void {
+  const observer = new MutationObserver(notify);
+  observer.observe(document.documentElement, { attributes: true, attributeFilter: ['style'] });
+  return () => observer.disconnect();
 }
 
 /**
@@ -14,15 +20,5 @@ function read(): number {
  * reports, which the app can send at any time.
  */
 export function useAppSafeAreaTop(): number {
-  const [top, setTop] = useState(0);
-
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional: state must sync after mount/route change (SSR-safe, avoids hydration mismatch)
-    setTop(read());
-    const observer = new MutationObserver(() => setTop(read()));
-    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['style'] });
-    return () => observer.disconnect();
-  }, []);
-
-  return top;
+  return useSyncExternalStore(subscribe, read, () => 0);
 }

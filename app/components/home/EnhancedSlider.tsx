@@ -1,6 +1,7 @@
 import { memo, useCallback, useEffect, useRef, useState, type RefObject } from 'react';
 import { SallaSlider } from '@salla.sa/twilight-components-react/slider';
 import { Link } from '@salla.sa/twilight-theme-engine/common';
+import { useTranslation } from '@salla.sa/twilight-theme-engine/i18n';
 import { parseSlideVideo, youtubeEmbedUrl } from '../../lib/slideVideo';
 import { useMotionAllowed } from '../../hooks/useMotionAllowed';
 
@@ -99,6 +100,7 @@ const YOUTUBE_PLAYING = 1;
  * the page says it is listening, and the frame answers with its state.
  */
 function YouTubeBackground({ id }: { id: string }) {
+  const { t } = useTranslation();
   const ref = useRef<HTMLIFrameElement>(null);
   const [state, setState] = useState<'loading' | 'playing' | 'failed'>('loading');
 
@@ -151,14 +153,12 @@ function YouTubeBackground({ id }: { id: string }) {
 
   if (state === 'failed') return null;
   return (
-    // eslint-disable-next-line jsx-a11y/iframe-has-title -- decorative background video; the empty title is intentional
     <iframe
       ref={ref}
       className="enhanced-slider__video enhanced-slider__video--embed"
       data-state={state}
-      // eslint-disable-next-line no-restricted-properties -- intentional: no ref available for this global DOM/location read; behaviour kept
-      src={youtubeEmbedUrl(id, window.location.origin)}
-      title=""
+      src={youtubeEmbedUrl(id, window.origin)}
+      title={t('blocks.slider.background_video', 'Background video')}
       loading="lazy"
       allow="autoplay; encrypted-media"
       referrerPolicy="strict-origin-when-cross-origin"

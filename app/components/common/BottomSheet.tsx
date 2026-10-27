@@ -49,13 +49,10 @@ export function BottomSheet({
 
   useScrollLock(open);
 
+  if (open && !mounted) setMounted(true);
+
   useEffect(() => {
-    if (open) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional: state must sync after mount/route change (SSR-safe, avoids hydration mismatch)
-      setMounted(true);
-      return;
-    }
-    setEntered(false);
+    if (open) return;
     const unmount = setTimeout(() => setMounted(false), TRANSITION_MS);
     return () => clearTimeout(unmount);
   }, [open]);
@@ -63,7 +60,11 @@ export function BottomSheet({
   useEffect(() => {
     if (!mounted || !open) return;
     void sheetRef.current?.offsetWidth;
-    return afterNextPaint(() => setEntered(true));
+    const cancelEnter = afterNextPaint(() => setEntered(true));
+    return () => {
+      cancelEnter();
+      setEntered(false);
+    };
   }, [mounted, open]);
 
   // Move focus into the sheet on open, trap Tab, restore it to the trigger on close.

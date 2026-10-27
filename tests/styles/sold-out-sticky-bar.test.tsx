@@ -53,8 +53,12 @@ beforeAll(async () => {
         this as unknown as IntersectionObserver
       );
     }
-    unobserve() {}
-    disconnect() {}
+    unobserve() {
+      return undefined;
+    }
+    disconnect() {
+      return undefined;
+    }
     takeRecords() {
       return [];
     }

@@ -84,7 +84,7 @@ describe('CartItem quantity', () => {
 
   it('keeps the quantity and sends nothing while a required option is empty', async () => {
     renderWithOption('');
-    await act(async () => {});
+    await act(async () => undefined);
     expect(updateItem).not.toHaveBeenCalled();
     expect(screen.getByLabelText<HTMLInputElement>('pages.products.quantity').value).toBe('1');
   });

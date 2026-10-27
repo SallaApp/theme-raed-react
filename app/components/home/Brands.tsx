@@ -4,7 +4,7 @@ import { Link } from '@salla.sa/twilight-theme-engine/common';
 import { useTranslation } from '@salla.sa/twilight-theme-engine/i18n';
 import { useTwilight } from '@salla.sa/twilight-theme-engine/providers';
 
-export interface BrandsData {
+interface BrandsData {
   brands: Brand[];
   title?: string;
   show_all?: boolean;

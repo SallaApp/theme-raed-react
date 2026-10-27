@@ -8,8 +8,15 @@ import { join } from 'node:path';
 const root = join(__dirname, '../..');
 const engine = join(root, 'node_modules/@salla.sa/twilight-theme-engine');
 
-type Field = { id?: string; type?: string; fields?: Field[] };
-type Manifest = { settings?: Field[]; components?: { key: string; fields?: Field[] }[] };
+interface Field {
+  id?: string;
+  type?: string;
+  fields?: Field[];
+}
+interface Manifest {
+  settings?: Field[];
+  components?: { key: string; fields?: Field[] }[];
+}
 
 // Known dead settings, each with the task that fixes it. Remove an entry when the fix lands;
 // the last test fails until you do, so this list cannot go stale.

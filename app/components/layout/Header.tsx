@@ -167,11 +167,7 @@ export function Header({ navOpen: navOpenProp, onNavOpenChange }: HeaderProps = 
   //    place when the bar goes `position: fixed`, since `__bar-outer` reserves
   //    the height).
   useEffect(() => {
-    if (!stickyEnabled) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional: state must sync after mount/route change (SSR-safe, avoids hydration mismatch)
-      setScrolled(false);
-      return;
-    }
+    if (!stickyEnabled) return;
 
     if (!isDefaultLayout) {
       const onScroll = () => setScrolled(window.scrollY > 4);
@@ -226,7 +222,7 @@ export function Header({ navOpen: navOpenProp, onNavOpenChange }: HeaderProps = 
       )}
 
       <div className="site-header__bar-outer">
-        <div className={`site-header__bar${scrolled ? ' is-scrolled' : ''}`}>
+        <div className={`site-header__bar${stickyEnabled && scrolled ? ' is-scrolled' : ''}`}>
           <div className="container site-header__bar-inner">
             <div className="site-header__nav-toggle">
               <button

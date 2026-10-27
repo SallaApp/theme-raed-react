@@ -285,7 +285,9 @@ function ProductQuantityInfo({ product }: { product: Product }) {
         <div className="px-4 only:px-0 !text-red-800">
           <i className="sicon-fire rtl:ml-1.5 ltr:mr-1.5"></i> {t('pages.products.sold')}{' '}
           {/* Salla ships `sold_times` in Laravel plural format; resolve it for the count. */}
-          <span>{formatSallaPlural(t('pages.products.sold_times'), product.sold_quantity!)}</span>
+          <span>
+            {formatSallaPlural(t('pages.products.sold_times'), product.sold_quantity ?? 0)}
+          </span>
         </div>
       )}
       {product.can_show_remained_quantity &&

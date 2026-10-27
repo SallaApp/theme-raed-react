@@ -1,6 +1,6 @@
 import { useSyncExternalStore } from 'react';
 
-const subscribeNothing = () => () => {};
+const subscribeNothing = () => () => undefined;
 
 /**
  * `false` on the server and through hydration, then `true` once mounted on

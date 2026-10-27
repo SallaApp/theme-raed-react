@@ -42,7 +42,7 @@ vi.mock('@salla.sa/twilight-components-react/cart-item-offers', () => ({
 
 vi.mock('@salla.sa/twilight-theme-engine/hooks', () => ({
   HookSlot: () => null,
-  usePageConfig: () => {},
+  usePageConfig: () => undefined,
 }));
 vi.mock('@salla.sa/twilight-theme-engine/hooks/useMoney', () => ({
   useMoney: () => ({ format: (amount: unknown) => String(amount) }),
@@ -55,8 +55,7 @@ vi.mock('@salla.sa/twilight-theme-engine/common', () => ({
   NoContent: ({ message }: { message: string }) => (
     <p data-testid="cart-empty-message">{message}</p>
   ),
-  // eslint-disable-next-line jsx-a11y/anchor-is-valid -- minimal Link mock
-  Link: ({ children }: { children?: unknown }) => <a>{children as never}</a>,
+  Link: ({ children }: { children?: unknown }) => <a href="/">{children as never}</a>,
   Image: () => <img alt="" />,
 }));
 vi.mock('@salla.sa/twilight-theme-engine/cart', () => ({

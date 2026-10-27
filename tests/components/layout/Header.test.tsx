@@ -17,9 +17,9 @@ const state = {
   routeIds: [] as string[],
 };
 
-type RouterStateStub = {
+interface RouterStateStub {
   matches: { routeId: string }[];
-};
+}
 
 vi.mock('@tanstack/react-router', () => ({
   useRouterState: ({ select }: { select: (s: RouterStateStub) => unknown }) =>
@@ -142,9 +142,15 @@ describe('Header', () => {
     vi.stubGlobal(
       'IntersectionObserver',
       class {
-        observe() {}
-        unobserve() {}
-        disconnect() {}
+        observe() {
+          return undefined;
+        }
+        unobserve() {
+          return undefined;
+        }
+        disconnect() {
+          return undefined;
+        }
       }
     );
     state.theme = { settings: { header_layout: 'default' } };
@@ -163,9 +169,15 @@ describe('Header', () => {
     vi.stubGlobal(
       'IntersectionObserver',
       class {
-        observe() {}
-        unobserve() {}
-        disconnect() {}
+        observe() {
+          return undefined;
+        }
+        unobserve() {
+          return undefined;
+        }
+        disconnect() {
+          return undefined;
+        }
       }
     );
     state.theme = { settings: { header_layout: 'default' } };
@@ -211,9 +223,15 @@ describe('Header', () => {
     vi.stubGlobal(
       'IntersectionObserver',
       class {
-        observe() {}
-        unobserve() {}
-        disconnect() {}
+        observe() {
+          return undefined;
+        }
+        unobserve() {
+          return undefined;
+        }
+        disconnect() {
+          return undefined;
+        }
       }
     );
     state.theme = { settings: { header_layout: 'default', header_store_info_home_only: false } };
@@ -254,9 +272,15 @@ describe('Header', () => {
         constructor(_cb: unknown, options: { rootMargin?: string }) {
           margins.push(options.rootMargin ?? '');
         }
-        observe() {}
-        unobserve() {}
-        disconnect() {}
+        observe() {
+          return undefined;
+        }
+        unobserve() {
+          return undefined;
+        }
+        disconnect() {
+          return undefined;
+        }
       }
     );
     // Only the header's pin observer sets a top margin; other observers on the page don't.

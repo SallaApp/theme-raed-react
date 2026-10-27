@@ -96,7 +96,7 @@ describe('ProductsSlider', () => {
   });
 
   it('shows the skeleton until the products resolve', () => {
-    listMock.mockReturnValue(new Promise(() => {}));
+    listMock.mockReturnValue(new Promise(() => undefined));
     const { getByTestId } = renderWithClient(
       <ProductsSlider data={{ products: { source: 'related', source_value: 1 } }} />
     );
