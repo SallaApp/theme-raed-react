@@ -22,7 +22,7 @@ export const ROWS_IN_DELAY_MS = 350;
  * cover either reliably, so this watches the document (`BottomSheet` portals to
  * `<body>`) until a `rowSelector` match shows up, then releases the stagger.
  *
- * The build's `no-manual-dom` check flags its `document.querySelector` calls.
+ * The build's `no-manual-dom` check flags its `document.body.querySelector` calls.
  * They stay: the rows are rendered by the web component, inside a portal, so
  * there is no ref or React state that reaches them.
  */
@@ -34,10 +34,7 @@ export function useStaggeredRows(
   const [rowsIn, setRowsIn] = useState(false);
 
   useEffect(() => {
-    if (!open) {
-      setRowsIn(false);
-      return;
-    }
+    if (!open) return;
 
     let timer: ReturnType<typeof setTimeout> | undefined;
     let cancelPaint: (() => void) | undefined;
@@ -47,16 +44,16 @@ export function useStaggeredRows(
       timer = setTimeout(() => {
         // Force a reflow so the web component's closed state is painted before
         // `.is-in` flips it; otherwise a just-inserted row never transitions.
-        void document.querySelector<HTMLElement>(containerSelector)?.offsetWidth;
+        void document.body.querySelector<HTMLElement>(containerSelector)?.offsetWidth;
         cancelPaint = afterNextPaint(() => setRowsIn(true));
       }, ROWS_IN_DELAY_MS);
     };
 
-    if (document.querySelector(rowSelector)) {
+    if (document.body.querySelector(rowSelector)) {
       release();
     } else {
       observer = new MutationObserver(() => {
-        if (document.querySelector(rowSelector)) {
+        if (document.body.querySelector(rowSelector)) {
           observer?.disconnect();
           release();
         }
@@ -68,6 +65,7 @@ export function useStaggeredRows(
       observer?.disconnect();
       clearTimeout(timer);
       cancelPaint?.();
+      setRowsIn(false);
     };
   }, [open, containerSelector, rowSelector]);
 

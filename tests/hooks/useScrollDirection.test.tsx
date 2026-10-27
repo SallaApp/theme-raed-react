@@ -1,13 +1,12 @@
 import { describe, it, expect, afterEach, vi } from 'vitest';
-import { act, render } from '@testing-library/react';
+import { act, render, screen } from '@testing-library/react';
 import { useScrollDirection } from '../../app/hooks/useScrollDirection';
 
-let direction: string | undefined;
-
 function Probe() {
-  direction = useScrollDirection();
-  return null;
+  return <output data-testid="scroll-direction-probe-value">{useScrollDirection()}</output>;
 }
+
+const direction = () => screen.getByTestId('scroll-direction-probe-value').textContent;
 
 /** Scroll the window to `y` and run the frame the hook waits for. */
 function scrollTo(y: number) {
@@ -28,19 +27,19 @@ describe('useScrollDirection', () => {
     vi.useFakeTimers({ toFake: ['requestAnimationFrame', 'cancelAnimationFrame'] });
     scrollTo(0);
     render(<Probe />);
-    expect(direction).toBe('up');
+    expect(direction()).toBe('up');
 
     scrollTo(200);
-    expect(direction).toBe('down');
+    expect(direction()).toBe('down');
 
     // A jitter back up of a few pixels doesn't flip it.
     scrollTo(195);
-    expect(direction).toBe('down');
+    expect(direction()).toBe('down');
 
     scrollTo(120);
-    expect(direction).toBe('up');
+    expect(direction()).toBe('up');
 
     scrollTo(300);
-    expect(direction).toBe('down');
+    expect(direction()).toBe('down');
   });
 });

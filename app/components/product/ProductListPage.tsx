@@ -1,4 +1,12 @@
-import { useState, useRef, useEffect, useMemo, useCallback, type ReactNode } from 'react';
+import {
+  useState,
+  useRef,
+  useEffect,
+  useMemo,
+  useCallback,
+  useSyncExternalStore,
+  type ReactNode,
+} from 'react';
 import { HookSlot } from '@salla.sa/twilight-theme-engine/hooks';
 import { useStore } from '@salla.sa/twilight-theme-engine/hooks/useStore';
 import { useTranslation } from '@salla.sa/twilight-theme-engine/i18n';
@@ -44,22 +52,28 @@ function usePref<T extends string>(
   values: readonly T[],
   initial: T
 ): [T, (v: T) => void] {
-  const [value, setValue] = useState<T>(initial);
-  useEffect(() => {
-    try {
-      const stored = window.localStorage.getItem(key) as T | null;
-      // This fills the hook's own state from localStorage; no parent is
-      // involved: see .react-doctor/false-positives.md.
-      // react-doctor-disable-next-line react-doctor/no-pass-data-to-parent
-      if (stored && values.includes(stored)) setValue(stored);
-    } catch {
-      /* private mode */
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [key]);
+  const subscribe = useCallback((notify: () => void) => {
+    window.addEventListener('storage', notify);
+    return () => window.removeEventListener('storage', notify);
+  }, []);
+  const stored = useSyncExternalStore(
+    subscribe,
+    () => {
+      try {
+        const saved = window.localStorage.getItem(key) as T | null;
+        return saved && values.includes(saved) ? saved : null;
+      } catch {
+        return null; // private mode
+      }
+    },
+    () => null
+  );
+  // Set once the shopper picks; covers private mode, where storage can't hold it.
+  const [picked, setPicked] = useState<T | null>(null);
+  const value = picked ?? stored ?? initial;
   const set = useCallback(
     (v: T) => {
-      setValue(v);
+      setPicked(v);
       try {
         window.localStorage.setItem(key, v);
       } catch {
@@ -101,7 +115,12 @@ function useCatalogLoader(
   }, [source.type, source.value, selectedSort, filters]);
 }
 
-type BrandEntity = { name: string; banner?: string; logo?: string; description?: string };
+interface BrandEntity {
+  name: string;
+  banner?: string;
+  logo?: string;
+  description?: string;
+}
 
 /** Banner + logo + description above the listing, for a `/brands/{id}` page. Renders
  * nothing for any other source type. */

@@ -18,7 +18,7 @@ vi.mock('@salla.sa/twilight-theme-engine/providers', () => ({
   useLocation: () => ({ pathname: '/categories/1', searchStr: '' }),
   useTwilight: () => ({ theme: { settings: {} } }),
 }));
-vi.mock('@salla.sa/twilight-theme-engine/utils', () => ({ onSallaEvent: () => () => {} }));
+vi.mock('@salla.sa/twilight-theme-engine/utils', () => ({ onSallaEvent: () => () => undefined }));
 // The real sort helpers (not mocked): the test is about how the page wires them.
 vi.mock('@salla.sa/twilight-theme-engine/common', () => ({
   Breadcrumb: () => null,
@@ -34,7 +34,7 @@ vi.mock('@salla.sa/twilight-components-react', () => ({
 }));
 vi.mock('@salla.sa/twilight-theme-engine/home', () => ({
   Testimonials: () => null,
-  useReorderButtons: () => {},
+  useReorderButtons: () => undefined,
 }));
 vi.mock('@salla.sa/twilight-theme-engine/api/product', () => ({
   product: { list: vi.fn() },
@@ -46,7 +46,7 @@ vi.mock('@salla.sa/twilight-theme-engine/routes/product-listing', () => ({
     page: undefined,
     lastPage: undefined,
     status: 'idle',
-    retry: () => {},
+    retry: () => undefined,
   }),
 }));
 vi.mock('../../../app/components/product/ProductCard', () => ({ ProductCard: () => null }));

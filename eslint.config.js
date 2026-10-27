@@ -25,7 +25,8 @@ export default tseslint.config(
   ...twilightEslintConfig,
 
   js.configs.recommended,
-  ...tseslint.configs.recommended,
+  ...tseslint.configs.strict,
+  ...tseslint.configs.stylistic,
 
   {
     files: ['**/*.{js,jsx,ts,tsx}'],
@@ -48,24 +49,14 @@ export default tseslint.config(
   { files: ['**/*.{jsx,tsx}'], ...jsxA11y.flatConfigs.recommended },
   { files: ['**/*.{js,jsx,ts,tsx}'], ...reactHooks.configs.flat.recommended },
 
-  // React Compiler-style rules shipped in eslint-plugin-react-hooks v7 flag existing, working
-  // patterns. Fixing them means editing effect/memo logic, which this change must not do, so
-  // they are downgraded to warnings (still visible, not blocking).
-  {
-    files: ['**/*.{js,jsx,ts,tsx}'],
-    rules: {
-      'react-hooks/set-state-in-effect': 'warn',
-      'react-hooks/use-memo': 'warn',
-      'react-hooks/globals': 'warn',
-    },
-  },
-
-  // Tests query the rendered DOM directly by design; the engine's DOM restrictions target app code.
+  // Tests query the rendered DOM directly and assert on values they just located, so the engine's
+  // DOM restrictions and non-null assertions are relaxed for tests only; app code keeps them.
   {
     files: ['tests/**/*.{ts,tsx}'],
     rules: {
       'no-restricted-properties': 'off',
       'no-restricted-globals': 'off',
+      '@typescript-eslint/no-non-null-assertion': 'off',
     },
   },
 

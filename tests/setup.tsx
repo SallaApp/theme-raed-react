@@ -15,10 +15,10 @@ if (typeof window !== 'undefined' && !window.matchMedia) {
     matches: true,
     media: query,
     onchange: null,
-    addListener: () => {},
-    removeListener: () => {},
-    addEventListener: () => {},
-    removeEventListener: () => {},
+    addListener: () => undefined,
+    removeListener: () => undefined,
+    addEventListener: () => undefined,
+    removeEventListener: () => undefined,
     dispatchEvent: () => false,
   })) as typeof window.matchMedia;
 }

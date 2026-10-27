@@ -100,7 +100,7 @@ describe('ProductsSlider', () => {
   });
 
   it('shows the skeleton until the products resolve', () => {
-    respondWith(() => new Promise(() => {}));
+    respondWith(() => new Promise(() => undefined));
     const { getByTestId } = renderWithClient(
       <ProductsSlider data={{ products: { source: 'related', source_value: 1 } }} />
     );

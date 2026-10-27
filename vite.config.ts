@@ -1,8 +1,9 @@
-import { defineConfig } from 'vite';
+import { defineConfig, type CSSOptions } from 'vite';
 import { twilightReact } from '@salla.sa/twilight-theme-engine/vite';
 import { visualizer } from 'rollup-plugin-visualizer';
 import path from 'path';
 
+type ScssOptions = NonNullable<CSSOptions['preprocessorOptions']>['scss'];
 export default defineConfig(async () => ({
   plugins: [
     // twilightReact() registers and configures the SSR runtime, so a theme
@@ -64,8 +65,8 @@ export default defineConfig(async () => ({
   },
   css: {
     preprocessorOptions: {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- vite's typings lag sass's `modern-compiler` option
-      scss: { api: 'modern-compiler', silenceDeprecations: ['import'] } as any,
+      // vite's typings lag sass's `modern-compiler` option, so widen to the declared shape.
+      scss: { api: 'modern-compiler', silenceDeprecations: ['import'] } as ScssOptions,
     },
   },
   build: {

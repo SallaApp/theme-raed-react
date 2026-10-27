@@ -63,7 +63,7 @@ vi.mock('../../../app/components/product', () => ({
   ),
 }));
 
-let resize: () => void = () => {};
+let resize: () => void = () => undefined;
 
 beforeEach(() => {
   state.settings = {};
@@ -105,8 +105,12 @@ beforeEach(() => {
       constructor(callback: () => void) {
         resize = callback;
       }
-      observe() {}
-      disconnect() {}
+      observe() {
+        return undefined;
+      }
+      disconnect() {
+        return undefined;
+      }
     }
   );
 });

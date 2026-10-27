@@ -7,6 +7,7 @@ import { ProductGallery } from '../../../app/components/product/ProductGallery';
 
 vi.mock('@salla.sa/twilight-theme-engine/providers', () => ({
   useTwilight: () => ({ theme: { settings: {} } }),
+  useNavigate: () => vi.fn(),
 }));
 
 vi.mock('@salla.sa/twilight-theme-engine/i18n', () => ({

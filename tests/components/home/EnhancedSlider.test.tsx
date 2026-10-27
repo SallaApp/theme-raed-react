@@ -287,7 +287,9 @@ describe('EnhancedSlider', () => {
           observe(element: Element) {
             observed.push(element);
           }
-          disconnect() {}
+          disconnect() {
+            return undefined;
+          }
         }
       );
       return {
@@ -358,7 +360,9 @@ describe('EnhancedSlider', () => {
       setReducedMotion(false);
       const io = stubIntersectionObserver();
       const play = vi.spyOn(HTMLMediaElement.prototype, 'play').mockResolvedValue(undefined);
-      const pause = vi.spyOn(HTMLMediaElement.prototype, 'pause').mockImplementation(() => {});
+      const pause = vi
+        .spyOn(HTMLMediaElement.prototype, 'pause')
+        .mockImplementation(() => undefined);
       const { container } = render(
         <EnhancedSlider
           data={{

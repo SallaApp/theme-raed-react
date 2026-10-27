@@ -75,14 +75,16 @@ afterEach(() => {
 describe('HeaderNav', () => {
   it('renders nothing while closed', () => {
     query.data = items;
-    const { container } = render(<HeaderNav open={false} onClose={() => {}} />);
+    const { container } = render(<HeaderNav open={false} onClose={() => undefined} />);
     expect(container.querySelector('.site-nav-drawer')).toBeNull();
     expect(container.firstChild).toBeNull();
   });
 
   it('opens on the root Miller column, then drills into a parent', () => {
     query.data = items;
-    const { container, getByText, queryByText } = render(<HeaderNav open onClose={() => {}} />);
+    const { container, getByText, queryByText } = render(
+      <HeaderNav open onClose={() => undefined} />
+    );
 
     expect(container.querySelector('.site-nav-drawer')).toBeTruthy();
 
@@ -107,7 +109,7 @@ describe('HeaderNav', () => {
   it('starts at the root column again when reopened after closing', () => {
     vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
     query.data = items;
-    const onClose = () => {};
+    const onClose = () => undefined;
     const { container, getByText, rerender } = render(<HeaderNav open onClose={onClose} />);
 
     fireEvent.click(getByText('Home'));
@@ -127,7 +129,7 @@ describe('HeaderNav', () => {
 
   it('locks body scroll while open', () => {
     query.data = items;
-    render(<HeaderNav open onClose={() => {}} />);
+    render(<HeaderNav open onClose={() => undefined} />);
     expect(document.body.classList.contains('menu-opened')).toBe(true);
   });
 
@@ -139,7 +141,7 @@ describe('HeaderNav', () => {
       { id: 1, title: 'Offers', url: '/offers' }, // no image
       { id: 2, title: 'Accessories', url: '/accessories', image: 'https://cdn.example.com/a.png' },
     ];
-    const { container } = render(<HeaderNav open onClose={() => {}} />);
+    const { container } = render(<HeaderNav open onClose={() => undefined} />);
 
     const rows = container.querySelectorAll('.site-nav-drawer__link');
     expect(rows.length).toBe(2);
@@ -165,7 +167,7 @@ describe('HeaderNav', () => {
       { id: 4, title: 'Dresses', url: '/dresses' },
       { id: 5, title: 'Accessories', url: '/accessories', image: 'https://cdn.example.com/a.png' },
     ];
-    const { container } = render(<HeaderNav open onClose={() => {}} />);
+    const { container } = render(<HeaderNav open onClose={() => undefined} />);
 
     const placeholders = Array.from(
       container.querySelectorAll('.site-nav-drawer__link-img-placeholder')
@@ -197,7 +199,7 @@ describe('HeaderNav', () => {
       { id: 1, title: 'Offers', url: '/offers' },
       { id: 2, title: 'Dresses', url: '/dresses' },
     ];
-    const { container } = render(<HeaderNav open onClose={() => {}} />);
+    const { container } = render(<HeaderNav open onClose={() => undefined} />);
 
     const rows = container.querySelectorAll('.site-nav-drawer__link');
     expect(rows.length).toBe(2);
@@ -219,7 +221,7 @@ describe('HeaderNav', () => {
         ],
       },
     ];
-    const { container, getByText } = render(<HeaderNav open onClose={() => {}} />);
+    const { container, getByText } = render(<HeaderNav open onClose={() => undefined} />);
 
     fireEvent.click(getByText('Home'));
 

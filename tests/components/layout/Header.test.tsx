@@ -1,6 +1,6 @@
 import React from 'react';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, fireEvent, act } from '@testing-library/react';
+import { render, fireEvent, act, cleanup } from '@testing-library/react';
 import { Header } from '../../../app/components/layout/Header';
 import { HOME_ROUTE_ID } from '../../../app/lib/routeIds';
 
@@ -17,9 +17,9 @@ const state = {
   routeIds: [] as string[],
 };
 
-type RouterStateStub = {
+interface RouterStateStub {
   matches: { routeId: string }[];
-};
+}
 
 vi.mock('@tanstack/react-router', () => ({
   useRouterState: ({ select }: { select: (s: RouterStateStub) => unknown }) =>
@@ -86,6 +86,8 @@ beforeEach(() => {
 });
 
 afterEach(() => {
+  // Unmount first so clearing the inset cannot re-render a mounted header after globals are unstubbed.
+  cleanup();
   document.documentElement.style.removeProperty('--app-safe-area-top');
   vi.unstubAllGlobals();
 });
@@ -142,9 +144,15 @@ describe('Header', () => {
     vi.stubGlobal(
       'IntersectionObserver',
       class {
-        observe() {}
-        unobserve() {}
-        disconnect() {}
+        observe() {
+          return undefined;
+        }
+        unobserve() {
+          return undefined;
+        }
+        disconnect() {
+          return undefined;
+        }
       }
     );
     state.theme = { settings: { header_layout: 'default' } };
@@ -163,9 +171,15 @@ describe('Header', () => {
     vi.stubGlobal(
       'IntersectionObserver',
       class {
-        observe() {}
-        unobserve() {}
-        disconnect() {}
+        observe() {
+          return undefined;
+        }
+        unobserve() {
+          return undefined;
+        }
+        disconnect() {
+          return undefined;
+        }
       }
     );
     state.theme = { settings: { header_layout: 'default' } };
@@ -211,9 +225,15 @@ describe('Header', () => {
     vi.stubGlobal(
       'IntersectionObserver',
       class {
-        observe() {}
-        unobserve() {}
-        disconnect() {}
+        observe() {
+          return undefined;
+        }
+        unobserve() {
+          return undefined;
+        }
+        disconnect() {
+          return undefined;
+        }
       }
     );
     state.theme = { settings: { header_layout: 'default', header_store_info_home_only: false } };
@@ -254,9 +274,15 @@ describe('Header', () => {
         constructor(_cb: unknown, options: { rootMargin?: string }) {
           margins.push(options.rootMargin ?? '');
         }
-        observe() {}
-        unobserve() {}
-        disconnect() {}
+        observe() {
+          return undefined;
+        }
+        unobserve() {
+          return undefined;
+        }
+        disconnect() {
+          return undefined;
+        }
       }
     );
     // Only the header's pin observer sets a top margin; other observers on the page don't.
