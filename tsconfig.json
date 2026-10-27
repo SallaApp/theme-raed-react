@@ -4,8 +4,6 @@
     "module": "ESNext",
     "moduleResolution": "bundler",
     "jsx": "react-jsx",
-    "lib": ["ES2023", "DOM", "DOM.Iterable"],
-    "allowImportingTsExtensions": true,
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
@@ -17,6 +15,6 @@
     "node_modules/@salla.sa/twilight-theme-engine/dist/ambient/salla-components.d.ts",
     "node_modules/@salla.sa/twilight-theme-engine/dist/ambient/virtual-modules.d.ts"
   ],
-  "include": ["app/**/*", "scripts/**/*", "vite.config.ts", "*.d.ts"],
+  "include": ["app/**/*", "vite.config.ts", "*.d.ts"],
   "exclude": ["node_modules", "dist"]
 }

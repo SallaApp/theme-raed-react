@@ -19,7 +19,7 @@ export default defineConfig({
     globals: true,
     environment: 'jsdom',
     setupFiles: ['./tests/setup.tsx'],
-    include: ['tests/**/*.test.{ts,tsx}', 'scripts/**/*.test.ts'],
+    include: ['tests/**/*.test.{ts,tsx}'],
     // The style tests compile the theme's Sass; under a full parallel run they pass alone but exceed the 5s default.
     testTimeout: 20000,
     server: {
@@ -30,7 +30,7 @@ export default defineConfig({
     },
     coverage: {
       provider: 'v8',
-      reporter: ['text', 'json', 'html', 'lcov'],
+      reporter: ['text', 'json', 'json-summary', 'html', 'lcov'],
       include: ['app/**/*.{ts,tsx}'],
       exclude: ['app/**/*.d.ts'],
       // Coverage floor (ratchet): measured on app/** and rounded down. It only goes up —

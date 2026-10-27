@@ -1,21 +1,19 @@
-name: Theme Raed React — Quality Gates
+name: CI
 
-# A draft runs nothing. A pull request that is ready for review runs every gate on each push; the merge queue (when
-# enabled) runs them on the exact result it would merge. Reports are published to the shared tests-reports worker.
+# Quality gates. A draft runs nothing; a pull request that is ready for review runs every gate on each push.
+# Results are summarised in one comment on the pull request (no external services involved).
 on:
   pull_request:
     branches:
       - master
       - feature/quality-gates-twig-parity-audit
     types: [opened, synchronize, reopened, ready_for_review, converted_to_draft]
-  merge_group:
-    types: [checks_requested]
   push:
     branches:
       - feature/quality-gates-twig-parity-audit
 
-# A draft run skips every job, so it gets its own group: sharing one with the real run lets a late-starting draft run
-# cancel the ready_for_review run and leave every gate failed at 0s.
+# A draft run skips every job, so it gets its own group: sharing one with the real run could cancel the
+# ready_for_review run.
 concurrency:
   group: quality-gates-${{ github.event.pull_request.number || github.ref }}${{ github.event.pull_request.draft && '-draft' || '' }}
   cancel-in-progress: true
@@ -28,22 +26,10 @@ defaults:
     shell: bash
 
 jobs:
-  # Required check for the "Tested & Coverage" ruleset: one verdict over every gate below.
-  testing-result:
-    name: Testing Ready
-    needs: [static, unit, build]
-    # Not on a draft: every gate is skipped there, and skipped counts as passed.
-    if: always() && (github.event_name != 'pull_request' || github.event.pull_request.draft == false)
-    runs-on: ${{ vars.RUNS_ON && fromJson(vars.RUNS_ON) || 'ubuntu-latest' }}
-    steps:
-      - uses: SallaApp/.CI/testing-ready@master
-        with:
-          needs: ${{ toJSON(needs) }}
-
   static:
     name: Lint & Static Checks
     if: github.event_name != 'pull_request' || github.event.pull_request.draft == false
-    runs-on: ${{ vars.RUNS_ON && fromJson(vars.RUNS_ON) || 'ubuntu-latest' }}
+    runs-on: ubuntu-latest
     timeout-minutes: 15
     env:
       NODE_OPTIONS: --max-old-space-size=6144
@@ -64,7 +50,7 @@ jobs:
   unit:
     name: Unit Tests & Coverage
     if: github.event_name != 'pull_request' || github.event.pull_request.draft == false
-    runs-on: ${{ vars.RUNS_ON && fromJson(vars.RUNS_ON) || 'ubuntu-latest' }}
+    runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
       - name: Checkout
@@ -73,6 +59,22 @@ jobs:
         uses: ./.github/actions/setup
       - name: Run unit tests and enforce the coverage floor
         run: pnpm test:coverage
+      - name: Write the coverage report
+        if: always()
+        run: |
+          mkdir -p report
+          {
+            echo "### Unit tests and coverage"
+            if [ -f coverage/coverage-summary.json ]; then
+              echo
+              echo "| Metric | Covered | Total | % |"
+              echo "| --- | --- | --- | --- |"
+              jq -r '.total | to_entries[] | select(.key | IN("lines","statements","functions","branches")) | "| \(.key) | \(.value.covered) | \(.value.total) | \(.value.pct) |"' coverage/coverage-summary.json
+            else
+              echo
+              echo "No coverage summary was produced."
+            fi
+          } > report/coverage.md
       - name: Upload coverage report
         if: always()
         uses: actions/upload-artifact@v4
@@ -81,26 +83,18 @@ jobs:
           path: coverage/
           if-no-files-found: warn
           retention-days: 7
-      - name: Publish the coverage report
+      - name: Upload the report section
         if: always()
-        continue-on-error: true
-        uses: SallaApp/checkout-tests-reports/publish@master
+        uses: actions/upload-artifact@v4
         with:
-          name: coverage
-          title: Unit tests and coverage
-          folders: |
-            coverage:coverage
-          entry: coverage/index.html
-          vitest-json: coverage/test-results.json
-          status: ${{ job.status }}
-          access-key-id: ${{ secrets.R2_REPORTS_ACCESS_KEY_ID }}
-          secret-access-key: ${{ secrets.R2_REPORTS_SECRET_ACCESS_KEY }}
-          endpoint: ${{ secrets.R2_REPORTS_ENDPOINT }}
+          name: report-coverage
+          path: report/coverage.md
+          retention-days: 1
 
   build:
     name: Build, Types & Bundle Size
     if: github.event_name != 'pull_request' || github.event.pull_request.draft == false
-    runs-on: ${{ vars.RUNS_ON && fromJson(vars.RUNS_ON) || 'ubuntu-latest' }}
+    runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
       - name: Checkout
@@ -112,67 +106,91 @@ jobs:
       # Typecheck needs app/routeTree.gen.ts, which the build generates on a clean checkout.
       - name: Typecheck
         run: pnpm typecheck
-      - name: Report the bundle size
-        run: |
-          mkdir -p bundle-report
-          {
-            echo "Build output size (dist/)"
-            du -sh dist
-            echo
-            find dist -type f \( -name '*.js' -o -name '*.css' \) -printf '%s %p\n' | sort -rn | head -40 | awk '{printf "%8.1f KB  %s\n", $1/1024, $2}'
-          } | tee bundle-report/bundle-size.txt
-      - name: Publish the bundle size
+      - name: Write the bundle size report
         if: always()
-        continue-on-error: true
-        uses: SallaApp/checkout-tests-reports/publish@master
+        run: |
+          mkdir -p report
+          {
+            echo "### Bundle size"
+            if [ -d dist ]; then
+              echo
+              echo "Total build output: $(du -sh dist | cut -f1)"
+              echo
+              echo "Largest JS and CSS files:"
+              echo
+              echo '```'
+              find dist -type f \( -name '*.js' -o -name '*.css' \) -printf '%s %p\n' | sort -rn | head -15 | awk '{printf "%8.1f KB  %s\n", $1/1024, $2}'
+              echo '```'
+            else
+              echo
+              echo "The build produced no output."
+            fi
+          } > report/size.md
+      - name: Upload the report section
+        if: always()
+        uses: actions/upload-artifact@v4
         with:
-          name: size
-          title: Bundle size
-          folders: |
-            bundle-report
-          entry: bundle-size.txt
-          status: ${{ job.status }}
-          access-key-id: ${{ secrets.R2_REPORTS_ACCESS_KEY_ID }}
-          secret-access-key: ${{ secrets.R2_REPORTS_SECRET_ACCESS_KEY }}
-          endpoint: ${{ secrets.R2_REPORTS_ENDPOINT }}
+          name: report-size
+          path: report/size.md
+          retention-days: 1
 
-  # Not in Testing Ready's needs: a reports problem never blocks a merge. Builds the run index and posts the PR comment.
+  # One verdict over every gate above: the single check to require in a branch ruleset.
+  testing-result:
+    name: Testing Ready
+    needs: [static, unit, build]
+    if: always() && (github.event_name != 'pull_request' || github.event.pull_request.draft == false)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Every gate passed
+        env:
+          NEEDS: ${{ toJSON(needs) }}
+        run: |
+          echo "$NEEDS" | jq -r 'to_entries[] | "\(.key): \(.value.result)"'
+          echo "$NEEDS" | jq -e 'all(.[]; .result == "success")' > /dev/null
+
+  # Not part of Testing Ready: a comment problem never blocks a merge.
   reports:
     name: Test Reports
     needs: [static, unit, build]
-    if: always() && (github.event_name != 'pull_request' || github.event.pull_request.draft == false)
-    runs-on: ${{ vars.RUNS_ON && fromJson(vars.RUNS_ON) || 'ubuntu-latest' }}
-    timeout-minutes: 15
+    if: always() && github.event_name == 'pull_request' && github.event.pull_request.draft == false
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
     continue-on-error: true
-    # One run at a time per pull request, so two runs never post the result comment at the same moment.
     concurrency:
-      group: test-reports-${{ github.event.pull_request.number || github.ref }}
+      group: test-reports-${{ github.event.pull_request.number }}
       cancel-in-progress: false
     permissions:
       contents: read
       pull-requests: write
     steps:
-      # `unit` publishes the coverage row, so its own `needs` row would be a second, empty one: fold it in.
-      - name: Fold the unit verdict into the coverage row
-        id: verdicts
-        if: always()
+      - name: Download the report sections
+        uses: actions/download-artifact@v4
+        with:
+          path: report
+          pattern: report-*
+          merge-multiple: true
         continue-on-error: true
+      - name: Comment on the pull request
         env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
           NEEDS: ${{ toJSON(needs) }}
         run: |
+          marker='<!-- ci-test-report -->'
           {
-            echo 'needs<<NEEDS_EOF'
-            jq -c 'if .unit then .coverage = .unit | del(.unit) else . end' <<< "$NEEDS"
-            echo 'NEEDS_EOF'
-          } >> "$GITHUB_OUTPUT"
-      - name: Build the run index and comment on the pull request
-        if: always()
-        continue-on-error: true
-        uses: SallaApp/checkout-tests-reports/finalize@master
-        with:
-          base-url: ${{ secrets.REPORTS_BASE_URL }}
-          needs: ${{ steps.verdicts.outputs.needs || toJSON(needs) }}
-          github-token: ${{ github.token }}
-          access-key-id: ${{ secrets.R2_REPORTS_ACCESS_KEY_ID }}
-          secret-access-key: ${{ secrets.R2_REPORTS_SECRET_ACCESS_KEY }}
-          endpoint: ${{ secrets.R2_REPORTS_ENDPOINT }}
+            echo "$marker"
+            echo "## Test report"
+            echo
+            echo "| Gate | Result |"
+            echo "| --- | --- |"
+            echo "$NEEDS" | jq -r 'to_entries[] | "| \(.key) | \(.value.result) |"'
+            for f in report/coverage.md report/size.md; do
+              if [ -f "$f" ]; then echo; cat "$f"; fi
+            done
+          } > comment.md
+          existing="$(gh api "repos/$GITHUB_REPOSITORY/issues/$PR_NUMBER/comments" --paginate --jq ".[] | select(.body | contains(\"$marker\")) | .id" | head -n 1)"
+          if [ -n "$existing" ]; then
+            gh api --method PATCH "repos/$GITHUB_REPOSITORY/issues/comments/$existing" -F body=@comment.md
+          else
+            gh api --method POST "repos/$GITHUB_REPOSITORY/issues/$PR_NUMBER/comments" -F body=@comment.md
+          fi
