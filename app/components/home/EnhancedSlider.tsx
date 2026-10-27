@@ -1,8 +1,26 @@
 import { memo, useCallback, useEffect, useRef, useState, type RefObject } from 'react';
 import { SallaSlider } from '@salla.sa/twilight-components-react/slider';
 import { Link } from '@salla.sa/twilight-theme-engine/common';
+import { getCdnImageSrcSet, getCdnImageUrl } from '@salla.sa/twilight-theme-engine/utils/cdn-image';
 import { parseSlideVideo, youtubeEmbedUrl } from '../../lib/slideVideo';
 import { useMotionAllowed } from '../../hooks/useMotionAllowed';
+import { useFirstInteraction } from '../../hooks/useFirstInteraction';
+
+/** CDN widths for a full-width slide, from phones to wide desktops. */
+const SLIDE_WIDTHS = [640, 828, 1080, 1280, 1920] as const;
+
+/**
+ * A slide image resized by the CDN instead of the merchant's original upload. The poster
+ * and slide 1 use the same `srcSet` and `sizes`, so the browser picks the same file for
+ * both and the slider reuses the poster's download.
+ */
+function slideImage(src: string | undefined) {
+  return {
+    src: getCdnImageUrl(src, { width: 1280 }) ?? src,
+    srcSet: getCdnImageSrcSet(src, SLIDE_WIDTHS),
+    sizes: '100vw',
+  };
+}
 
 export interface SliderBanner {
   link?: string;
@@ -97,6 +115,15 @@ const YOUTUBE_PLAYING = 1;
  * the page says it is listening, and the frame answers with its state.
  */
 function YouTubeBackground({ id }: { id: string }) {
+  // The player is ~1 MB of script: it waits for the visitor's first scroll, tap or key,
+  // so it stays out of the page load (the slider sits above the fold, where
+  // `loading="lazy"` doesn't hold it back). The slide image shows until then.
+  const interacted = useFirstInteraction();
+  if (!interacted) return null;
+  return <YouTubeFrame id={id} />;
+}
+
+function YouTubeFrame({ id }: { id: string }) {
   const ref = useRef<HTMLIFrameElement>(null);
   const [state, setState] = useState<'loading' | 'playing' | 'failed'>('loading');
 
@@ -239,7 +266,10 @@ export const EnhancedSlider = memo(function EnhancedSlider({ data }: EnhancedSli
   );
   const hidePoster = useCallback(() => {
     const image = new Image();
-    image.src = firstImage ?? '';
+    const { src, srcSet, sizes } = slideImage(firstImage);
+    image.sizes = sizes;
+    if (srcSet) image.srcset = srcSet;
+    image.src = src ?? '';
     // Wait for the (already cached) image to decode so the swap never flashes.
     Promise.resolve(image.decode?.())
       .catch(() => undefined)
@@ -273,9 +303,17 @@ export const EnhancedSlider = memo(function EnhancedSlider({ data }: EnhancedSli
             // The slide's ratio lives in CSS (home-blocks.scss): taller on phones.
             <div key={index} className="swiper-slide w-full bg-dark relative">
               <div
-                style={{ backgroundImage: `url(${slide.image})` }}
                 className={`${slide.without_overlay ? '' : 'overlay-bg'} bg-cover bg-center absolute inset-0`}
               >
+                {slide.image && (
+                  <img
+                    {...slideImage(slide.image)}
+                    alt=""
+                    loading={index === 0 ? 'eager' : 'lazy'}
+                    decoding="async"
+                    className="absolute inset-0 w-full h-full object-cover object-center"
+                  />
+                )}
                 {motionAllowed && <SlideVideo url={slide.video} poster={slide.image} />}
               </div>
               <SlideText slide={slide} />
@@ -291,7 +329,7 @@ export const EnhancedSlider = memo(function EnhancedSlider({ data }: EnhancedSli
               className={`${first.without_overlay ? '' : 'overlay-bg'} absolute inset-0 overflow-hidden`}
             >
               <img
-                src={first.image}
+                {...slideImage(first.image)}
                 alt=""
                 fetchPriority="high"
                 loading="eager"

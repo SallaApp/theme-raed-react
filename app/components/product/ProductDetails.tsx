@@ -1,4 +1,4 @@
-import { Fragment, useState } from 'react';
+import { Fragment, useState, type MouseEvent } from 'react';
 import { HookSlot } from '@salla.sa/twilight-theme-engine/hooks';
 import { HookName } from '@salla.sa/twilight-theme-engine/types/hooks';
 import { useTranslation } from '@salla.sa/twilight-theme-engine/i18n';
@@ -12,6 +12,7 @@ import { SallaSocialShare } from '@salla.sa/twilight-components-react/social-sha
 import { SallaInstallment } from '@salla.sa/twilight-components-react/installment';
 import { useHydrated } from '../../hooks/useHydrated';
 import { useMobileViewport } from '../../hooks/useMobileViewport';
+import { youtubeFacades } from '../../lib/descriptionVideos';
 import { ProductMetadata } from './ProductMetadata';
 import { WishlistHeartButton } from './WishlistHeartButton';
 
@@ -240,10 +241,24 @@ function lazyIframes(html: string): string {
 function ProductDescription({ product }: { product: Product }) {
   const { t } = useTranslation();
   const [isExpanded, setIsExpanded] = useState(false);
+  // YouTube videos the shopper pressed play on; the rest stay thumbnails.
+  const [playingVideos, setPlayingVideos] = useState<ReadonlySet<number>>(() => new Set());
 
   if (!product.description) return null;
 
-  const description = lazyIframes(product.description.replace(/&nbsp;/g, '\n'));
+  const description = youtubeFacades(
+    lazyIframes(product.description.replace(/&nbsp;/g, '\n')),
+    playingVideos,
+    t('pages.products.play_video', 'Play video')
+  );
+
+  // One listener for every thumbnail in the merchant's HTML.
+  const playVideo = (event: MouseEvent<HTMLElement>) => {
+    const facade = (event.target as Element).closest?.('[data-video-index]');
+    if (!facade) return;
+    const index = Number(facade.getAttribute('data-video-index'));
+    setPlayingVideos((current) => new Set(current).add(index));
+  };
 
   if (product.has_read_more) {
     return (
@@ -252,6 +267,7 @@ function ProductDescription({ product }: { product: Product }) {
           className="article article--main relative leading-8 overflow-hidden transition-[max-height] duration-300 py-4"
           id="more-content"
           style={{ maxHeight: isExpanded ? 'none' : '5.25rem' }}
+          onClick={playVideo}
           dangerouslySetInnerHTML={{ __html: description }}
         />
         <button
@@ -268,7 +284,11 @@ function ProductDescription({ product }: { product: Product }) {
 
   return (
     <div className="product__description leading-7 mb-3">
-      <article className="article--main pb-1" dangerouslySetInnerHTML={{ __html: description }} />
+      <article
+        className="article--main pb-1"
+        onClick={playVideo}
+        dangerouslySetInnerHTML={{ __html: description }}
+      />
     </div>
   );
 }

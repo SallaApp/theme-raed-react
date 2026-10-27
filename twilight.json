@@ -24,20 +24,37 @@
     "menu-images",
     "filters"
   ],
+  "groups": [
+    {
+      "id": "header",
+      "icon": "sicon-add_row_before",
+      "type": "header",
+      "label": "Header"
+    },
+    {
+      "id": "footer",
+      "icon": "sicon-add_row_after",
+      "type": "footer",
+      "label": "Footer"
+    }
+  ],
   "settings": [
     {
       "type": "static",
       "format": "title",
       "id": "static-label2",
-      "value": "<div class='rounded-lg' style='background-color: #21636d; display: flex; justify-content: center; align-items: center;padding: 15px;margin-bottom: 20px !important; flex-direction: column;gap: 15px;'><h6 style='color: #ffffff;font-size: 15px; font-weight: bold;'> خيارات الهيدر</h6></div>",
-      "variant": "h6"
+      "value": "<div class='rounded-lg' style='background-color: #21636d; display: flex; justify-content: center; align-items: center;padding: 15px;margin-bottom: 20px !important; flex-direction: column;gap: 15px;'><h6 style='color: #ffffff;font-size: 15px; font-weight: bold;'> خيارات رأس الصفحة</h6></div>",
+      "variant": "h6",
+      "groups": [
+        "header"
+      ]
     },
     {
       "id": "header_layout",
       "type": "items",
       "format": "dropdown-list",
       "icon": "sicon-layout-01",
-      "label": "تخطيط الهيدر",
+      "label": "تخطيط رأس الصفحة",
       "description": "الافتراضي: شريط علوي (روابط + اللغة والعملة والفروع) وقائمة رئيسية أفقية. المبسّط: لوجو في المنتصف وزر قائمة منسدلة.",
       "source": "Manual",
       "required": true,
@@ -59,6 +76,9 @@
           "value": "default",
           "key": "header-layout-default"
         }
+      ],
+      "groups": [
+        "header"
       ]
     },
     {
@@ -77,13 +97,16 @@
           "operation": "=",
           "value": "default"
         }
+      ],
+      "groups": [
+        "header"
       ]
     },
     {
       "type": "boolean",
       "icon": "sicon-toggle-off",
       "label": "عرض معلومات المتجر أسفل الشريط الرئيسي",
-      "description": "اسم المتجر ووصفه وروابط التواصل الاجتماعي وبيانات التواصل أسفل اللوجو (في الهيدر المبسّط فقط)",
+      "description": "اسم المتجر ووصفه وروابط التواصل الاجتماعي وبيانات التواصل أسفل اللوجو (في رأس الصفحة المبسّط فقط)",
       "id": "header_show_store_info",
       "format": "switch",
       "required": false,
@@ -95,6 +118,9 @@
           "operation": "=",
           "value": "lite"
         }
+      ],
+      "groups": [
+        "header"
       ]
     },
     {
@@ -118,6 +144,9 @@
           "operation": "=",
           "value": true
         }
+      ],
+      "groups": [
+        "header"
       ]
     },
     {
@@ -129,7 +158,10 @@
       "format": "switch",
       "required": false,
       "value": false,
-      "selected": false
+      "selected": false,
+      "groups": [
+        "header"
+      ]
     },
     {
       "type": "boolean",
@@ -140,7 +172,10 @@
       "format": "switch",
       "required": false,
       "value": true,
-      "selected": false
+      "selected": false,
+      "groups": [
+        "header"
+      ]
     },
     {
       "type": "boolean",
@@ -151,7 +186,10 @@
       "format": "switch",
       "required": false,
       "value": true,
-      "selected": true
+      "selected": true,
+      "groups": [
+        "header"
+      ]
     },
     {
       "type": "static",
@@ -215,7 +253,10 @@
       "format": "title",
       "id": "static-label4",
       "value": "<div class='rounded-lg' style='background-color: #21636d; display: flex; justify-content: center; align-items: center;padding: 15px;margin-bottom: 20px !important; flex-direction: column;gap: 15px;'><h6 style='color: #ffffff;font-size: 15px; font-weight: bold;'> خيارات أسفل الصفحة</h6></div>",
-      "variant": "h6"
+      "variant": "h6",
+      "groups": [
+        "footer"
+      ]
     },
     {
       "type": "boolean",
@@ -226,7 +267,10 @@
       "format": "switch",
       "required": false,
       "value": true,
-      "selected": false
+      "selected": false,
+      "groups": [
+        "footer"
+      ]
     },
     {
       "type": "static",

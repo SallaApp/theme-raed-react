@@ -2,6 +2,10 @@ import React from 'react';
 import { afterEach, describe, it, expect, vi } from 'vitest';
 import { act, render, waitFor } from '@testing-library/react';
 import { EnhancedSlider } from '../../../app/components/home/EnhancedSlider';
+import { resetFirstInteraction } from '../../../app/hooks/useFirstInteraction';
+
+/** The visitor's first scroll, which lets a YouTube background load. */
+const interact = () => act(() => void window.dispatchEvent(new Event('scroll')));
 
 vi.mock('@salla.sa/twilight-theme-engine/common', () => ({
   Link: ({
@@ -170,7 +174,23 @@ describe('EnhancedSlider', () => {
     const { container } = render(<EnhancedSlider data={{ slider_banner: mockSlides }} />);
     const overlay = container.querySelector('.overlay-bg');
     expect(overlay).toBeTruthy();
-    expect(overlay?.getAttribute('style')).toContain('background-image');
+    expect(overlay?.querySelector('img')?.getAttribute('src')).toBe('slide1.jpg');
+  });
+
+  it('serves CDN slide images resized, with the same srcset on the poster and slide 1', () => {
+    const image = 'https://cdn.files.salla.network/other/1/hero-original.jpg';
+    const { container } = render(
+      <EnhancedSlider data={{ slider_banner: [{ ...mockSlides[0], image }], priority: true }} />
+    );
+    const slide = container.querySelector('salla-slider .overlay-bg img')!;
+    const poster = container.querySelector('.enhanced-slider__poster img')!;
+    expect(slide.getAttribute('src')).toBe(
+      'https://cdn.files.salla.network/cdn-cgi/image/fit=scale-down,onerror=redirect,format=auto,width=1280/other/1/hero-original.jpg'
+    );
+    expect(slide.getAttribute('srcset')).toContain('width=640/other/1/hero-original.jpg 640w');
+    expect(slide.getAttribute('sizes')).toBe('100vw');
+    expect(poster.getAttribute('srcset')).toBe(slide.getAttribute('srcset'));
+    expect(poster.getAttribute('src')).toBe(slide.getAttribute('src'));
   });
 
   it('renders slide title with parallax attribute', () => {
@@ -308,6 +328,7 @@ describe('EnhancedSlider', () => {
     const renderYouTube = async () => {
       setReducedMotion(false);
       const utils = render(<EnhancedSlider data={{ slider_banner: youtubeSlides }} />);
+      interact();
       const iframe = await waitFor(() => {
         const element = utils.container.querySelector<HTMLIFrameElement>(
           'iframe.enhanced-slider__video--embed'
@@ -327,6 +348,16 @@ describe('EnhancedSlider', () => {
     afterEach(() => {
       vi.unstubAllGlobals();
       vi.restoreAllMocks();
+      resetFirstInteraction();
+    });
+
+    it('holds the YouTube frame back until the visitor first interacts with the page', async () => {
+      setReducedMotion(false);
+      const { container } = render(<EnhancedSlider data={{ slider_banner: youtubeSlides }} />);
+      await act(async () => undefined);
+      expect(container.querySelector('iframe')).toBeNull();
+      interact();
+      expect(container.querySelector('iframe.enhanced-slider__video--embed')).toBeTruthy();
     });
 
     it('covers the slide with a muted, looping video file over the image', async () => {
@@ -412,7 +443,7 @@ describe('EnhancedSlider', () => {
       const { container, fromFrame } = await renderYouTube();
       fromFrame({ event: 'onError', info: 101 });
       expect(container.querySelector('.enhanced-slider__video')).toBeNull();
-      expect(container.querySelector('.overlay-bg')?.getAttribute('style')).toContain('slide1.jpg');
+      expect(container.querySelector('.overlay-bg img')?.getAttribute('src')).toBe('slide1.jpg');
     });
 
     it('starts asking a late-loading YouTube frame for its state once it loads', async () => {
@@ -448,6 +479,7 @@ describe('EnhancedSlider', () => {
     it('removes the videos when the visitor turns reduced motion on mid-visit', async () => {
       const motion = setReducedMotion(false);
       const { container } = render(<EnhancedSlider data={{ slider_banner: youtubeSlides }} />);
+      interact();
       await waitFor(() => expect(container.querySelector('.enhanced-slider__video')).toBeTruthy());
       act(() => motion.change(true));
       expect(container.querySelector('.enhanced-slider__video')).toBeNull();
@@ -462,7 +494,7 @@ describe('EnhancedSlider', () => {
       );
       await act(async () => undefined);
       expect(container.querySelector('.enhanced-slider__video')).toBeNull();
-      expect(container.querySelector('.overlay-bg')?.getAttribute('style')).toContain('slide1.jpg');
+      expect(container.querySelector('.overlay-bg img')?.getAttribute('src')).toBe('slide1.jpg');
     });
   });
 });
