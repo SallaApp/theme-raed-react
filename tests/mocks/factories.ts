@@ -151,7 +151,7 @@ export const createCartItem = (overrides: Overrides<CartItem> = {}): CartItem =>
     type: 'product',
     price: 100,
     product_price: 100,
-    total: 100 * quantity,
+    total: (typeof overrides.price === 'number' ? overrides.price : 100) * quantity,
     is_available: true,
     is_hidden_quantity: false,
     can_add_note: false,

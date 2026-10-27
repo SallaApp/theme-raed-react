@@ -21,7 +21,9 @@ describe('mock store API, driven through the engine api client', () => {
     const prices = sorted.items.map((p) => Number(p.sale_price ?? p.price));
     expect(prices).toEqual([...prices].sort((a, b) => a - b));
 
-    expect((await product.list({ source: 'offers' })).items.every((p) => p.is_on_sale)).toBe(true);
+    const offers = (await product.list({ source: 'offers' })).items;
+    expect(offers).toHaveLength(1);
+    expect(offers.every((p) => p.is_on_sale)).toBe(true);
     expect((await product.list({ source: 'search', keyword: 'nothing-matches' })).items).toEqual(
       []
     );
