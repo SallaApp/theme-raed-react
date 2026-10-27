@@ -1,4 +1,5 @@
 import { useEffect, useId, useRef, useState, type ReactNode } from 'react';
+import { flushSync } from 'react-dom';
 import { useTranslation } from '@salla.sa/twilight-theme-engine/i18n';
 import { CheckCircleIcon, ChevronDownIcon } from '../icons';
 
@@ -142,10 +143,10 @@ export function ProductOptionsPanel({
   const fields = useRef<HTMLDivElement>(null);
 
   const [expanded, setExpanded] = useState(false);
-  const [focusId, setFocusId] = useState<PanelOption['id'] | null>(null);
-  // The shopper's answers since `options` last came in; `null` until they change one.
-  const [live, setLive] = useState<PanelOption[] | null>(null);
-  useEffect(() => setLive(null), [options]);
+  // The shopper's answers, with the `options` they were read against: new `options`
+  // (a cart refetch) replace them.
+  const [live, setLive] = useState<{ from: PanelOption[]; options: PanelOption[] } | null>(null);
+  const current = live?.from === options ? live.options : options;
 
   // Follow every pick and keystroke inside the element.
   useEffect(() => {
@@ -153,7 +154,7 @@ export function ProductOptionsPanel({
     if (!container) return;
     const sync = () => {
       const form = container.closest('form');
-      if (form) setLive(withFormAnswers(options, form));
+      if (form) setLive({ from: options, options: withFormAnswers(options, form) });
     };
     // `changed` is the element's own event; `change`/`input` cover plain fields.
     const events = ['changed', 'change', 'input'];
@@ -161,19 +162,19 @@ export function ProductOptionsPanel({
     return () => events.forEach((name) => container.removeEventListener(name, sync));
   }, [options]);
 
-  // Open on the chip's option, once the panel is showing.
-  useEffect(() => {
-    if (!expanded || focusId == null) return;
+  // A chip opens the panel on its option: shown at once (a hidden field can't take
+  // focus), then scrolled to and focused.
+  const openOn = (id: PanelOption['id']) => {
+    flushSync(() => setExpanded(true));
     const container = fields.current?.querySelector<HTMLElement>(
-      `[data-option-id="${CSS.escape(String(focusId))}"]`
+      `[data-option-id="${CSS.escape(String(id))}"]`
     );
     container?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
     container?.querySelector<HTMLElement>(FOCUSABLE)?.focus({ preventScroll: true });
-    setFocusId(null);
-  }, [expanded, focusId]);
+  };
 
   const added = t('blocks.product_options.added', 'Added');
-  const chips = (live ?? options)
+  const chips = current
     .filter((option) => !SKIPPED_TYPES.has(option.type ?? ''))
     .map((option) => ({ option, answer: optionAnswer(option, added) }))
     // A conditional option the shopper hasn't reached yet has nothing to show.
@@ -203,10 +204,7 @@ export function ProductOptionsPanel({
                 <button
                   type="button"
                   className={`options-panel__chip${option.required && answer === null ? ' is-missing' : ''}`}
-                  onClick={() => {
-                    setFocusId(option.id);
-                    setExpanded(true);
-                  }}
+                  onClick={() => openOn(option.id)}
                 >
                   <span className="options-panel__name">{option.name}</span>
                   {answer ??
