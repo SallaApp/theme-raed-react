@@ -195,23 +195,29 @@ const prefersReducedMotion = () =>
   typeof window.matchMedia === 'function' &&
   window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-const inViewport = (element: HTMLElement) => {
-  const { top, bottom } = element.getBoundingClientRect();
-  return top >= 0 && bottom <= window.innerHeight;
-};
+/** The part of an option the shopper presses: its widget or control, below the label. */
+const FIELD = `salla-color-picker, salla-map, salla-datetime-picker, salla-file-upload, ${FOCUSABLE}`;
+
+/** Closer than this to the pointer, a field doesn't move. */
+const SCROLL_SLACK = 4;
 
 /**
- * Scrolls `element` smoothly to the middle of the screen, then runs `then`, so a
- * popup opens where the field has settled, not where it was mid-scroll. A field
- * already on screen doesn't move, and `then` runs at once.
+ * Scrolls the page smoothly so the option's field lands under the pointer (at
+ * `pointerY`, where the shopper pressed the chip), then runs `then`, so a popup
+ * opens where the field has settled, not where it was mid-scroll.
  */
-function scrollToThen(element: HTMLElement, then: () => void) {
-  if (inViewport(element)) {
+function scrollUnderThen(container: HTMLElement, pointerY: number, then: () => void) {
+  const field = container.querySelector<HTMLElement>(FIELD);
+  const box = field?.getBoundingClientRect();
+  // A visually hidden control (a swatch's radio) has no box: aim at the option.
+  const target = box && box.height > 0 ? box : container.getBoundingClientRect();
+  const by = target.top + target.height / 2 - pointerY;
+  if (Math.abs(by) < SCROLL_SLACK) {
     then();
     return;
   }
   const smooth = !prefersReducedMotion();
-  element.scrollIntoView({ block: 'center', behavior: smooth ? 'smooth' : 'auto' });
+  window.scrollBy({ top: by, behavior: smooth ? 'smooth' : 'auto' });
   if (!smooth) {
     then();
     return;
@@ -223,6 +229,7 @@ function scrollToThen(element: HTMLElement, then: () => void) {
     then();
   };
   window.addEventListener('scrollend', done, { once: true });
+  // `scrollend` doesn't fire when the page can't scroll (already at its end).
   timer = window.setTimeout(done, SCROLL_FALLBACK_MS);
 }
 
@@ -267,14 +274,17 @@ export function ProductOptionsPanel({
   }, [options]);
 
   // A chip opens the panel on its option: shown at once (a hidden field can't take
-  // focus), scrolled to the middle of the screen, then its field opened, so the
-  // shopper doesn't press it a second time.
-  const openOn = (id: PanelOption['id']) => {
+  // focus), scrolled so its field sits under the pointer, then opened, so the
+  // shopper neither scrolls to it nor presses it a second time.
+  const openOn = (id: PanelOption['id'], chip: HTMLElement, pointerY: number | null) => {
+    // From the keyboard there's no pointer: aim at the chip itself.
+    const chipBox = chip.getBoundingClientRect();
+    const anchorY = pointerY ?? chipBox.top + chipBox.height / 2;
     flushSync(() => setExpanded(true));
     const container = fields.current?.querySelector<HTMLElement>(
       `[data-option-id="${CSS.escape(String(id))}"]`
     );
-    if (container) scrollToThen(container, () => activateField(container));
+    if (container) scrollUnderThen(container, anchorY, () => activateField(container));
   };
 
   const added = t('blocks.product_options.added', 'Added');
@@ -345,7 +355,9 @@ export function ProductOptionsPanel({
                   className={`options-panel__chip${option.required && answer === null ? ' is-missing' : ''}`}
                   // Out of sight below the first row: not a tab stop either.
                   tabIndex={index >= firstHidden ? -1 : undefined}
-                  onClick={() => openOn(option.id)}
+                  onClick={(event) =>
+                    openOn(option.id, event.currentTarget, event.detail > 0 ? event.clientY : null)
+                  }
                 >
                   <span className="options-panel__name">{option.name}</span>
                   {answer ??

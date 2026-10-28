@@ -118,7 +118,6 @@ describe('ProductOptionsPanel', () => {
   });
 
   it("opens on a chip's option and focuses its field", () => {
-    Element.prototype.scrollIntoView = vi.fn();
     const { container } = render(
       <ProductOptionsPanel options={[size, note]}>
         <OptionFields ids={[1, 3]} />
@@ -132,7 +131,6 @@ describe('ProductOptionsPanel', () => {
   });
 
   it("opens a picker option's picker from its chip, without a second press", () => {
-    Element.prototype.scrollIntoView = vi.fn();
     const ink: PanelOption = { id: 5, name: 'Ink', type: 'color_picker', value: '#00ff00' };
     const place: PanelOption = { id: 6, name: 'Place', type: 'map' };
     const { container } = render(
@@ -159,7 +157,6 @@ describe('ProductOptionsPanel', () => {
   });
 
   it("scrolls the color picker's popup fully on screen once it opens, keeping the label in sight", async () => {
-    Element.prototype.scrollIntoView = vi.fn();
     vi.spyOn(window, 'matchMedia').mockReturnValue({ matches: false } as MediaQueryList);
     const scrollBy = vi.fn();
     window.scrollBy = scrollBy as typeof window.scrollBy;
@@ -178,19 +175,20 @@ describe('ProductOptionsPanel', () => {
     });
     // The field is on screen at 500px; its popup ends 200px past the bottom.
     container.querySelector<HTMLElement>('[data-option-id="5"]')!.getBoundingClientRect = () =>
-      ({ top: 500, bottom: 560 }) as DOMRect;
+      ({ top: 500, bottom: 560, height: 60 }) as DOMRect;
     container.querySelector<HTMLElement>('.picker_wrapper')!.getBoundingClientRect = () =>
       ({ bottom: window.innerHeight + 200 }) as DOMRect;
 
-    fireEvent.click(screen.getByText('Ink').closest('button')!);
+    // Pressed right where the option already sits: no scroll before it opens.
+    fireEvent.click(screen.getByText('Ink').closest('button')!, { detail: 1, clientY: 530 });
 
     await vi.waitFor(() =>
       expect(scrollBy).toHaveBeenCalledWith({ top: 216, behavior: 'smooth' })
     );
+    expect(scrollBy).toHaveBeenCalledOnce();
   });
 
   it("opens a dropdown's list from its chip", () => {
-    Element.prototype.scrollIntoView = vi.fn();
     const showPicker = vi.fn();
     HTMLSelectElement.prototype.showPicker = showPicker;
     render(
@@ -209,26 +207,43 @@ describe('ProductOptionsPanel', () => {
     expect(showPicker).toHaveBeenCalledOnce();
   });
 
-  it('scrolls an off-screen field to the middle, and opens it once the scroll ends', () => {
-    const scrollIntoView = vi.fn();
-    Element.prototype.scrollIntoView = scrollIntoView;
+  it('scrolls the field under the pointer that pressed the chip, and opens it once the scroll ends', () => {
     vi.spyOn(window, 'matchMedia').mockReturnValue({ matches: false } as MediaQueryList);
+    const scrollBy = vi.fn();
+    window.scrollBy = scrollBy as typeof window.scrollBy;
     render(
       <ProductOptionsPanel options={[note]}>
         <OptionFields ids={[3]} />
       </ProductOptionsPanel>
     );
     const field = screen.getByLabelText('field-3');
-    const container = field.closest<HTMLElement>('[data-option-id]')!;
-    container.getBoundingClientRect = () =>
-      ({ top: window.innerHeight + 200, bottom: window.innerHeight + 260 }) as DOMRect;
+    // The opened field sits at 400–440px; the shopper pressed the chip at 100px.
+    field.getBoundingClientRect = () => ({ top: 400, height: 40 }) as DOMRect;
 
-    fireEvent.click(screen.getByText('Note').closest('button')!);
-    expect(scrollIntoView).toHaveBeenCalledWith({ block: 'center', behavior: 'smooth' });
+    fireEvent.click(screen.getByText('Note').closest('button')!, { detail: 1, clientY: 100 });
+    expect(scrollBy).toHaveBeenCalledWith({ top: 320, behavior: 'smooth' });
     expect(document.activeElement).not.toBe(field);
 
     fireEvent(window, new Event('scrollend'));
     expect(document.activeElement).toBe(field);
+  });
+
+  it('aims at the chip itself when it is pressed from the keyboard', () => {
+    vi.spyOn(window, 'matchMedia').mockReturnValue({ matches: false } as MediaQueryList);
+    const scrollBy = vi.fn();
+    window.scrollBy = scrollBy as typeof window.scrollBy;
+    render(
+      <ProductOptionsPanel options={[note]}>
+        <OptionFields ids={[3]} />
+      </ProductOptionsPanel>
+    );
+    const chip = screen.getByText('Note').closest('button')!;
+    chip.getBoundingClientRect = () => ({ top: 80, height: 40 }) as DOMRect;
+    screen.getByLabelText('field-3').getBoundingClientRect = () =>
+      ({ top: 400, height: 40 }) as DOMRect;
+
+    fireEvent.click(chip, { detail: 0 });
+    expect(scrollBy).toHaveBeenCalledWith({ top: 320, behavior: 'smooth' });
   });
 
   it('shows one row of chips, and a "…" that opens the panel when more wrap below it', () => {
