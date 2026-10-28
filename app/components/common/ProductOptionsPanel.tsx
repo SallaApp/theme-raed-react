@@ -1,4 +1,4 @@
-import { useEffect, useId, useRef, useState, type ReactNode } from 'react';
+import { useEffect, useId, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import { flushSync } from 'react-dom';
 import { useTranslation } from '@salla.sa/twilight-theme-engine/i18n';
 import { CheckCircleIcon, ChevronDownIcon } from '../icons';
@@ -122,6 +122,117 @@ function withFormAnswers(options: PanelOption[], form: HTMLFormElement): PanelOp
 const FOCUSABLE =
   'input:not([type="hidden"]):not([disabled]), select:not([disabled]), textarea:not([disabled]), button:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
+/** How long to wait for a smooth scroll to end where `scrollend` never fires. */
+const SCROLL_FALLBACK_MS = 600;
+
+type ColorPickerElement = HTMLElement & { openPicker?: () => Promise<void> };
+type MapElement = HTMLElement & { open?: () => Promise<void> };
+
+/**
+ * Opens an option's field the way pressing it would: the color picker's popup, the
+ * map's modal, the date picker's calendar, the file browser, the dropdown's list.
+ * Any other field (text, radios, swatches) takes focus.
+ */
+function activateField(container: HTMLElement) {
+  const colorPicker = container.querySelector<ColorPickerElement>('salla-color-picker');
+  if (colorPicker?.openPicker) {
+    // The popup opens below the field, often past the bottom of the screen.
+    void colorPicker.openPicker().then(() => afterPaint(() => revealPopup(container)));
+    return;
+  }
+  const map = container.querySelector<MapElement>('salla-map');
+  if (map?.open) {
+    void map.open();
+    return;
+  }
+  // flatpickr opens on a click on its input.
+  const dateInput = container.querySelector<HTMLInputElement>('salla-datetime-picker input');
+  if (dateInput) {
+    dateInput.focus({ preventScroll: true });
+    dateInput.click();
+    return;
+  }
+  const fileInput = container.querySelector<HTMLInputElement>('input[type="file"]');
+  if (fileInput) {
+    fileInput.click();
+    return;
+  }
+
+  const field = container.querySelector<HTMLElement>(FOCUSABLE);
+  field?.focus({ preventScroll: true });
+  if (field instanceof HTMLSelectElement) {
+    try {
+      field.showPicker();
+    } catch {
+      // Not supported for a select (older Safari): focus is the next best thing.
+    }
+  }
+}
+
+/** Room left above a revealed option, clear of the sticky header (the theme's `top-24`). */
+const TOP_CLEARANCE = 96;
+/** Room left below a revealed popup. */
+const BOTTOM_CLEARANCE = 16;
+
+/** Runs `then` once the next frame is painted: the color picker positions its popup a frame late. */
+const afterPaint = (then: () => void) =>
+  window.requestAnimationFrame(() => window.requestAnimationFrame(then));
+
+/**
+ * Scrolls an option's open popup fully on screen, as the shopper would, but no
+ * further than keeps the option's own label in sight.
+ */
+function revealPopup(container: HTMLElement) {
+  const popup = container.querySelector<HTMLElement>('.picker_wrapper');
+  if (!popup) return;
+  const below = popup.getBoundingClientRect().bottom + BOTTOM_CLEARANCE - window.innerHeight;
+  const room = container.getBoundingClientRect().top - TOP_CLEARANCE;
+  const by = Math.min(below, room);
+  if (by > 0) window.scrollBy({ top: by, behavior: prefersReducedMotion() ? 'auto' : 'smooth' });
+}
+
+const prefersReducedMotion = () =>
+  typeof window.matchMedia === 'function' &&
+  window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/** The part of an option the shopper presses: its widget or control, below the label. */
+const FIELD = `salla-color-picker, salla-map, salla-datetime-picker, salla-file-upload, ${FOCUSABLE}`;
+
+/** Closer than this to the pointer, a field doesn't move. */
+const SCROLL_SLACK = 4;
+
+/**
+ * Scrolls the page smoothly so the option's field lands under the pointer (at
+ * `pointerY`, where the shopper pressed the chip), then runs `then`, so a popup
+ * opens where the field has settled, not where it was mid-scroll.
+ */
+function scrollUnderThen(container: HTMLElement, pointerY: number, then: () => void) {
+  const field = container.querySelector<HTMLElement>(FIELD);
+  const box = field?.getBoundingClientRect();
+  // A visually hidden control (a swatch's radio) has no box: aim at the option.
+  const target = box && box.height > 0 ? box : container.getBoundingClientRect();
+  const by = target.top + target.height / 2 - pointerY;
+  if (Math.abs(by) < SCROLL_SLACK) {
+    then();
+    return;
+  }
+  const smooth = !prefersReducedMotion();
+  window.scrollBy({ top: by, behavior: smooth ? 'smooth' : 'auto' });
+  if (!smooth) {
+    then();
+    return;
+  }
+  let timer = 0;
+  const done = () => {
+    window.removeEventListener('scrollend', done);
+    window.clearTimeout(timer);
+    then();
+  };
+  window.addEventListener('scrollend', done, { once: true });
+  // `scrollend` doesn't fire when the page can't scroll (already at its end).
+  timer = window.setTimeout(done, SCROLL_FALLBACK_MS);
+}
+
 /**
  * Product options as a collapsible panel, collapsed at first. A row of chips sums
  * up each option and its answer, following the shopper's picks as they make
@@ -163,14 +274,17 @@ export function ProductOptionsPanel({
   }, [options]);
 
   // A chip opens the panel on its option: shown at once (a hidden field can't take
-  // focus), then scrolled to and focused.
-  const openOn = (id: PanelOption['id']) => {
+  // focus), scrolled so its field sits under the pointer, then opened, so the
+  // shopper neither scrolls to it nor presses it a second time.
+  const openOn = (id: PanelOption['id'], chip: HTMLElement, pointerY: number | null) => {
+    // From the keyboard there's no pointer: aim at the chip itself.
+    const chipBox = chip.getBoundingClientRect();
+    const anchorY = pointerY ?? chipBox.top + chipBox.height / 2;
     flushSync(() => setExpanded(true));
     const container = fields.current?.querySelector<HTMLElement>(
       `[data-option-id="${CSS.escape(String(id))}"]`
     );
-    container?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
-    container?.querySelector<HTMLElement>(FOCUSABLE)?.focus({ preventScroll: true });
+    if (container) scrollUnderThen(container, anchorY, () => activateField(container));
   };
 
   const added = t('blocks.product_options.added', 'Added');
@@ -179,6 +293,38 @@ export function ProductOptionsPanel({
     .map((option) => ({ option, answer: optionAnswer(option, added) }))
     // A conditional option the shopper hasn't reached yet has nothing to show.
     .filter(({ option, answer }) => answer !== null || !option.visibility_condition);
+
+  // Collapsed, the chips show one row (the CSS caps the list's height); the ones
+  // wrapped below it are counted, and a "…" sits right after the last chip still
+  // in sight. It's placed out of the flow (at `moreAt`, from the list's start
+  // edge), with room kept for it at the row's end, so showing it never reflows
+  // the chips back and forth.
+  const chipList = useRef<HTMLUListElement>(null);
+  const [overflow, setOverflow] = useState({ hidden: 0, moreAt: 0 });
+  const chipsKey = chips.map(({ option }) => option.id).join(',');
+  useLayoutEffect(() => {
+    const list = chipList.current;
+    if (!list) return;
+    const measure = () => {
+      const items = [...list.querySelectorAll<HTMLElement>(':scope > li[data-chip]')];
+      const firstRow = items[0]?.offsetTop ?? 0;
+      const shown = items.filter((item) => item.offsetTop <= firstRow);
+      const hidden = items.length - shown.length;
+      const last = shown.at(-1)?.getBoundingClientRect();
+      const box = list.getBoundingClientRect();
+      const rtl = getComputedStyle(list).direction === 'rtl';
+      const moreAt = hidden && last ? Math.round(rtl ? box.right - last.left : last.right - box.left) : 0;
+      setOverflow((now) =>
+        now.hidden === hidden && now.moreAt === moreAt ? now : { hidden, moreAt }
+      );
+    };
+    measure();
+    if (typeof ResizeObserver === 'undefined') return;
+    const observer = new ResizeObserver(measure);
+    observer.observe(list);
+    return () => observer.disconnect();
+  }, [expanded, chipsKey]);
+  const firstHidden = chips.length - overflow.hidden;
 
   const title = t('blocks.product_options.title', 'Product options');
 
@@ -198,13 +344,20 @@ export function ProductOptionsPanel({
         {expanded ? (
           <span className="options-panel__title">{title}</span>
         ) : (
-          <ul className="options-panel__chips">
-            {chips.map(({ option, answer }) => (
-              <li key={option.id}>
+          <ul
+            ref={chipList}
+            className={`options-panel__chips${overflow.hidden ? ' has-more' : ''}`}
+          >
+            {chips.map(({ option, answer }, index) => (
+              <li key={option.id} data-chip>
                 <button
                   type="button"
                   className={`options-panel__chip${option.required && answer === null ? ' is-missing' : ''}`}
-                  onClick={() => openOn(option.id)}
+                  // Out of sight below the first row: not a tab stop either.
+                  tabIndex={index >= firstHidden ? -1 : undefined}
+                  onClick={(event) =>
+                    openOn(option.id, event.currentTarget, event.detail > 0 ? event.clientY : null)
+                  }
                 >
                   <span className="options-panel__name">{option.name}</span>
                   {answer ??
@@ -216,6 +369,19 @@ export function ProductOptionsPanel({
                 </button>
               </li>
             ))}
+            {overflow.hidden > 0 && (
+              <li className="options-panel__more-item" style={{ insetInlineStart: overflow.moreAt }}>
+                <button
+                  type="button"
+                  className="options-panel__more"
+                  aria-label={t('blocks.product_options.more', 'Show all options')}
+                  title={t('blocks.product_options.more', 'Show all options')}
+                  onClick={() => setExpanded(true)}
+                >
+                  …
+                </button>
+              </li>
+            )}
           </ul>
         )}
         <button

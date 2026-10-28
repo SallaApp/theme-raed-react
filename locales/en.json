@@ -8,6 +8,7 @@
   "blocks.product_options.title": "Product options",
   "blocks.product_options.required": "Required",
   "blocks.product_options.added": "Added",
+  "blocks.product_options.more": "Show all options",
   "pages.products.add_to_cart": "Add to Cart",
   "pages.products.out_of_stock": "Out of Stock",
   "common.actions.save": "Save",

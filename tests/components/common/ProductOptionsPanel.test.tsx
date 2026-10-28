@@ -118,7 +118,6 @@ describe('ProductOptionsPanel', () => {
   });
 
   it("opens on a chip's option and focuses its field", () => {
-    Element.prototype.scrollIntoView = vi.fn();
     const { container } = render(
       <ProductOptionsPanel options={[size, note]}>
         <OptionFields ids={[1, 3]} />
@@ -129,6 +128,162 @@ describe('ProductOptionsPanel', () => {
 
     expect(fieldsHidden(container)).toBe(false);
     expect(document.activeElement).toBe(screen.getByLabelText('field-3'));
+  });
+
+  it("opens a picker option's picker from its chip, without a second press", () => {
+    const ink: PanelOption = { id: 5, name: 'Ink', type: 'color_picker', value: '#00ff00' };
+    const place: PanelOption = { id: 6, name: 'Place', type: 'map' };
+    const { container } = render(
+      <ProductOptionsPanel options={[ink, place]}>
+        <div data-option-id="5">
+          <salla-color-picker />
+        </div>
+        <div data-option-id="6">
+          <salla-map />
+        </div>
+      </ProductOptionsPanel>
+    );
+    const openPicker = vi.fn(() => Promise.resolve());
+    const openMap = vi.fn(() => Promise.resolve());
+    Object.assign(container.querySelector('salla-color-picker')!, { openPicker });
+    Object.assign(container.querySelector('salla-map')!, { open: openMap });
+
+    fireEvent.click(screen.getByText('Ink').closest('button')!);
+    expect(openPicker).toHaveBeenCalledOnce();
+
+    fireEvent.click(screen.getByLabelText('blocks.product_options.title'));
+    fireEvent.click(screen.getByText('Place').closest('button')!);
+    expect(openMap).toHaveBeenCalledOnce();
+  });
+
+  it("scrolls the color picker's popup fully on screen once it opens, keeping the label in sight", async () => {
+    vi.spyOn(window, 'matchMedia').mockReturnValue({ matches: false } as MediaQueryList);
+    const scrollBy = vi.fn();
+    window.scrollBy = scrollBy as typeof window.scrollBy;
+    const ink: PanelOption = { id: 5, name: 'Ink', type: 'color_picker', value: '#00ff00' };
+    const { container } = render(
+      <ProductOptionsPanel options={[ink]}>
+        <div data-option-id="5">
+          <salla-color-picker>
+            <div className="picker_wrapper popup" />
+          </salla-color-picker>
+        </div>
+      </ProductOptionsPanel>
+    );
+    Object.assign(container.querySelector('salla-color-picker')!, {
+      openPicker: () => Promise.resolve(),
+    });
+    // The field is on screen at 500px; its popup ends 200px past the bottom.
+    container.querySelector<HTMLElement>('[data-option-id="5"]')!.getBoundingClientRect = () =>
+      ({ top: 500, bottom: 560, height: 60 }) as DOMRect;
+    container.querySelector<HTMLElement>('.picker_wrapper')!.getBoundingClientRect = () =>
+      ({ bottom: window.innerHeight + 200 }) as DOMRect;
+
+    // Pressed right where the option already sits: no scroll before it opens.
+    fireEvent.click(screen.getByText('Ink').closest('button')!, { detail: 1, clientY: 530 });
+
+    await vi.waitFor(() =>
+      expect(scrollBy).toHaveBeenCalledWith({ top: 216, behavior: 'smooth' })
+    );
+    expect(scrollBy).toHaveBeenCalledOnce();
+  });
+
+  it("opens a dropdown's list from its chip", () => {
+    const showPicker = vi.fn();
+    HTMLSelectElement.prototype.showPicker = showPicker;
+    render(
+      <ProductOptionsPanel options={[size]}>
+        <div data-option-id="1">
+          <select aria-label="size" name="options[1]">
+            <option value="11">S</option>
+          </select>
+        </div>
+      </ProductOptionsPanel>
+    );
+
+    fireEvent.click(screen.getByText('Size').closest('button')!);
+
+    expect(document.activeElement).toBe(screen.getByLabelText('size'));
+    expect(showPicker).toHaveBeenCalledOnce();
+  });
+
+  it('scrolls the field under the pointer that pressed the chip, and opens it once the scroll ends', () => {
+    vi.spyOn(window, 'matchMedia').mockReturnValue({ matches: false } as MediaQueryList);
+    const scrollBy = vi.fn();
+    window.scrollBy = scrollBy as typeof window.scrollBy;
+    render(
+      <ProductOptionsPanel options={[note]}>
+        <OptionFields ids={[3]} />
+      </ProductOptionsPanel>
+    );
+    const field = screen.getByLabelText('field-3');
+    // The opened field sits at 400–440px; the shopper pressed the chip at 100px.
+    field.getBoundingClientRect = () => ({ top: 400, height: 40 }) as DOMRect;
+
+    fireEvent.click(screen.getByText('Note').closest('button')!, { detail: 1, clientY: 100 });
+    expect(scrollBy).toHaveBeenCalledWith({ top: 320, behavior: 'smooth' });
+    expect(document.activeElement).not.toBe(field);
+
+    fireEvent(window, new Event('scrollend'));
+    expect(document.activeElement).toBe(field);
+  });
+
+  it('aims at the chip itself when it is pressed from the keyboard', () => {
+    vi.spyOn(window, 'matchMedia').mockReturnValue({ matches: false } as MediaQueryList);
+    const scrollBy = vi.fn();
+    window.scrollBy = scrollBy as typeof window.scrollBy;
+    render(
+      <ProductOptionsPanel options={[note]}>
+        <OptionFields ids={[3]} />
+      </ProductOptionsPanel>
+    );
+    const chip = screen.getByText('Note').closest('button')!;
+    chip.getBoundingClientRect = () => ({ top: 80, height: 40 }) as DOMRect;
+    screen.getByLabelText('field-3').getBoundingClientRect = () =>
+      ({ top: 400, height: 40 }) as DOMRect;
+
+    fireEvent.click(chip, { detail: 0 });
+    expect(scrollBy).toHaveBeenCalledWith({ top: 320, behavior: 'smooth' });
+  });
+
+  it('shows one row of chips, and a "…" that opens the panel when more wrap below it', () => {
+    // Stands in for the layout: the Note chip wraps to a second row.
+    const offsetTop = vi.spyOn(HTMLElement.prototype, 'offsetTop', 'get');
+    offsetTop.mockImplementation(function (this: HTMLElement) {
+      return this.tagName === 'LI' && this.textContent?.startsWith('Note') ? 44 : 0;
+    });
+    // The last chip in sight (Color) ends 300px from the list's start edge.
+    const rect = vi.spyOn(Element.prototype, 'getBoundingClientRect');
+    rect.mockImplementation(function (this: Element) {
+      const right = this.tagName === 'LI' && this.textContent === 'Color' ? 300 : 0;
+      return { left: 0, right } as DOMRect;
+    });
+    const { container } = render(
+      <ProductOptionsPanel options={[size, color, note]}>
+        <OptionFields ids={[]} />
+      </ProductOptionsPanel>
+    );
+    offsetTop.mockRestore();
+    rect.mockRestore();
+
+    const more = screen.getByLabelText('blocks.product_options.more');
+    // Right after the last chip in sight, not at the far end of the row.
+    expect(more.closest('li')!.style.insetInlineStart).toBe('300px');
+    expect(screen.getByText('Note').closest('button')!.tabIndex).toBe(-1);
+    expect(screen.getByText('Size').closest('button')!.tabIndex).toBe(0);
+
+    fireEvent.click(more);
+    expect(fieldsHidden(container)).toBe(false);
+    expect(screen.queryByLabelText('blocks.product_options.more')).toBeNull();
+  });
+
+  it('shows no "…" when every chip fits on the first row', () => {
+    render(
+      <ProductOptionsPanel options={[size, note]}>
+        <OptionFields ids={[]} />
+      </ProductOptionsPanel>
+    );
+    expect(screen.queryByLabelText('blocks.product_options.more')).toBeNull();
   });
 
   it('toggles open and closed with the chevron', () => {
