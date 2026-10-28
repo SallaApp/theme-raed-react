@@ -18,12 +18,18 @@
     @apply flex-1 text-sm font-bold text-gray-900;
   }
 
+  /* One row of chips: the list is capped at a chip's height, and whole chips
+     wrap out of sight below it (the component counts them for the "…"). The
+     2px bleed keeps a chip's focus ring from being clipped. */
   &__chips {
-    @apply flex flex-1 flex-wrap gap-2;
+    @apply flex min-w-0 flex-1 flex-wrap gap-2 overflow-hidden;
+    max-height: calc(2.25rem + 4px);
+    padding: 2px;
+    margin: -2px;
   }
 
   &__chip {
-    @apply inline-flex max-w-full items-center gap-2 rounded-lg bg-gray-100 px-2.5 py-1.5 text-sm text-gray-600 transition-colors hover:bg-gray-200;
+    @apply inline-flex h-9 max-w-full items-center gap-2 whitespace-nowrap rounded-lg bg-gray-100 px-2.5 text-sm text-gray-600 transition-colors hover:bg-gray-200;
 
     &.is-missing {
       @apply bg-red-50 text-red-700 hover:bg-red-100;
@@ -42,6 +48,14 @@
     .is-missing & {
       @apply text-red-700;
     }
+  }
+
+  &__name {
+    @apply min-w-0 truncate;
+  }
+
+  &__more {
+    @apply flex h-9 shrink-0 items-center rounded-lg bg-gray-100 px-3 text-base font-bold leading-none text-gray-600 transition-colors hover:bg-gray-200;
   }
 
   &__swatch {

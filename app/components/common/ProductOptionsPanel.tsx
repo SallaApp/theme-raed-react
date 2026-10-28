@@ -1,4 +1,4 @@
-import { useEffect, useId, useRef, useState, type ReactNode } from 'react';
+import { useEffect, useId, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import { flushSync } from 'react-dom';
 import { useTranslation } from '@salla.sa/twilight-theme-engine/i18n';
 import { CheckCircleIcon, ChevronDownIcon } from '../icons';
@@ -261,6 +261,27 @@ export function ProductOptionsPanel({
     // A conditional option the shopper hasn't reached yet has nothing to show.
     .filter(({ option, answer }) => answer !== null || !option.visibility_condition);
 
+  // Collapsed, the chips show one row (the CSS caps the list's height); the ones
+  // wrapped below it are counted, so a "…" can say there are more.
+  const chipList = useRef<HTMLUListElement>(null);
+  const [hiddenChips, setHiddenChips] = useState(0);
+  const chipsKey = chips.map(({ option }) => option.id).join(',');
+  useLayoutEffect(() => {
+    const list = chipList.current;
+    if (!list) return;
+    const measure = () => {
+      const items = [...list.children] as HTMLElement[];
+      const firstRow = items[0]?.offsetTop ?? 0;
+      setHiddenChips(items.filter((item) => item.offsetTop > firstRow).length);
+    };
+    measure();
+    if (typeof ResizeObserver === 'undefined') return;
+    const observer = new ResizeObserver(measure);
+    observer.observe(list);
+    return () => observer.disconnect();
+  }, [expanded, chipsKey]);
+  const firstHidden = chips.length - hiddenChips;
+
   const title = t('blocks.product_options.title', 'Product options');
 
   return (
@@ -279,12 +300,14 @@ export function ProductOptionsPanel({
         {expanded ? (
           <span className="options-panel__title">{title}</span>
         ) : (
-          <ul className="options-panel__chips">
-            {chips.map(({ option, answer }) => (
+          <ul ref={chipList} className="options-panel__chips">
+            {chips.map(({ option, answer }, index) => (
               <li key={option.id}>
                 <button
                   type="button"
                   className={`options-panel__chip${option.required && answer === null ? ' is-missing' : ''}`}
+                  // Out of sight below the first row: not a tab stop either.
+                  tabIndex={index >= firstHidden ? -1 : undefined}
                   onClick={() => openOn(option.id)}
                 >
                   <span className="options-panel__name">{option.name}</span>
@@ -298,6 +321,17 @@ export function ProductOptionsPanel({
               </li>
             ))}
           </ul>
+        )}
+        {!expanded && hiddenChips > 0 && (
+          <button
+            type="button"
+            className="options-panel__more"
+            aria-label={t('blocks.product_options.more', 'Show all options')}
+            title={t('blocks.product_options.more', 'Show all options')}
+            onClick={() => setExpanded(true)}
+          >
+            …
+          </button>
         )}
         <button
           type="button"

@@ -8,6 +8,7 @@
   "blocks.product_options.title": "خيارات المنتج",
   "blocks.product_options.required": "مطلوب",
   "blocks.product_options.added": "تمت الإضافة",
+  "blocks.product_options.more": "عرض كل الخيارات",
   "pages.products.add_to_cart": "أضف للسلة",
   "pages.products.out_of_stock": "نفذت الكمية",
   "common.actions.save": "حفظ",

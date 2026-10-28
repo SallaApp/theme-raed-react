@@ -200,6 +200,37 @@ describe('ProductOptionsPanel', () => {
     expect(document.activeElement).toBe(field);
   });
 
+  it('shows one row of chips, and a "…" that opens the panel when more wrap below it', () => {
+    // Stands in for the layout: the Note chip wraps to a second row.
+    const offsetTop = vi.spyOn(HTMLElement.prototype, 'offsetTop', 'get');
+    offsetTop.mockImplementation(function (this: HTMLElement) {
+      return this.tagName === 'LI' && this.textContent?.startsWith('Note') ? 44 : 0;
+    });
+    const { container } = render(
+      <ProductOptionsPanel options={[size, color, note]}>
+        <OptionFields ids={[]} />
+      </ProductOptionsPanel>
+    );
+    offsetTop.mockRestore();
+
+    const more = screen.getByLabelText('blocks.product_options.more');
+    expect(screen.getByText('Note').closest('button')!.tabIndex).toBe(-1);
+    expect(screen.getByText('Size').closest('button')!.tabIndex).toBe(0);
+
+    fireEvent.click(more);
+    expect(fieldsHidden(container)).toBe(false);
+    expect(screen.queryByLabelText('blocks.product_options.more')).toBeNull();
+  });
+
+  it('shows no "…" when every chip fits on the first row', () => {
+    render(
+      <ProductOptionsPanel options={[size, note]}>
+        <OptionFields ids={[]} />
+      </ProductOptionsPanel>
+    );
+    expect(screen.queryByLabelText('blocks.product_options.more')).toBeNull();
+  });
+
   it('toggles open and closed with the chevron', () => {
     const { container } = render(
       <ProductOptionsPanel options={[size]}>
