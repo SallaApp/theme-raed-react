@@ -14,6 +14,21 @@
   display: contents;
 }
 
+/* Inside the Salla app the page runs edge to edge, under the status bar. The
+   header's first row is a strip as tall as the app's top inset
+   (`mobile::ui.safearea`, written to `--app-safe-area-top` by the engine), in
+   the header's white, so the header is the inset plus its own height and its
+   content starts below the status bar. It stays stuck to the top (the header is
+   `display: contents`, so its containing block is the whole page column), so the
+   page never shows behind the status bar while it scrolls; the pinned bar, the
+   mobile page-title bar and the catalog toolbar sit right under it
+   (`top: var(--app-safe-area-top)`). 0px tall in a browser. Above the pinned bar
+   (z-40), below the drawers and sheets (z-200 and up). */
+.site-header__safe-area {
+  @apply sticky top-0 z-[45] bg-white;
+  height: var(--app-safe-area-top, 0px);
+}
+
 /* `<SallaSearch>` is a modal and takes no room once loaded, but its SSR
    skeleton sat in the header flow (36px) until hydration (CLS 0.068). */
 .site-header .s-skeleton-search {
