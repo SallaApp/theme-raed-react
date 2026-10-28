@@ -136,7 +136,8 @@ type MapElement = HTMLElement & { open?: () => Promise<void> };
 function activateField(container: HTMLElement) {
   const colorPicker = container.querySelector<ColorPickerElement>('salla-color-picker');
   if (colorPicker?.openPicker) {
-    void colorPicker.openPicker();
+    // The popup opens below the field, often past the bottom of the screen.
+    void colorPicker.openPicker().then(() => afterPaint(() => revealPopup(container)));
     return;
   }
   const map = container.querySelector<MapElement>('salla-map');
@@ -166,6 +167,28 @@ function activateField(container: HTMLElement) {
       // Not supported for a select (older Safari): focus is the next best thing.
     }
   }
+}
+
+/** Room left above a revealed option, clear of the sticky header (the theme's `top-24`). */
+const TOP_CLEARANCE = 96;
+/** Room left below a revealed popup. */
+const BOTTOM_CLEARANCE = 16;
+
+/** Runs `then` once the next frame is painted: the color picker positions its popup a frame late. */
+const afterPaint = (then: () => void) =>
+  window.requestAnimationFrame(() => window.requestAnimationFrame(then));
+
+/**
+ * Scrolls an option's open popup fully on screen, as the shopper would, but no
+ * further than keeps the option's own label in sight.
+ */
+function revealPopup(container: HTMLElement) {
+  const popup = container.querySelector<HTMLElement>('.picker_wrapper');
+  if (!popup) return;
+  const below = popup.getBoundingClientRect().bottom + BOTTOM_CLEARANCE - window.innerHeight;
+  const room = container.getBoundingClientRect().top - TOP_CLEARANCE;
+  const by = Math.min(below, room);
+  if (by > 0) window.scrollBy({ top: by, behavior: prefersReducedMotion() ? 'auto' : 'smooth' });
 }
 
 const prefersReducedMotion = () =>

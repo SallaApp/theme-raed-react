@@ -158,6 +158,37 @@ describe('ProductOptionsPanel', () => {
     expect(openMap).toHaveBeenCalledOnce();
   });
 
+  it("scrolls the color picker's popup fully on screen once it opens, keeping the label in sight", async () => {
+    Element.prototype.scrollIntoView = vi.fn();
+    vi.spyOn(window, 'matchMedia').mockReturnValue({ matches: false } as MediaQueryList);
+    const scrollBy = vi.fn();
+    window.scrollBy = scrollBy as typeof window.scrollBy;
+    const ink: PanelOption = { id: 5, name: 'Ink', type: 'color_picker', value: '#00ff00' };
+    const { container } = render(
+      <ProductOptionsPanel options={[ink]}>
+        <div data-option-id="5">
+          <salla-color-picker>
+            <div className="picker_wrapper popup" />
+          </salla-color-picker>
+        </div>
+      </ProductOptionsPanel>
+    );
+    Object.assign(container.querySelector('salla-color-picker')!, {
+      openPicker: () => Promise.resolve(),
+    });
+    // The field is on screen at 500px; its popup ends 200px past the bottom.
+    container.querySelector<HTMLElement>('[data-option-id="5"]')!.getBoundingClientRect = () =>
+      ({ top: 500, bottom: 560 }) as DOMRect;
+    container.querySelector<HTMLElement>('.picker_wrapper')!.getBoundingClientRect = () =>
+      ({ bottom: window.innerHeight + 200 }) as DOMRect;
+
+    fireEvent.click(screen.getByText('Ink').closest('button')!);
+
+    await vi.waitFor(() =>
+      expect(scrollBy).toHaveBeenCalledWith({ top: 216, behavior: 'smooth' })
+    );
+  });
+
   it("opens a dropdown's list from its chip", () => {
     Element.prototype.scrollIntoView = vi.fn();
     const showPicker = vi.fn();
