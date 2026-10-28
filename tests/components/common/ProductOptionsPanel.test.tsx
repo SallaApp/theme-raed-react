@@ -206,14 +206,23 @@ describe('ProductOptionsPanel', () => {
     offsetTop.mockImplementation(function (this: HTMLElement) {
       return this.tagName === 'LI' && this.textContent?.startsWith('Note') ? 44 : 0;
     });
+    // The last chip in sight (Color) ends 300px from the list's start edge.
+    const rect = vi.spyOn(Element.prototype, 'getBoundingClientRect');
+    rect.mockImplementation(function (this: Element) {
+      const right = this.tagName === 'LI' && this.textContent === 'Color' ? 300 : 0;
+      return { left: 0, right } as DOMRect;
+    });
     const { container } = render(
       <ProductOptionsPanel options={[size, color, note]}>
         <OptionFields ids={[]} />
       </ProductOptionsPanel>
     );
     offsetTop.mockRestore();
+    rect.mockRestore();
 
     const more = screen.getByLabelText('blocks.product_options.more');
+    // Right after the last chip in sight, not at the far end of the row.
+    expect(more.closest('li')!.style.insetInlineStart).toBe('300px');
     expect(screen.getByText('Note').closest('button')!.tabIndex).toBe(-1);
     expect(screen.getByText('Size').closest('button')!.tabIndex).toBe(0);
 

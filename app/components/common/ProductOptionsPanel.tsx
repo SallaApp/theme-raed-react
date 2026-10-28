@@ -262,17 +262,28 @@ export function ProductOptionsPanel({
     .filter(({ option, answer }) => answer !== null || !option.visibility_condition);
 
   // Collapsed, the chips show one row (the CSS caps the list's height); the ones
-  // wrapped below it are counted, so a "…" can say there are more.
+  // wrapped below it are counted, and a "…" sits right after the last chip still
+  // in sight. It's placed out of the flow (at `moreAt`, from the list's start
+  // edge), with room kept for it at the row's end, so showing it never reflows
+  // the chips back and forth.
   const chipList = useRef<HTMLUListElement>(null);
-  const [hiddenChips, setHiddenChips] = useState(0);
+  const [overflow, setOverflow] = useState({ hidden: 0, moreAt: 0 });
   const chipsKey = chips.map(({ option }) => option.id).join(',');
   useLayoutEffect(() => {
     const list = chipList.current;
     if (!list) return;
     const measure = () => {
-      const items = [...list.children] as HTMLElement[];
+      const items = [...list.querySelectorAll<HTMLElement>(':scope > li[data-chip]')];
       const firstRow = items[0]?.offsetTop ?? 0;
-      setHiddenChips(items.filter((item) => item.offsetTop > firstRow).length);
+      const shown = items.filter((item) => item.offsetTop <= firstRow);
+      const hidden = items.length - shown.length;
+      const last = shown.at(-1)?.getBoundingClientRect();
+      const box = list.getBoundingClientRect();
+      const rtl = getComputedStyle(list).direction === 'rtl';
+      const moreAt = hidden && last ? Math.round(rtl ? box.right - last.left : last.right - box.left) : 0;
+      setOverflow((now) =>
+        now.hidden === hidden && now.moreAt === moreAt ? now : { hidden, moreAt }
+      );
     };
     measure();
     if (typeof ResizeObserver === 'undefined') return;
@@ -280,7 +291,7 @@ export function ProductOptionsPanel({
     observer.observe(list);
     return () => observer.disconnect();
   }, [expanded, chipsKey]);
-  const firstHidden = chips.length - hiddenChips;
+  const firstHidden = chips.length - overflow.hidden;
 
   const title = t('blocks.product_options.title', 'Product options');
 
@@ -300,9 +311,12 @@ export function ProductOptionsPanel({
         {expanded ? (
           <span className="options-panel__title">{title}</span>
         ) : (
-          <ul ref={chipList} className="options-panel__chips">
+          <ul
+            ref={chipList}
+            className={`options-panel__chips${overflow.hidden ? ' has-more' : ''}`}
+          >
             {chips.map(({ option, answer }, index) => (
-              <li key={option.id}>
+              <li key={option.id} data-chip>
                 <button
                   type="button"
                   className={`options-panel__chip${option.required && answer === null ? ' is-missing' : ''}`}
@@ -320,18 +334,20 @@ export function ProductOptionsPanel({
                 </button>
               </li>
             ))}
+            {overflow.hidden > 0 && (
+              <li className="options-panel__more-item" style={{ insetInlineStart: overflow.moreAt }}>
+                <button
+                  type="button"
+                  className="options-panel__more"
+                  aria-label={t('blocks.product_options.more', 'Show all options')}
+                  title={t('blocks.product_options.more', 'Show all options')}
+                  onClick={() => setExpanded(true)}
+                >
+                  …
+                </button>
+              </li>
+            )}
           </ul>
-        )}
-        {!expanded && hiddenChips > 0 && (
-          <button
-            type="button"
-            className="options-panel__more"
-            aria-label={t('blocks.product_options.more', 'Show all options')}
-            title={t('blocks.product_options.more', 'Show all options')}
-            onClick={() => setExpanded(true)}
-          >
-            …
-          </button>
         )}
         <button
           type="button"
