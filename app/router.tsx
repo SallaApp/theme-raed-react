@@ -15,6 +15,7 @@ import {
   FeaturedProducts,
   featuredProductsConfig,
   FixedProducts,
+  LatestProducts,
   MainLinks,
   PhotosSlider,
   ProductsSlider,
@@ -71,6 +72,8 @@ registerHomeComponents({
   'featured-products-special-product': FeaturedProductsWithSpecialProduct,
   // Fork of the engine block so its grid renders the theme's ProductCard wrapper.
   'fixed-products': FixedProducts,
+  // Fork of the engine's no-blocks fallback, for the same reason.
+  'latest-products': LatestProducts,
   'slider-products-with-header': SliderProductsWithHeader,
   'enhanced-square-banners': EnhancedSquareBanners,
   blog: Blog,
