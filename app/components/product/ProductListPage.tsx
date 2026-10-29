@@ -50,12 +50,13 @@ function usePref<T extends string>(
       // This fills the hook's own state from localStorage; no parent is
       // involved: see .react-doctor/false-positives.md.
       // react-doctor-disable-next-line react-doctor/no-pass-data-to-parent
-      if (stored && values.includes(stored)) setValue(stored);
+      // A new key (or default) with nothing stored goes back to the default.
+      setValue(stored && values.includes(stored) ? stored : initial);
     } catch {
-      /* private mode */
+      setValue(initial);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [key]);
+  }, [key, initial]);
   const set = useCallback(
     (v: T) => {
       setValue(v);
@@ -446,9 +447,11 @@ export function ProductListPage({
   const selectedSort = query.sort;
   const [filtersOpen, setFiltersOpen] = useState(false);
   // The merchant's card layout picks the view until the visitor switches it.
+  // The visitor's choice is kept per layout, so changing the setting applies
+  // again, also live in the theme editor.
   const cardLayout = useProductCardLayout();
   const [view, setView] = usePref<View>(
-    'catalog-view',
+    `catalog-view-${cardLayout}`,
     ['grid', 'list'],
     cardLayout === 'horizontal' ? 'list' : 'grid'
   );
