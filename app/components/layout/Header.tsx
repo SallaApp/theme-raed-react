@@ -8,7 +8,6 @@ import { useTwilight, useIsHome } from '@salla.sa/twilight-theme-engine/provider
 import { useTranslation } from '@salla.sa/twilight-theme-engine/i18n';
 import { HookSlot } from '@salla.sa/twilight-theme-engine/hooks';
 import { Image } from '@salla.sa/twilight-theme-engine/common';
-import { PageAdvertisements } from '@salla.sa/twilight-theme-engine/layout';
 import { MapPinIcon, SearchIcon, ShoppingBagIcon } from '../icons';
 import { useHydrated } from '../../hooks/useHydrated';
 import { useAppSafeAreaTop } from '../../hooks/useAppSafeAreaTop';
@@ -16,6 +15,7 @@ import { HOME_ROUTE_ID, PRODUCT_ROUTE_ID } from '../../lib/routeIds';
 import { HeaderMainMenu } from './HeaderMainMenu';
 import { HeaderNav } from './HeaderNav';
 import { HeaderTopnav } from './HeaderTopnav';
+import { PageAdvertisements } from './PageAdvertisements';
 
 /** Opens the Salla search modal (the `<SallaSearch />` at the end of the header). */
 const openSearch = () => window.salla?.event?.dispatch('search::open');

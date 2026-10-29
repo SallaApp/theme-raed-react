@@ -54,7 +54,7 @@ vi.mock('../../../app/components/layout/HeaderNav', () => ({
   HeaderNav: ({ open }: { open: boolean }) => <nav data-testid="header-nav" data-open={open} />,
 }));
 
-vi.mock('@salla.sa/twilight-theme-engine/layout', () => ({
+vi.mock('../../../app/components/layout/PageAdvertisements', () => ({
   PageAdvertisements: () => <div data-testid="advertisement-bar-render" />,
 }));
 vi.mock('@salla.sa/twilight-components-react/search', () => ({

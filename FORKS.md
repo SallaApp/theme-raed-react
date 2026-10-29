@@ -19,6 +19,7 @@ upstream change the fork might have taken in, not proof that it was synced then.
 | `page/PageSingle.tsx`         | `routes/page/PageSingle.tsx`                  | `app/routes/$slug.page-$id.tsx`                    | 1.0.78 | `customised` pages render only the `information_page.information_page` hook                                |
 | `home/FixedProducts.tsx`      | `components/home/FixedProducts.tsx`           | `registerHomeComponents` in `app/router.tsx`       | 1.0.47 | Same markup, uses the theme `ProductCard`, and shows the block's `limit` products instead of always 4        |
 | `home/LatestProducts.tsx`     | `components/home/LatestProducts.tsx`          | `registerHomeComponents` in `app/router.tsx`       | 1.0.139 | Same markup, uses the theme `ProductCard` (the no-blocks home fallback)                                     |
+| `layout/PageAdvertisements.tsx` | `components/layout/PageAdvertisements.tsx` | `layout/Header.tsx` | 1.0.139 | The theme editor preview keeps each ad's pages (the engine shows every ad on every page there); page slug read from the router matches |
 
 ## Upgrading the engine
 
