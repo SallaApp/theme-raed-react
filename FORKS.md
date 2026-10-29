@@ -20,6 +20,7 @@ upstream change the fork might have taken in, not proof that it was synced then.
 | `home/FixedProducts.tsx`      | `components/home/FixedProducts.tsx`           | `registerHomeComponents` in `app/router.tsx`       | 1.0.47 | Same markup, uses the theme `ProductCard`, and shows the block's `limit` products instead of always 4        |
 | `home/LatestProducts.tsx`     | `components/home/LatestProducts.tsx`          | `registerHomeComponents` in `app/router.tsx`       | 1.0.139 | Same markup, uses the theme `ProductCard` (the no-blocks home fallback)                                     |
 | `layout/PageAdvertisements.tsx` | `components/layout/PageAdvertisements.tsx` | `layout/Header.tsx` | 1.0.139 | The theme editor preview keeps each ad's pages (the engine shows every ad on every page there); page slug read from the router matches |
+| `layout/Footer.tsx` | `components/layout/Footer.tsx` | `layout/ThemeLayout.tsx`, `layout/MobileAccountSheet.tsx` | 1.0.139 | Columns layout: a "Contact us" column (`<salla-contacts>` list) replaces the phone / email row under the description; the "Important links" column hides when the footer menu is empty |
 
 ## Upgrading the engine
 

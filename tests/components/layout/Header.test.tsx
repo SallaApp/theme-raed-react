@@ -54,6 +54,11 @@ vi.mock('../../../app/components/layout/HeaderNav', () => ({
   HeaderNav: ({ open }: { open: boolean }) => <nav data-testid="header-nav" data-open={open} />,
 }));
 
+const nav = { hasContent: true };
+vi.mock('../../../app/hooks/useNavHasContent', () => ({
+  useNavHasContent: () => nav.hasContent,
+}));
+
 vi.mock('../../../app/components/layout/PageAdvertisements', () => ({
   PageAdvertisements: () => <div data-testid="advertisement-bar-render" />,
 }));
@@ -83,6 +88,7 @@ beforeEach(() => {
   state.theme = { settings: { header_show_store_info: true } };
   state.isHome = true;
   state.routeIds = [];
+  nav.hasContent = true;
 });
 
 afterEach(() => {
@@ -102,6 +108,14 @@ describe('Header', () => {
     expect(getAllByLabelText('Search')).toHaveLength(1);
     expect(container.querySelector('[data-hook-slot="header:start"]')).toBeTruthy();
     expect(container.querySelector('[data-hook-slot="header:end"]')).toBeTruthy();
+  });
+
+  it('drops the menu button when the menu would open empty', () => {
+    nav.hasContent = false;
+    const { container, queryByLabelText } = render(<Header />);
+    expect(queryByLabelText('Menu')).toBeNull();
+    // The cell stays, so the logo keeps its place.
+    expect(container.querySelector('.site-header__nav-toggle')).toBeTruthy();
   });
 
   it('renders the store name, description and social links in the intro row', () => {

@@ -2,6 +2,7 @@ import { Suspense, useCallback } from 'react';
 import type { Product } from '@salla.sa/twilight-theme-engine/types';
 import { product, type ProductsListSource } from '@salla.sa/twilight-theme-engine/api/product';
 import { ProductCard } from '../product';
+import { useProductCardLayout } from '../../hooks/useProductCardLayout';
 import { ProductsSliderSkeleton, SallaProductsSlider } from '@salla.sa/twilight-components-react';
 
 interface ProductsSourceConfig {
@@ -24,6 +25,7 @@ export interface SliderProductsWithHeaderProps {
 }
 
 export function SliderProductsWithHeader({ data }: SliderProductsWithHeaderProps) {
+  const layout = useProductCardLayout();
   const {
     background,
     title,
@@ -92,7 +94,7 @@ export function SliderProductsWithHeader({ data }: SliderProductsWithHeaderProps
             blockTitle=" "
             {...(displayAllUrl ? { displayAllUrl } : {})}
           >
-            {(product) => <ProductCard product={product} />}
+            {(product) => <ProductCard product={product} layout={layout} />}
           </SallaProductsSlider>
         </Suspense>
       </div>

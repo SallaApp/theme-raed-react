@@ -6,6 +6,11 @@ import { ProductsSlider } from '../../../app/components/home/ProductsSlider';
 const listMock = vi.fn();
 
 // Only the module under test, not the whole barrel and everything it re-exports.
+const cardLayout = { value: 'vertical' as 'vertical' | 'horizontal' };
+vi.mock('../../../app/hooks/useProductCardLayout', () => ({
+  useProductCardLayout: () => cardLayout.value,
+}));
+
 vi.mock('../../../app/components/common', async () => ({
   ScrollCarousel: (await vi.importActual<typeof import('../../../app/components/common/ScrollCarousel')>(
     '../../../app/components/common/ScrollCarousel'

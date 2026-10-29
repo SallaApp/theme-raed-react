@@ -7,6 +7,8 @@ import { ProductsListSkeleton } from '@salla.sa/twilight-components-react';
 import { ScrollCarousel } from '../common';
 import { ProductCard } from '../product';
 import { blockLimit } from '../../lib/blockLimit';
+import { showsDisplayAll } from '../../lib/displayAll';
+import { useProductCardLayout } from '../../hooks/useProductCardLayout';
 
 export interface ProductsSliderProps {
   data: {
@@ -39,6 +41,7 @@ export function ProductsSlider({ data, onResolve }: ProductsSliderProps) {
   const source = data.products?.source;
   const sourceValue = data.products?.source_value ?? undefined;
   const limit = blockLimit(data.limit);
+  const layout = useProductCardLayout();
 
   // `product.queries.list` over a manual fetch: scope-aware cache key, request
   // dedup, an AbortSignal wired to the query lifecycle instead of a hand-rolled
@@ -88,10 +91,18 @@ export function ProductsSlider({ data, onResolve }: ProductsSliderProps) {
 
   const { title } = data;
   const displayAll = data.display_all_url;
-  const displayAllUrl = displayAll && displayAll !== '' && displayAll !== '#' ? displayAll : '';
+  const displayAllUrl =
+    displayAll &&
+    displayAll !== '#' &&
+    // A `latest` block waits for its count, so the link doesn't flash in and out.
+    (isSuccess
+      ? showsDisplayAll(source, items?.length ?? 0, limit, result?.next)
+      : source !== 'latest')
+      ? displayAll
+      : '';
 
   return (
-    <div className="s-products-carousel">
+    <div className={`s-products-carousel s-products-carousel--${layout}`}>
       {(title || displayAllUrl) && (
         <div className="s-products-carousel__head">
           {title && <h2 className="s-products-carousel__title">{title}</h2>}
@@ -113,7 +124,7 @@ export function ProductsSlider({ data, onResolve }: ProductsSliderProps) {
         >
           {(items ?? []).map((item) => (
             <div key={item.id} className="s-products-carousel__slide">
-              <ProductCard product={item} />
+              <ProductCard product={item} layout={layout} />
             </div>
           ))}
         </ScrollCarousel>

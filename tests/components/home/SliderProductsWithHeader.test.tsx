@@ -3,6 +3,11 @@ import { describe, it, expect, vi } from 'vitest';
 import { render } from '@testing-library/react';
 
 // Only the module under test, not the whole barrel and everything it re-exports.
+const cardLayout = { value: 'vertical' as 'vertical' | 'horizontal' };
+vi.mock('../../../app/hooks/useProductCardLayout', () => ({
+  useProductCardLayout: () => cardLayout.value,
+}));
+
 vi.mock('../../../app/components/product', async () => ({
   ProductCard: (await vi.importActual<typeof import('../../../app/components/product/ProductCard')>(
     '../../../app/components/product/ProductCard'

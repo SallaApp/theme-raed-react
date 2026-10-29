@@ -26,6 +26,7 @@ import { useAppliedFilters } from '@salla.sa/twilight-theme-engine/routes/produc
 import type { ProductListFilters } from '@salla.sa/twilight-theme-engine/api/product';
 import { BlockHookSlot, BottomSheet } from '../common';
 import { useAppSafeAreaTop } from '../../hooks/useAppSafeAreaTop';
+import { useProductCardLayout } from '../../hooks/useProductCardLayout';
 import { useScrollDirection } from '../../hooks/useScrollDirection';
 import {
   ChevronDownIcon,
@@ -444,7 +445,13 @@ export function ProductListPage({
 
   const selectedSort = query.sort;
   const [filtersOpen, setFiltersOpen] = useState(false);
-  const [view, setView] = usePref<View>('catalog-view', ['grid', 'list'], 'grid');
+  // The merchant's card layout picks the view until the visitor switches it.
+  const cardLayout = useProductCardLayout();
+  const [view, setView] = usePref<View>(
+    'catalog-view',
+    ['grid', 'list'],
+    cardLayout === 'horizontal' ? 'list' : 'grid'
+  );
   const [filtersHidden, setFiltersHidden] = usePref<'0' | '1'>(
     'catalog-filters-hidden',
     ['0', '1'],
