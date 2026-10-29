@@ -80,7 +80,7 @@ beforeEach(() => {
     description: '<p>Handmade goods</p>',
     social: { twitter: 'https://x.com/acme' },
   };
-  state.theme = { settings: {} };
+  state.theme = { settings: { header_show_store_info: true } };
   state.isHome = true;
   state.routeIds = [];
 });
@@ -123,10 +123,11 @@ describe('Header', () => {
     expect(container.querySelector('header.site-header')).toBeTruthy();
   });
 
-  it('shows the store info row when header_show_store_info is unset', () => {
+  it('hides the store info row when header_show_store_info is unset', () => {
     state.routeIds = [HOME_ROUTE_ID];
+    state.theme = { settings: {} };
     const { container } = render(<Header />);
-    expect(container.querySelector('.site-header__intro')).toBeTruthy();
+    expect(container.querySelector('.site-header__intro')).toBeNull();
   });
 
   it('leaves the store contacts to the footer, out of the intro row', () => {
@@ -198,7 +199,7 @@ describe('Header', () => {
   });
 
   it('shows the store info row on every page when home-only is off', () => {
-    state.theme = { settings: { header_store_info_home_only: false } };
+    state.theme = { settings: { header_show_store_info: true, header_store_info_home_only: false } };
     state.routeIds = ['/{-$locale}/$slug/p{$id}'];
     state.isHome = false;
     const { container } = render(<Header />);

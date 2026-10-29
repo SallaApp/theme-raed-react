@@ -143,14 +143,14 @@ export function Header({ navOpen: navOpenProp, onNavOpenChange }: HeaderProps = 
     select: (state) => state.matches.some((match) => match.routeId === HOME_ROUTE_ID),
   });
   // Store name, description, social and contacts under the logo: lite layout only,
-  // when `header_show_store_info` is on, and on the home page alone unless
-  // `header_store_info_home_only` is turned off.
+  // when `header_show_store_info` is explicitly on (missing counts as off), and
+  // on the home page alone unless `header_store_info_home_only` is turned off.
   const introSettings = theme?.settings as
     | { header_show_store_info?: boolean; header_store_info_home_only?: boolean }
     | undefined;
   const showIntro =
     !isDefaultLayout &&
-    introSettings?.header_show_store_info !== false &&
+    introSettings?.header_show_store_info === true &&
     (introSettings?.header_store_info_home_only === false || isHomePage);
   // Marker in the flow, right where the main bar sits. The bar pins once this
   // scrolls out the top of the viewport (see below).
