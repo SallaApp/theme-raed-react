@@ -27,3 +27,6 @@ allowBuilds:
 overrides:
   'undici@>=7.0.0 <7.29.1': 7.29.1
   'sharp@>=0.35.0 <0.35.5': 0.35.5
+# tailwindcss@3 and postcss-nested@6 pin postcss-selector-parser 6.x, whose line never got the
+# GHSA-rj75-hqrm-r3gf fix (7.1.6 only). Drop once the tailwind toolchain no longer pins 6.x.
+  'postcss-selector-parser@<7.1.6': 7.1.6
