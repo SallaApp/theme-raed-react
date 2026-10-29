@@ -271,6 +271,13 @@ describe('Header', () => {
     expect(pinMargins().at(-1)).toBe('-47px 0px 0px 0px');
   });
 
+  it("opens with the status-bar strip, before anything else in the header, hidden from screen readers", () => {
+    const { container } = render(<Header />);
+    const strip = container.querySelector('header')!.firstElementChild!;
+    expect(strip.className).toBe('site-header__safe-area');
+    expect(strip.getAttribute('aria-hidden')).toBe('true');
+  });
+
   it('never pins the bar when header_is_sticky is disabled', () => {
     state.theme = { settings: { header_is_sticky: false } };
     const { container } = render(<Header />);

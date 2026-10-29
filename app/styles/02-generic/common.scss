@@ -15,13 +15,13 @@ input[type='file'] {
   display: none;
 }
 
-/* Inside the Salla app, keep the page clear of the status bar and the home
-   indicator with the insets the app reports. Unset (0) in a browser.
-   `html body`, not `body`: the engine's inline head style resets
-   `html,body{padding:0}` after this stylesheet, and at equal specificity it won,
-   leaving the page under the status bar. */
+/* Inside the Salla app, keep the page clear of the home indicator with the
+   inset the app reports. Unset (0) in a browser. The top inset is not padded
+   here: the app shows the page edge to edge, and the header grows by the status
+   bar instead (`.site-header__safe-area`, header.scss), so its own background
+   fills it. `html body`, not `body`: the engine's inline head style resets
+   `html,body{padding:0}` after this stylesheet, and at equal specificity it won. */
 html body {
-  padding-top: var(--app-safe-area-top, 0px);
   padding-bottom: var(--app-safe-area-bottom, 0px);
 }
 

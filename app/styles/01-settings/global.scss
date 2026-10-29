@@ -34,10 +34,11 @@ $main-text-color: var(--main-text-color);
      the larger keeps one inset from being counted twice. */
   --safe-top: max(env(safe-area-inset-top, 0px), var(--app-safe-area-top, 0px));
   --safe-bottom: max(env(safe-area-inset-bottom, 0px), var(--app-safe-area-bottom, 0px));
-  /* What is left for an element in the page flow: `body` is already padded by
-     the app's insets (02-generic/common.scss), so only the part env() asks for
-     beyond them. env() in a browser; normally 0 in the app. Fixed elements,
-     which body padding doesn't move, use `--safe-*`. */
+  /* What is left for an element in the page flow: the app's insets are already
+     taken at the top by the header's status-bar strip (`.site-header__safe-area`)
+     and at the bottom by the body's padding (02-generic/common.scss), so only the
+     part env() asks for beyond them. env() in a browser; normally 0 in the app.
+     Fixed elements use `--safe-*`. */
   --flow-safe-top: max(0px, env(safe-area-inset-top, 0px) - var(--app-safe-area-top, 0px));
   --flow-safe-bottom: max(0px, env(safe-area-inset-bottom, 0px) - var(--app-safe-area-bottom, 0px));
 }
