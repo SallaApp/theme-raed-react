@@ -199,6 +199,8 @@ export function Header({ navOpen: navOpenProp, onNavOpenChange }: HeaderProps = 
       }${isHomePage ? ' site-header--home' : ''}`}
       suppressHydrationWarning
     >
+      {/* The status bar's height inside the Salla app; nothing in a browser (header.scss). */}
+      <div className="site-header__safe-area" aria-hidden="true" />
       <HookSlot name="header:start" />
 
       <div className="site-header__ad">
