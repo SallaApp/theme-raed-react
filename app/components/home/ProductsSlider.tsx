@@ -8,7 +8,6 @@ import { ScrollCarousel } from '../common';
 import { ProductCard } from '../product';
 import { blockLimit } from '../../lib/blockLimit';
 import { showsDisplayAll } from '../../lib/displayAll';
-import { useProductCardLayout } from '../../hooks/useProductCardLayout';
 
 export interface ProductsSliderProps {
   data: {
@@ -34,14 +33,15 @@ export interface ProductsSliderProps {
  *
  * Replaces the engine's Swiper (`<salla-products-slider>`) with the theme's
  * {@link ScrollCarousel} — a native scroll row with a progress bar + arrows,
- * matching the homepage testimonials. Styling: `04-components/home-blocks.scss`.
+ * matching the homepage testimonials. Cards are always vertical: the store's
+ * `product_card_layout` applies to grids and lists, not sliders.
+ * Styling: `04-components/home-blocks.scss`.
  */
 export function ProductsSlider({ data, onResolve }: ProductsSliderProps) {
   const { t } = useTranslation();
   const source = data.products?.source;
   const sourceValue = data.products?.source_value ?? undefined;
   const limit = blockLimit(data.limit);
-  const layout = useProductCardLayout();
 
   // `product.queries.list` over a manual fetch: scope-aware cache key, request
   // dedup, an AbortSignal wired to the query lifecycle instead of a hand-rolled
@@ -102,7 +102,7 @@ export function ProductsSlider({ data, onResolve }: ProductsSliderProps) {
       : '';
 
   return (
-    <div className={`s-products-carousel s-products-carousel--${layout}`}>
+    <div className="s-products-carousel s-products-carousel--vertical">
       {(title || displayAllUrl) && (
         <div className="s-products-carousel__head">
           {title && <h2 className="s-products-carousel__title">{title}</h2>}
@@ -124,7 +124,7 @@ export function ProductsSlider({ data, onResolve }: ProductsSliderProps) {
         >
           {(items ?? []).map((item) => (
             <div key={item.id} className="s-products-carousel__slide">
-              <ProductCard product={item} layout={layout} />
+              <ProductCard product={item} layout="vertical" />
             </div>
           ))}
         </ScrollCarousel>

@@ -3,6 +3,7 @@ import type { Product } from '@salla.sa/twilight-theme-engine/types';
 import { useTranslation } from '@salla.sa/twilight-theme-engine/i18n';
 import { product, type ProductsListSource } from '@salla.sa/twilight-theme-engine/api/product';
 import { ProductCard } from '../product';
+import { useProductCardLayout } from '../../hooks/useProductCardLayout';
 import { SallaProductsList, ProductsListSkeleton } from '@salla.sa/twilight-components-react';
 
 /**
@@ -20,6 +21,9 @@ import { SallaProductsList, ProductsListSkeleton } from '@salla.sa/twilight-comp
  * `featured-products-special-offer` and `featured-products-special-product`.
  * The older combined block chose one through `show_method`, which saved blocks
  * may still carry, so `featured-products` keeps honoring it.
+ *
+ * Without a special product the tab grids follow the store's
+ * `product_card_layout` (vertical or horizontal), with one tab or several.
  */
 
 const TYPE_TO_SOURCE: Record<string, ProductsListSource> = {
@@ -210,6 +214,7 @@ export function FeaturedProducts({
   const { t } = useTranslation();
   const sections = useMemo(() => (Array.isArray(data.items) ? data.items : []), [data.items]);
   const [active, setActive] = useState('0');
+  const cardLayout = useProductCardLayout();
 
   const tabs: Tab[] = useMemo(
     () =>
@@ -293,6 +298,7 @@ export function FeaturedProducts({
                   source={tab.source as ProductsListSource}
                   sourceValue={tab.sourceValue}
                   limit={perTab}
+                  layout={hasSpecial ? 'vertical' : cardLayout}
                 />
               )}
             </div>

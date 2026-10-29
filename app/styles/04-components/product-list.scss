@@ -19,10 +19,6 @@
     @apply gap-1;
   }
 
-  &__count {
-    @apply whitespace-nowrap px-4 text-sm text-gray-500;
-  }
-
   &__views {
     @apply flex items-center gap-1 px-3;
 
@@ -160,10 +156,6 @@
     .s-catalog-toolbar__views {
       @apply order-1 px-0;
       margin-inline-end: auto;
-    }
-
-    .s-catalog-toolbar__count {
-      @apply order-2 px-0;
     }
 
     .s-catalog-toolbar__sort {

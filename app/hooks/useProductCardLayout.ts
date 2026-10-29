@@ -12,7 +12,8 @@ export function productCardLayout(raw: unknown): ProductCardLayout {
 
 /**
  * The merchant's product card layout (`product_card_layout`), for the product
- * blocks on the home page and the default view of the product listing.
+ * grids and lists on the home page and the default view of the product listing.
+ * Product sliders ignore it and always use vertical cards.
  */
 export function useProductCardLayout(): ProductCardLayout {
   const { theme } = useTwilight();
