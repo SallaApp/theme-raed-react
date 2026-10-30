@@ -18,7 +18,8 @@ export interface PageSingleProps {
  * Adds the classic-storefront `information_page.information_page` app hook: on a
  * `customised` page the whole body IS the app-injected block, so we render only
  * the hook — exactly like `page-single.twig`. Every other page type keeps the
- * engine's breadcrumb + article + comments layout.
+ * engine's breadcrumb + article + comments layout, keyed by the page id so
+ * moving from one page to another loads the new page's comments.
  *
  * Upgrade notes: `FORKS.md`.
  */
@@ -43,7 +44,10 @@ export function PageSingle({ page }: PageSingleProps) {
   }
 
   return (
-    <div key={page.slug} className="container">
+    // Keyed by the page id: the loader gives every page the same `slug` (the route
+    // id), and TanStack keeps the route mounted between two pages, so the comments
+    // list would otherwise keep the page it first loaded for.
+    <div key={page.id ?? page.slug} className="container">
       <Breadcrumb page={page} />
 
       <div className="flex justify-center">
