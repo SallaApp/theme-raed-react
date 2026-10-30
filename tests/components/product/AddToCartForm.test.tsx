@@ -232,3 +232,49 @@ describe('AddToCartForm sticky bar when sold out', () => {
     expect(bar(container).classList.contains('sticky-product-bar--sold-out')).toBe(false);
   });
 });
+
+describe('AddToCartForm note and file tabs', () => {
+  const tab = (container: HTMLElement, text: string) =>
+    [...container.querySelectorAll<HTMLButtonElement>('.btn--collapse')].find((b) =>
+      b.textContent?.includes(text)
+    )!;
+
+  it('says which panel each tab controls and whether it is open', () => {
+    const { container } = render(
+      <AddToCartForm product={makeProduct({ can_add_note: true, can_upload_file: true })} />
+    );
+    const note = tab(container, 'pages.products.add_note');
+    const panel = container.querySelector(`#${note.getAttribute('aria-controls')}`)!;
+
+    expect(note.getAttribute('aria-expanded')).toBe('false');
+    expect(panel.querySelector('textarea[name="notes"]')).toBeTruthy();
+
+    fireEvent.click(note);
+    expect(note.getAttribute('aria-expanded')).toBe('true');
+    expect(tab(container, 'pages.products.add_file').getAttribute('aria-expanded')).toBe('false');
+  });
+
+  it('keeps a closed panel out of the tab order, so Tab does not land on a hidden field', () => {
+    const { container } = render(<AddToCartForm product={makeProduct({ can_add_note: true })} />);
+    const note = tab(container, 'pages.products.add_note');
+    const panel = container.querySelector(`#${note.getAttribute('aria-controls')}`)!;
+
+    expect(panel.hasAttribute('inert')).toBe(true);
+    fireEvent.click(note);
+    expect(panel.hasAttribute('inert')).toBe(false);
+  });
+
+  it('still posts a note the shopper typed and then closed the tab on', () => {
+    const { container } = render(<AddToCartForm product={makeProduct({ can_add_note: true })} />);
+    const note = tab(container, 'pages.products.add_note');
+
+    fireEvent.click(note);
+    fireEvent.change(container.querySelector('textarea[name="notes"]')!, {
+      target: { value: 'Gift wrap' },
+    });
+    fireEvent.click(note);
+
+    const form = container.querySelector<HTMLFormElement>('form')!;
+    expect(new FormData(form).get('notes')).toBe('Gift wrap');
+  });
+});

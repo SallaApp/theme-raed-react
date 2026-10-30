@@ -256,3 +256,28 @@ describe('ProductDetails description embeds', () => {
     expect(container.querySelector('.video-facade')).toBeNull();
   });
 });
+
+describe('ProductDetails read more', () => {
+  const longProduct = () =>
+    makeProduct({ description: '<p>Long text</p>', has_read_more: true } as Partial<Product>);
+
+  it('says what the button expands and whether it has', async () => {
+    const { container } = render(<ProductDetails product={longProduct()} />);
+    const button = await waitFor(() => container.querySelector<HTMLElement>('#btn-show-more')!);
+
+    expect(button.getAttribute('aria-controls')).toBe('more-content');
+    expect(button.getAttribute('aria-expanded')).toBe('false');
+    expect(button.hasAttribute('inert')).toBe(false);
+  });
+
+  it('moves focus to the revealed text, since the button fades out and leaves the tab order', async () => {
+    const { container } = render(<ProductDetails product={longProduct()} />);
+    const button = await waitFor(() => container.querySelector<HTMLElement>('#btn-show-more')!);
+    button.focus();
+
+    fireEvent.click(button);
+
+    expect(button.hasAttribute('inert')).toBe(true);
+    expect(document.activeElement).toBe(container.querySelector('#more-content'));
+  });
+});
