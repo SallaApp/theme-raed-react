@@ -629,41 +629,191 @@
 }
 
 /*
-  Photos slider — plain linked images/banners in a horizontal scroller with
-  a progress bar + arrows (the same `ScrollCarousel` as the testimonials and
-  products sliders). Markup: app/components/home/PhotosSlider.tsx
+  Photos slider — one centred banner with its neighbours on both sides, endless
+  in both directions. Markup: app/components/home/PhotosSlider.tsx
+
+  --stage-w is the banner's width: the container's, less on a short screen so the
+  whole banner stays above the fold, and always leaving room for a peek on phones.
+  Every percentage in it resolves against the row, wherever the variable is used.
 */
-.s-photos-slider__slide {
-  @apply block shrink-0 rounded overflow-hidden bg-gray-100;
-  flex: 0 0 88%;
-  aspect-ratio: 3 / 2;
-  scroll-snap-align: start;
+.s-photos-stage {
+  --stage-ratio: 1.7; /* until the first banner has loaded */
+  --stage-gap: 0.625rem;
+  --stage-vh: 100vh;
+  --stage-w: min(1260px, 100% - 3rem, max(18rem, (var(--stage-vh) - 14rem) * var(--stage-ratio)));
 
-  @media (min-width: 640px) {
-    flex-basis: 70%;
+  @supports (height: 100svh) {
+    --stage-vh: 100svh;
   }
 
-  @media (min-width: 1024px) {
-    flex-basis: calc(50% - 1rem);
+  @media (min-width: 768px) {
+    --stage-gap: 1.5rem;
   }
 
-  img {
-    @apply w-full h-full object-cover;
+  &__viewport {
+    @apply relative mx-auto;
+    max-width: 1920px;
+
+    /* Past 1920px the row stops and fades, so neighbours never take over the screen. */
+    @media (min-width: 1921px) {
+      mask-image: linear-gradient(to right, transparent, #000 8%, #000 92%, transparent);
+    }
+  }
+
+  &__track {
+    @apply relative flex overflow-x-auto cursor-grab;
+    gap: var(--stage-gap);
+    scroll-snap-type: x mandatory;
+    overscroll-behavior-x: contain;
+
+    &.is-dragging {
+      @apply cursor-grabbing select-none;
+      scroll-snap-type: none;
+      scroll-behavior: auto;
+    }
+  }
+
+  /* The server's HTML can't set a scroll position, so the one copy it renders is
+     pulled in by its own width: the first real banner is centred without one. */
+  &.is-static .s-photos-slider__slide:first-child {
+    margin-inline-start: calc((100% - var(--stage-w)) / 2 - var(--stage-gap) - var(--stage-w));
+  }
+
+  &.is-static .s-photos-slider__slide:last-child {
+    margin-inline-end: calc((100% - var(--stage-w)) / 2);
+  }
+
+  &.is-single &__track {
+    @apply justify-center overflow-hidden cursor-auto;
+  }
+
+  &__arrow {
+    @apply absolute top-1/2 z-1 hidden h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full bg-white text-gray-900 transition-colors hover:bg-primary hover:text-primary-reverse md:inline-flex;
+    box-shadow:
+      0 1px 2px rgb(17 24 39 / 12%),
+      0 6px 20px rgb(17 24 39 / 14%);
+
+    /* The chevrons are drawn for RTL, where prev sits on the right and points
+       right; in LTR both point the other way. */
+    svg {
+      @apply h-5 w-5 ltr:-scale-x-100;
+    }
+
+    &:focus-visible {
+      @apply outline outline-2 outline-offset-2 outline-primary;
+    }
+
+    /* Straddling the banner's edge, and on screen however narrow the gutter. */
+    &--prev {
+      inset-inline-start: max(0.5rem, calc((100% - var(--stage-w)) / 2 - 1.5rem));
+    }
+
+    &--next {
+      inset-inline-end: max(0.5rem, calc((100% - var(--stage-w)) / 2 - 1.5rem));
+    }
+  }
+
+  /* A segment on desktop, a dot on phones: the same button, 24px tall to tap. */
+  &__pager {
+    @apply mt-2 flex flex-wrap items-center justify-center md:mt-3 md:gap-1.5;
+  }
+
+  &__pause {
+    @apply hidden h-8 w-8 items-center justify-center rounded-full text-gray-700 transition-colors hover:bg-gray-100 md:inline-flex;
+
+    svg {
+      @apply h-3.5 w-3.5;
+    }
+
+    &:focus-visible {
+      @apply outline outline-2 outline-offset-2 outline-primary;
+    }
+  }
+
+  &__segment {
+    @apply flex h-6 w-6 items-center justify-center p-0 md:w-11;
+
+    &:focus-visible {
+      @apply outline outline-2 outline-primary;
+    }
+  }
+
+  &__bar {
+    @apply block h-1.5 w-1.5 overflow-hidden rounded-full bg-gray-300 md:h-1 md:w-full md:bg-gray-200;
+    transition:
+      width 0.2s ease,
+      background-color 0.2s ease;
+  }
+
+  &__segment.is-active &__bar {
+    @apply w-[18px] bg-primary md:w-full;
+  }
+
+  /* The fill is the timer: PhotosSlider moves on when it ends. It never runs on
+     phones, so nothing there moves on its own. */
+  &__fill {
+    @apply hidden h-full w-full bg-primary origin-left rtl:origin-right md:block;
+    animation: photos-stage-fill 5s linear forwards;
+    will-change: transform;
+  }
+
+  @media (min-width: 768px) {
+    &.is-playing &__segment.is-active &__bar {
+      @apply bg-gray-200;
+    }
+  }
+
+  /* Hovering, keyboard focus or leaving the screen holds the timer where it is. */
+  @media (hover: hover) {
+    &:hover &__fill {
+      animation-play-state: paused;
+    }
+  }
+
+  &:has(:focus-visible) &__fill,
+  &.is-offscreen &__fill {
+    animation-play-state: paused;
   }
 }
 
-.s-block--photos-slider {
-  /* Same container treatment as the testimonials carousel: the row starts
-     flush with the container's edge but is free to bleed past it into the
-     viewport edge, instead of being boxed in on both sides. */
-  .scroll-carousel__track {
-    padding-inline-start: max(1rem, calc(50% - 630px));
-    padding-inline-end: 1rem;
-    scroll-padding-inline-start: max(1rem, calc(50% - 630px));
+@keyframes photos-stage-fill {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+.s-photos-slider__slide {
+  @apply block shrink-0 rounded-2xl overflow-hidden bg-gray-100;
+  flex: 0 0 var(--stage-w);
+  aspect-ratio: var(--stage-ratio);
+  scroll-snap-align: center;
+  scroll-snap-stop: always;
+  /* The neighbours step back. Every copy of the current banner carries
+     `is-current`, so the jump between copies changes nothing on screen. */
+  opacity: 0.45;
+  transform: scale(0.97);
+  transition:
+    opacity 0.35s ease,
+    transform 0.35s ease;
+
+  &.is-current {
+    opacity: 1;
+    transform: none;
   }
 
-  .scroll-carousel__controls {
-    @apply container;
+  @media (prefers-reduced-motion: reduce) {
+    transition: none;
+  }
+
+  img {
+    @apply block h-full w-full object-cover;
+  }
+
+  &:focus-visible {
+    @apply outline outline-2 -outline-offset-2 outline-primary;
   }
 }
 
@@ -706,33 +856,40 @@
 }
 
 .s-block--photos-slider-with-text {
-  /* The photos slider's container treatment: the row starts at the
-     container's edge and bleeds past the other into the viewport. */
-  .scroll-carousel__track {
-    padding-inline-start: max(1rem, calc(50% - 630px));
-    padding-inline-end: 1rem;
-    scroll-padding-inline-start: max(1rem, calc(50% - 630px));
+  /* Off the container: two whole cards across the screen, with the same gutter
+     on both sides, up to 1920px. */
+  .scroll-carousel {
+    @apply mx-auto;
+    max-width: 1920px;
   }
 
-  .scroll-carousel__controls {
-    @apply container;
+  .scroll-carousel__track {
+    margin-inline: 0;
+    padding-inline: 1rem;
+    scroll-padding-inline: 1rem;
+  }
+
+  .scroll-carousel__foot {
+    @apply px-4;
   }
 
   .home-slider__cta {
     @apply mt-5 sm:mt-8;
   }
 
-  /* `in_container`: boxed to the container on both sides, no bleed. */
+  /* `in_container`: boxed to the container on both sides. */
   &.s-block--photos-slider-with-text-boxed .scroll-carousel {
     @apply container;
 
-    .scroll-carousel__track {
-      padding-inline: 0;
-      scroll-padding-inline-start: 0;
+    .scroll-carousel__foot {
+      @apply px-0;
     }
 
-    .scroll-carousel__controls {
-      @apply px-0;
+    @media (min-width: 768px) {
+      .scroll-carousel__track {
+        padding-inline: 0;
+        scroll-padding-inline: 0;
+      }
     }
   }
 }
@@ -1061,7 +1218,7 @@
 }
 
 /*
-  Custom testimonials — full-width gray band with a horizontal card scroller.
+  Custom testimonials — full-width gray band around a row of whole cards.
   Markup: app/components/home/CustomTestimonials.tsx
 */
 .s-block--custom-testimonials {
@@ -1078,103 +1235,103 @@ salla-reviews:not(:has(.s-reviews-swiper-slide)) {
 }
 
 .s-testimonials {
-  &__head {
-    @apply mb-6 lg:mb-10;
-  }
-
   &__title {
-    @apply text-xl font-bold text-gray-900;
+    @apply text-xl font-bold text-gray-900 lg:text-2xl;
   }
 
   &__desc {
-    @apply mt-2 text-sm text-gray-500;
-  }
-
-  &__scroller {
-    @apply flex gap-4 lg:gap-6 overflow-x-auto pb-1 cursor-grab;
-    scroll-snap-type: x proximity;
-    /* the row starts at the container's start edge (right in RTL) and its tail
-       bleeds to the opposite viewport edge */
-    padding-inline-start: max(1rem, calc(50% - 630px));
-    padding-inline-end: 1rem;
-    scroll-padding-inline-start: max(1rem, calc(50% - 630px));
-
-    &.is-dragging {
-      @apply cursor-grabbing select-none;
-      scroll-snap-type: none;
-      scroll-behavior: auto;
-    }
-  }
-
-  &__controls {
-    @apply flex items-center gap-4 mt-6 lg:mt-8;
-  }
-
-  &__nav {
-    @apply flex items-center gap-2 shrink-0;
-
-    button {
-      @apply w-11 h-11 rounded-full border border-gray-300 text-gray-600 inline-flex items-center justify-center transition-colors hover:border-primary hover:text-primary;
-
-      /* The chevrons are drawn for RTL, where prev sits on the right and
-         points right; in LTR both point the other way. */
-      svg {
-        @apply w-5 h-5 ltr:-scale-x-100;
-      }
-    }
-  }
-
-  &__progress {
-    @apply relative flex-1 h-0.5 bg-gray-200 rounded-full;
-  }
-
-  &__progress-thumb {
-    @apply absolute top-0 h-0.5 bg-gray-900 rounded-full transition-all duration-200;
+    @apply mt-1 text-sm text-gray-500;
   }
 }
 
+/* Three whole cards on desktop, and any fewer share the row between them. */
 .testimonial-card {
-  @apply flex-shrink-0 flex flex-col bg-white rounded p-5 lg:p-6;
-  flex-basis: clamp(260px, 30%, 340px);
+  @apply m-0 flex flex-col gap-4 rounded-2xl border border-gray-100 bg-white p-5 lg:p-7;
+  flex: 1 0 calc(100% - 2.5rem);
   scroll-snap-align: start;
 
-  &__head {
-    @apply flex items-start justify-between gap-3 mb-4;
+  @media (min-width: 640px) {
+    flex-basis: calc((100% - 1rem) / 2);
   }
 
-  &__rating {
-    @apply inline-flex items-center gap-1 shrink-0 bg-gray-100 rounded-full px-2.5 py-1 text-sm font-bold text-gray-800;
+  @media (min-width: 1024px) {
+    flex-basis: calc((100% - 3rem) / 3);
+  }
+
+  &__head {
+    @apply flex items-center justify-between gap-3;
+  }
+
+  &__quote {
+    @apply h-5 w-auto shrink-0 text-primary lg:h-6;
+  }
+
+  &__stars {
+    @apply inline-flex shrink-0 gap-0.5;
 
     svg {
-      @apply w-3.5 h-3.5 fill-current text-amber-400;
+      @apply h-4 w-4 fill-current text-gray-200 lg:h-[18px] lg:w-[18px];
+
+      &.is-on {
+        @apply text-amber-400;
+      }
     }
-  }
-
-  &__person {
-    @apply flex items-center gap-2.5 rtl:text-right ltr:text-left;
-  }
-
-  &__name {
-    @apply text-sm font-bold text-gray-900 whitespace-nowrap;
-  }
-
-  &__avatar {
-    @apply w-11 h-11 rounded-full object-cover shrink-0 bg-gray-100;
   }
 
   &__text {
-    @apply text-sm leading-6 text-gray-600 line-clamp-4;
+    @apply m-0 flex-1 text-base leading-7 text-gray-800 line-clamp-5;
+  }
+
+  &__person {
+    @apply flex items-center gap-3 rtl:text-right ltr:text-left;
+  }
+
+  &__name {
+    @apply min-w-0 truncate text-sm font-bold text-gray-900;
+  }
+
+  &__avatar {
+    @apply h-11 w-11 shrink-0 rounded-full bg-gray-100 object-cover;
+
+    &.is-initial {
+      @apply inline-flex items-center justify-center font-bold text-primary;
+    }
   }
 }
 
 /*
-  Shared scroll carousel (app/components/common/ScrollCarousel.tsx) — used by the
-  products slider block and the product page's "similar products" slider.
+  Shared scroll carousel (app/components/common/ScrollCarousel.tsx): a row of whole
+  slides boxed to its container, used by the products, testimonials and blog rows
+  and the product page's "similar products". Each block sets its slide widths. On
+  phones the row runs on past the container to the screen's edge.
 */
 .scroll-carousel {
+  &__head {
+    @apply mb-4 flex items-center gap-4 lg:mb-6;
+
+    @media (min-width: 768px) {
+      min-height: 2.75rem; /* the arrows, which arrive once the row is measured */
+    }
+  }
+
+  &__heading {
+    @apply min-w-0 flex-1;
+  }
+
   &__track {
-    @apply flex gap-4 lg:gap-6 overflow-x-auto pb-1 cursor-grab;
-    scroll-snap-type: x proximity;
+    @apply flex gap-3 overflow-x-auto cursor-grab md:gap-4 lg:gap-6;
+    margin-inline: -10px; /* the container's padding */
+    padding-inline: 10px;
+    scroll-padding-inline: 10px;
+    padding-block-end: 0.25rem;
+    scroll-snap-type: x mandatory;
+    overscroll-behavior-x: contain;
+
+    @media (min-width: 768px) {
+      margin-inline: 0;
+      padding-inline: 0;
+      scroll-padding-inline: 0;
+    }
 
     &.is-dragging {
       @apply cursor-grabbing select-none;
@@ -1183,59 +1340,69 @@ salla-reviews:not(:has(.s-reviews-swiper-slide)) {
     }
   }
 
-  &__controls {
-    @apply flex items-center gap-4 mt-6;
+  &__foot {
+    @apply mt-4 flex justify-end;
   }
 
   &__nav {
-    @apply flex items-center gap-2 shrink-0;
+    @apply flex shrink-0 items-center gap-2;
 
     button {
-      @apply w-11 h-11 rounded-full border border-gray-300 text-gray-600 inline-flex items-center justify-center transition-colors hover:border-primary hover:text-primary;
+      @apply inline-flex h-11 w-11 items-center justify-center rounded-full border border-gray-300 text-gray-800 transition-colors;
+
+      &:hover:not(:disabled) {
+        @apply border-primary bg-primary text-primary-reverse;
+      }
+
+      &:focus-visible {
+        @apply outline outline-2 outline-offset-2 outline-primary;
+      }
+
+      /* Disabled, not hidden, so nothing jumps at the end of the row. */
+      &:disabled {
+        @apply cursor-default opacity-35;
+      }
 
       /* The chevrons are drawn for RTL, where prev sits on the right and
          points right; in LTR both point the other way. */
       svg {
-        @apply w-5 h-5 ltr:-scale-x-100;
+        @apply h-5 w-5 ltr:-scale-x-100;
       }
     }
   }
 
-  &__progress {
-    @apply relative flex-1 h-0.5 bg-gray-200 rounded-full;
-  }
-
-  &__progress-thumb {
-    /* no transition — it must track `scrollLeft` frame-for-frame, otherwise it
-       lags behind (most visible at the start/end of a scroll). */
-    @apply absolute top-0 h-0.5 bg-gray-900 rounded-full;
+  &__count {
+    @apply me-2 whitespace-nowrap text-sm text-gray-500 tabular-nums;
   }
 }
 
 /*
-  Dot navigation (app/components/common/CarouselDots.tsx) — phones only. Below
-  `md` the scroll carousels and the testimonials swap their progress bar and
-  arrows for it; from `md` up it's hidden and those controls come back. Same
-  dot → pill shape as the photos slider's own pagination above.
+  Dot navigation (app/components/common/CarouselDots.tsx): phones only. Below `md`
+  the rows swap their arrows for it. Each dot is a 24px target around a small pill.
 */
 .carousel-dots {
-  @apply mt-5 flex items-center justify-center gap-1.5 md:hidden;
+  @apply mt-3 flex flex-wrap items-center justify-center md:hidden;
 
   &__dot {
-    @apply h-1.5 w-1.5 shrink-0 rounded-full bg-gray-300 p-0;
-    transition:
-      width 0.25s ease,
-      background-color 0.25s ease;
+    @apply flex h-6 w-6 shrink-0 items-center justify-center p-0;
 
-    &.is-active {
-      @apply w-6 bg-gray-900;
+    &::before {
+      @apply block h-1.5 w-1.5 rounded-full bg-gray-300;
+      content: '';
+      transition:
+        width 0.2s ease,
+        background-color 0.2s ease;
+    }
+
+    &.is-active::before {
+      @apply w-[18px] bg-primary;
     }
   }
 }
 
 @media (max-width: 767px) {
-  .scroll-carousel__controls,
-  .s-testimonials__controls {
+  .scroll-carousel__nav,
+  .scroll-carousel__foot {
     display: none;
   }
 }
@@ -1244,28 +1411,28 @@ salla-reviews:not(:has(.s-reviews-swiper-slide)) {
   @apply mt-4;
 
   &__head {
-    @apply flex items-center justify-between mb-4;
+    @apply flex items-center justify-between gap-4;
   }
 
   &__title {
-    @apply text-lg font-bold text-gray-900;
+    @apply text-lg font-bold text-gray-900 lg:text-2xl;
   }
 
-  /* Mobile shows two cards + a peek of the third; 4–5 across on desktop. */
+  /* Phones show two cards and a peek of the third; tablets three; desktop four whole. */
   &__slide {
     flex: 0 0 calc(43% - 0.5rem);
     scroll-snap-align: start;
 
     @media (min-width: 640px) {
-      flex-basis: 42%;
+      flex-basis: calc(30% - 0.5rem);
     }
 
     @media (min-width: 768px) {
-      flex-basis: 30%;
+      flex-basis: calc((100% - 2rem) / 3);
     }
 
     @media (min-width: 1024px) {
-      flex-basis: 21%;
+      flex-basis: calc((100% - 4.5rem) / 4);
     }
   }
 }
@@ -1450,22 +1617,14 @@ salla-reviews:not(:has(.s-reviews-swiper-slide)) {
   }
 }
 /*
-  Blog — the articles the merchant picked, as cards in the shared scroll
-  carousel: heading in the container, the row bleeding past its other edge
-  (like the testimonials). Markup: app/components/home/Blog.tsx
+  Blog — the articles the merchant picked, as whole cards in the shared scroll
+  carousel, boxed to the container. Markup: app/components/home/Blog.tsx
 */
 .s-block--blog {
   @apply overflow-hidden;
 
   .scroll-carousel__track {
-    padding-inline-start: max(1rem, calc(50% - 630px));
-    padding-inline-end: 1rem;
-    scroll-padding-inline-start: max(1rem, calc(50% - 630px));
     padding-block: 0.5rem; /* room for the cards' shadow */
-  }
-
-  .scroll-carousel__controls {
-    @apply container;
   }
 }
 
@@ -1473,30 +1632,26 @@ salla-reviews:not(:has(.s-reviews-swiper-slide)) {
   /* The band: light gray unless the merchant picks a color (`background_color`). */
   @apply bg-gray-50 py-10 lg:py-16;
 
-  &__head {
-    @apply mb-6 lg:mb-8;
-  }
-
   &__title {
     @apply text-xl font-bold text-gray-900 lg:text-2xl;
   }
 
   &__desc {
-    @apply mt-2 text-sm text-gray-500 lg:mt-3 lg:text-base;
+    @apply mt-1 text-sm text-gray-500;
   }
 }
 
 .s-blog-card {
   @apply flex shrink-0 flex-col rounded-2xl bg-white p-4 shadow-sm lg:p-6;
-  flex: 0 0 85%;
+  flex: 1 0 85%;
   scroll-snap-align: start;
 
   @media (min-width: 640px) {
-    flex-basis: 55%;
+    flex-basis: calc((100% - 1rem) / 2);
   }
 
   @media (min-width: 1024px) {
-    flex-basis: calc((100% - 3rem) / 2.6);
+    flex-basis: calc((100% - 3rem) / 3);
   }
 
   &.is-loading {

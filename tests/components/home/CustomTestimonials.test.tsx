@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, fireEvent } from '@testing-library/react';
 import { CustomTestimonials } from '../../../app/components/home/CustomTestimonials';
 
@@ -21,6 +21,14 @@ const items = [
 
 beforeEach(() => {
   Element.prototype.scrollBy = vi.fn();
+  // A row that overflows: jsdom has no layout, so everything else would "fit".
+  Object.defineProperty(HTMLElement.prototype, 'scrollWidth', { configurable: true, value: 800 });
+  Object.defineProperty(HTMLElement.prototype, 'clientWidth', { configurable: true, value: 400 });
+});
+
+afterEach(() => {
+  delete (HTMLElement.prototype as unknown as Record<string, unknown>).scrollWidth;
+  delete (HTMLElement.prototype as unknown as Record<string, unknown>).clientWidth;
 });
 
 describe('CustomTestimonials', () => {
@@ -33,14 +41,31 @@ describe('CustomTestimonials', () => {
     const { container, getByText } = render(<CustomTestimonials data={{ items }} />);
     expect(getByText('Customer reviews')).toBeTruthy();
     expect(container.querySelectorAll('.testimonial-card')).toHaveLength(3);
-    expect(container.querySelector('.s-testimonials__scroller')).toBeTruthy();
+    expect(container.querySelector('.scroll-carousel__track')).toBeTruthy();
   });
 
-  it('renders the rating as "N.0" with the star icon', () => {
+  it('renders the rating as a row of stars, read out as a number', () => {
     const { container } = render(<CustomTestimonials data={{ items }} />);
-    const rating = container.querySelector('.testimonial-card__rating');
-    expect(rating?.textContent?.trim()).toBe('5.0');
-    expect(rating?.querySelector('svg')).toBeTruthy();
+    const cards = container.querySelectorAll('.testimonial-card');
+    const stars = cards[1].querySelector('.testimonial-card__stars') as HTMLElement;
+    expect(stars.getAttribute('role')).toBe('img');
+    expect(stars.getAttribute('aria-label')).toBe('4 of 5');
+    expect(stars.querySelectorAll('svg')).toHaveLength(5);
+    expect(stars.querySelectorAll('svg.is-on')).toHaveLength(4);
+  });
+
+  it('leaves the stars out of a review with no rating', () => {
+    const { container } = render(<CustomTestimonials data={{ items: [{ name: 'A', text: 'B' }] }} />);
+    expect(container.querySelector('.testimonial-card__stars')).toBeNull();
+  });
+
+  it('shows the initial when a review has no avatar', () => {
+    const { container } = render(
+      <CustomTestimonials data={{ items: [{ name: 'ندى', text: 'رائع', stars: 5 }] }} />
+    );
+    const initial = container.querySelector('.testimonial-card__avatar.is-initial');
+    expect(initial?.textContent).toBe('ن');
+    expect(initial?.getAttribute('aria-hidden')).toBe('true');
   });
 
   it('renders name, text and avatar for each card', () => {
@@ -52,11 +77,13 @@ describe('CustomTestimonials', () => {
     );
   });
 
-  it('renders prev / next controls and a progress bar', () => {
-    const { container, getByLabelText } = render(<CustomTestimonials data={{ items }} />);
+  it('renders prev / next controls on the title line', () => {
+    const { container, getByLabelText, getByText } = render(<CustomTestimonials data={{ items }} />);
     expect(getByLabelText('Previous')).toBeTruthy();
     expect(getByLabelText('Next')).toBeTruthy();
-    expect(container.querySelector('.s-testimonials__progress-thumb')).toBeTruthy();
+    expect(
+      container.querySelector('.scroll-carousel__head')?.contains(getByText('Customer reviews'))
+    ).toBe(true);
   });
 
   it('scrolls the row when a nav button is clicked', () => {
@@ -67,7 +94,7 @@ describe('CustomTestimonials', () => {
 
   it('drags the row with the mouse and swallows the trailing click', () => {
     const { container } = render(<CustomTestimonials data={{ items }} />);
-    const scroller = container.querySelector('.s-testimonials__scroller') as HTMLElement;
+    const scroller = container.querySelector('.scroll-carousel__track') as HTMLElement;
 
     fireEvent.pointerDown(scroller, { pointerType: 'mouse', button: 0, clientX: 200 });
     // the pointer is captured (and `is-dragging` added) only once the drag moves,
@@ -86,7 +113,7 @@ describe('CustomTestimonials', () => {
 
   it('leaves plain clicks (no drag) alone', () => {
     const { container } = render(<CustomTestimonials data={{ items }} />);
-    const scroller = container.querySelector('.s-testimonials__scroller') as HTMLElement;
+    const scroller = container.querySelector('.scroll-carousel__track') as HTMLElement;
     fireEvent.pointerDown(scroller, { pointerType: 'mouse', button: 0, clientX: 200 });
     fireEvent.pointerUp(scroller, { clientX: 200 });
     expect(fireEvent.click(scroller)).toBe(true);

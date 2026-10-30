@@ -144,16 +144,29 @@ describe('ProductsSlider', () => {
     );
   });
 
-  it('renders progress + prev/next controls and scrolls on click', async () => {
-    const { container, getByLabelText, getAllByTestId } = renderWithClient(
-      <ProductsSlider data={{ products: { source: 'related', source_value: 1 } }} />
+  it('renders prev/next controls beside the title and scrolls on click', async () => {
+    // A row that overflows: jsdom has no layout, so everything else would "fit".
+    Object.defineProperty(HTMLElement.prototype, 'scrollWidth', { configurable: true, value: 800 });
+    Object.defineProperty(HTMLElement.prototype, 'clientWidth', { configurable: true, value: 400 });
+    const { container, getByLabelText, getAllByTestId, getByText } = renderWithClient(
+      <ProductsSlider data={{ title: 'New', products: { source: 'related', source_value: 1 } }} />
     );
     await waitFor(() => expect(getAllByTestId('product-card').length).toBe(3));
 
-    expect(container.querySelector('.scroll-carousel__progress-thumb')).toBeTruthy();
     expect(getByLabelText('Previous')).toBeTruthy();
+    expect(container.querySelector('.scroll-carousel__head')?.contains(getByText('New'))).toBe(true);
 
     fireEvent.click(getByLabelText('Next'));
     expect(Element.prototype.scrollBy).toHaveBeenCalled();
+    delete (HTMLElement.prototype as unknown as Record<string, unknown>).scrollWidth;
+    delete (HTMLElement.prototype as unknown as Record<string, unknown>).clientWidth;
+  });
+
+  it('shows no controls when every product fits', async () => {
+    const { queryByLabelText, getAllByTestId } = renderWithClient(
+      <ProductsSlider data={{ products: { source: 'related', source_value: 1 } }} />
+    );
+    await waitFor(() => expect(getAllByTestId('product-card').length).toBe(3));
+    expect(queryByLabelText('Next')).toBeNull();
   });
 });

@@ -83,10 +83,17 @@ describe('PhotosSliderWithText', () => {
     expect(container.querySelector('.s-text-photos-slider__overlay')).toBeNull();
   });
 
-  it('scrolls on the arrows', () => {
-    const { getByLabelText } = render(<PhotosSliderWithText data={{ slides }} />);
+  it('scrolls on the arrows, which sit under a row with no title', () => {
+    Object.defineProperty(HTMLElement.prototype, 'scrollWidth', { configurable: true, value: 800 });
+    Object.defineProperty(HTMLElement.prototype, 'clientWidth', { configurable: true, value: 400 });
+    const { container, getByLabelText } = render(<PhotosSliderWithText data={{ slides }} />);
+    expect(container.querySelector('.scroll-carousel__foot')?.contains(getByLabelText('Next'))).toBe(
+      true
+    );
     fireEvent.click(getByLabelText('Next'));
     expect(Element.prototype.scrollBy).toHaveBeenCalled();
+    delete (HTMLElement.prototype as unknown as Record<string, unknown>).scrollWidth;
+    delete (HTMLElement.prototype as unknown as Record<string, unknown>).clientWidth;
   });
 
   it('auto scrolls unless switched off, and waits while hovered', () => {

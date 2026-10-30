@@ -31,8 +31,8 @@ export interface ProductsSliderProps {
  * (rendered as `best-offers-<n>-slider` by the engine).
  *
  * Replaces the engine's Swiper (`<salla-products-slider>`) with the theme's
- * {@link ScrollCarousel} — a native scroll row with a progress bar + arrows,
- * matching the homepage testimonials. Styling: `04-components/home-blocks.scss`.
+ * {@link ScrollCarousel} — a native row of whole cards with its arrows beside the
+ * title, matching the homepage testimonials. Styling: `04-components/home-blocks.scss`.
  */
 export function ProductsSlider({ data, onResolve }: ProductsSliderProps) {
   const { t } = useTranslation();
@@ -90,24 +90,28 @@ export function ProductsSlider({ data, onResolve }: ProductsSliderProps) {
   const displayAll = data.display_all_url;
   const displayAllUrl = displayAll && displayAll !== '' && displayAll !== '#' ? displayAll : '';
 
+  const heading = (title || displayAllUrl) && (
+    <div className="s-products-carousel__head">
+      {title && <h2 className="s-products-carousel__title">{title}</h2>}
+      {displayAllUrl && (
+        <Link to={displayAllUrl} className="s-block__display-all">
+          {t('blocks.home.display_all', 'View All')}
+          <i className="sicon-arrow-left" aria-hidden="true" />
+        </Link>
+      )}
+    </div>
+  );
+
   return (
     <div className="s-products-carousel">
-      {(title || displayAllUrl) && (
-        <div className="s-products-carousel__head">
-          {title && <h2 className="s-products-carousel__title">{title}</h2>}
-          {displayAllUrl && (
-            <Link to={displayAllUrl} className="s-block__display-all">
-              {t('blocks.home.display_all', 'View All')}
-              <i className="sicon-arrow-left" aria-hidden="true" />
-            </Link>
-          )}
-        </div>
-      )}
-
       {!isSuccess ? (
-        <ProductsListSkeleton />
+        <>
+          {heading && <div className="scroll-carousel__head">{heading}</div>}
+          <ProductsListSkeleton />
+        </>
       ) : (
         <ScrollCarousel
+          heading={heading}
           prevLabel={t('blocks.home.reviews_prev', 'Previous')}
           nextLabel={t('blocks.home.reviews_next', 'Next')}
         >
