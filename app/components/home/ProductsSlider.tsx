@@ -26,6 +26,21 @@ export interface ProductsSliderProps {
   onResolve?: (count: number) => void;
 }
 
+function ProductsHeading({ title, displayAllUrl }: { title?: string; displayAllUrl: string }) {
+  const { t } = useTranslation();
+  return (
+    <div className="s-products-carousel__head">
+      {title && <h2 className="s-products-carousel__title">{title}</h2>}
+      {displayAllUrl && (
+        <Link to={displayAllUrl} className="s-block__display-all">
+          {t('blocks.home.display_all', 'View All')}
+          <i className="sicon-arrow-left" aria-hidden="true" />
+        </Link>
+      )}
+    </div>
+  );
+}
+
 /**
  * `products-slider` home block + the product page's "similar products" block
  * (rendered as `best-offers-<n>-slider` by the engine).
@@ -91,15 +106,7 @@ export function ProductsSlider({ data, onResolve }: ProductsSliderProps) {
   const displayAllUrl = displayAll && displayAll !== '' && displayAll !== '#' ? displayAll : '';
 
   const heading = (title || displayAllUrl) && (
-    <div className="s-products-carousel__head">
-      {title && <h2 className="s-products-carousel__title">{title}</h2>}
-      {displayAllUrl && (
-        <Link to={displayAllUrl} className="s-block__display-all">
-          {t('blocks.home.display_all', 'View All')}
-          <i className="sicon-arrow-left" aria-hidden="true" />
-        </Link>
-      )}
-    </div>
+    <ProductsHeading title={title} displayAllUrl={displayAllUrl} />
   );
 
   return (
