@@ -56,6 +56,9 @@ function CartQuantity({
   onChange: (quantity: number) => Promise<void>;
 }) {
   const [qty, setQty] = useState(value);
+  // What the box shows while it holds no quantity yet (cleared, or a lone 0) —
+  // `null` once it does. Nothing is sent for it, and leaving the box restores `qty`.
+  const [draft, setDraft] = useState<string | null>(null);
   const pending = useRef(false);
   const timer = useRef<ReturnType<typeof setTimeout>>(undefined);
 
@@ -79,6 +82,7 @@ function CartQuantity({
     (next: number) => {
       const clamped = Math.max(1, max ? Math.min(next, max) : next);
       setQty(clamped);
+      setDraft(null);
       pending.current = true;
       clearTimeout(timer.current);
       timer.current = setTimeout(() => {
@@ -110,12 +114,17 @@ function CartQuantity({
           name="quantity"
           inputMode="numeric"
           aria-label={label}
-          value={qty}
+          value={draft ?? qty}
           disabled={disabled}
           onChange={(e) => {
-            const n = parseInt(e.target.value.replace(/\D/g, ''), 10);
-            commit(Number.isFinite(n) ? n : 1);
+            const digits = e.target.value.replace(/\D/g, '');
+            const n = parseInt(digits, 10);
+            // Clearing the box to type a new number must not send 1 first (and turn
+            // the next digit into "15"): wait until it holds a quantity.
+            if (n >= 1) commit(n);
+            else setDraft(digits);
           }}
+          onBlur={() => setDraft(null)}
         />
         <button
           type="button"

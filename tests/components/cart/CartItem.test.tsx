@@ -88,6 +88,63 @@ describe('CartItem quantity', () => {
     expect(updateItem).not.toHaveBeenCalled();
     expect(screen.getByLabelText<HTMLInputElement>('pages.products.quantity').value).toBe('1');
   });
+
+  const sentQuantities = () =>
+    updateItem.mock.calls.map((call) => ((call as unknown[])[0] as FormData).get('quantity'));
+
+  it('waits for a number when the box is cleared, instead of sending 1 and turning 5 into 15', async () => {
+    render(<CartItem item={{ ...item, quantity: 3 }} />);
+    const box = screen.getByLabelText<HTMLInputElement>('pages.products.quantity');
+
+    fireEvent.change(box, { target: { value: '' } });
+    act(() => void vi.advanceTimersByTime(400));
+    expect(box.value).toBe('');
+    expect(updateItem).not.toHaveBeenCalled();
+
+    fireEvent.change(box, { target: { value: '5' } });
+    await act(async () => void vi.advanceTimersByTime(400));
+    expect(box.value).toBe('5');
+    expect(sentQuantities()).toEqual(['5']);
+  });
+
+  it('treats a lone 0 like an empty box', async () => {
+    render(<CartItem item={{ ...item, quantity: 3 }} />);
+    const box = screen.getByLabelText<HTMLInputElement>('pages.products.quantity');
+
+    fireEvent.change(box, { target: { value: '0' } });
+    act(() => void vi.advanceTimersByTime(400));
+    expect(box.value).toBe('0');
+    expect(updateItem).not.toHaveBeenCalled();
+
+    fireEvent.change(box, { target: { value: '04' } });
+    await act(async () => void vi.advanceTimersByTime(400));
+    expect(box.value).toBe('4');
+    expect(sentQuantities()).toEqual(['4']);
+  });
+
+  it('puts the quantity back when the box is left empty', () => {
+    render(<CartItem item={{ ...item, quantity: 3 }} />);
+    const box = screen.getByLabelText<HTMLInputElement>('pages.products.quantity');
+
+    fireEvent.change(box, { target: { value: '' } });
+    fireEvent.blur(box);
+    act(() => void vi.advanceTimersByTime(400));
+
+    expect(box.value).toBe('3');
+    expect(updateItem).not.toHaveBeenCalled();
+  });
+
+  it('shows the quantity again when + is pressed on a cleared box', async () => {
+    render(<CartItem item={{ ...item, quantity: 3 }} />);
+    const box = screen.getByLabelText<HTMLInputElement>('pages.products.quantity');
+
+    fireEvent.change(box, { target: { value: '' } });
+    fireEvent.click(screen.getByLabelText('pages.products.quantity +'));
+    await act(async () => void vi.advanceTimersByTime(400));
+
+    expect(box.value).toBe('4');
+    expect(sentQuantities()).toEqual(['4']);
+  });
 });
 
 describe('CartItem delete', () => {
