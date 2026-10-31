@@ -131,6 +131,15 @@ describe('HeaderNav', () => {
     expect(document.body.classList.contains('menu-opened')).toBe(true);
   });
 
+  it('names the logo link by the store name once', () => {
+    query.data = items;
+    const { container } = render(<HeaderNav open onClose={() => {}} />);
+    const brand = container.querySelector('.site-nav-drawer__brand')!;
+    // The sr-only name is the link's name; the logo adds nothing (no "Store logo").
+    expect(brand.querySelector('img')?.getAttribute('alt')).toBe('');
+    expect(brand.querySelector('.sr-only')?.textContent).toBe('Store');
+  });
+
   // A root row with no image used to skip the `.site-nav-drawer__label`
   // wrapper entirely, leaving its text flush against the row edge instead of
   // lined up with an image row's text (image width + gap to its right).

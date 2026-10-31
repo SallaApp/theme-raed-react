@@ -17,19 +17,19 @@ export interface EnhancedSquareBannersProps {
   };
 }
 
-function MosaicBanner({
-  banner,
-  index,
-  ctaLabel,
-}: {
-  banner: BannerItem;
-  index: number;
-  ctaLabel: string;
-}) {
+/**
+ * The link's `aria-label`: the title; none when the description names the link;
+ * the "Discover now" CTA text when the banner has no text at all (its image is a
+ * CSS background, with no alt to fall back on).
+ */
+const bannerLabel = (banner: BannerItem, ctaLabel: string) =>
+  banner.title || (banner.description ? undefined : ctaLabel);
+
+function MosaicBanner({ banner, ctaLabel }: { banner: BannerItem; ctaLabel: string }) {
   return (
     <Link
       to={banner.url || '#'}
-      aria-label={banner.title ? banner.title : `square-banner-${index}`}
+      aria-label={bannerLabel(banner, ctaLabel)}
       className="enhanced-square-banner bg-no-repeat bg-cover bg-center"
       style={{ backgroundImage: `url(${banner.image})` }}
     >
@@ -52,17 +52,18 @@ export const EnhancedSquareBanners = memo(function EnhancedSquareBanners({
 
   if (!banners.length) return null;
 
+  const ctaLabel = t('blocks.home.discover_now', 'Discover now');
+
   // 5 banners: hero mosaic — two stacked banners on each side, one tall
   // banner spanning both rows in the center. Fewer banners keep the plain grid.
   if (banners.length === 5) {
-    const ctaLabel = t('blocks.home.discover_now', 'Discover now');
     return (
       <div className="enhanced-square-banners-mosaic">
         {banners.map((banner, index) => (
           // A static settings list whose items have no id: see
           // .react-doctor/false-positives.md.
           // react-doctor-disable-next-line react-doctor/no-array-index-as-key
-          <MosaicBanner key={index} banner={banner} index={index} ctaLabel={ctaLabel} />
+          <MosaicBanner key={index} banner={banner} ctaLabel={ctaLabel} />
         ))}
       </div>
     );
@@ -78,7 +79,7 @@ export const EnhancedSquareBanners = memo(function EnhancedSquareBanners({
         <Link
           key={index}
           to={banner.url || '#'}
-          aria-label={banner.title ? banner.title : `square-banner-${index}`}
+          aria-label={bannerLabel(banner, ctaLabel)}
           className={`banner-entry bg-no-repeat bg-cover bg-center ${banner.title ? 'has-overlay' : ''} ${hasTwoRows ? 'h-banner' : 'h-lg-banner'}`}
           style={{ backgroundImage: `url(${banner.image})` }}
         >
