@@ -13,10 +13,17 @@ vi.mock('@salla.sa/twilight-theme-engine/common', () => ({
   ),
 }));
 
+// `<salla-comments>` loads its list once, when it is first attached, and does not
+// reload when `item-id` changes. The mock records the item id of every mount.
+// `vi.hoisted` shares the list with the hoisted factory.
+const commentMounts = vi.hoisted<number[]>(() => []);
+
 vi.mock('@salla.sa/twilight-components-react/comments', () => ({
-  SallaComments: ({ itemId }: { itemId: number }) => (
-    <div className="salla-comments" data-item-id={itemId} />
-  ),
+  SallaComments: ({ itemId }: { itemId: number }) => {
+    const [mountedFor] = React.useState(itemId);
+    React.useEffect(() => void commentMounts.push(mountedFor), [mountedFor]);
+    return <div className="salla-comments" data-item-id={itemId} />;
+  },
 }));
 
 vi.mock('../../../app/components/common/BlockHookSlot', () => ({
@@ -102,6 +109,15 @@ describe('PageSingle', () => {
       const { container } = render(<PageSingle page={makePage({ type: 'faq' })} />);
       expect(container.querySelector('.block-hook-slot')).toBeNull();
       expect(container.querySelector('h1')?.textContent).toBe('About Us');
+    });
+
+    it("loads the next page's comments when the router moves between two pages", () => {
+      commentMounts.length = 0;
+      // The route's loader sets the same slug (the route id) for every page.
+      const { rerender } = render(<PageSingle page={makePage({ slug: 'page-single', id: 1 })} />);
+      rerender(<PageSingle page={makePage({ slug: 'page-single', id: 2, title: 'Privacy' })} />);
+
+      expect(commentMounts).toEqual([1, 2]);
     });
   });
 });
