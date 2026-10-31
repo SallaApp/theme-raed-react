@@ -133,6 +133,13 @@ interface NavColumnProps {
   onClose: () => void;
 }
 
+/** The merchant's "open in a new tab" choice, applied the way `HeaderMainMenu` does on desktop. */
+function linkTarget(item: MenuItem) {
+  return item.target && item.target !== '_self'
+    ? { target: item.target, rel: 'noopener noreferrer' }
+    : {};
+}
+
 /** One Miller column: an optional "browse all" link then the level's rows. */
 function NavColumn({
   parent,
@@ -149,7 +156,12 @@ function NavColumn({
     <ul className={`site-nav-drawer__list${staggered ? ' is-in' : ''}`}>
       {parent && isLinkable(parent.url) && (
         <li>
-          <Link to={parent.url} className="site-nav-drawer__browse-all" onClick={onClose}>
+          <Link
+            to={parent.url}
+            className="site-nav-drawer__browse-all"
+            onClick={onClose}
+            {...linkTarget(parent)}
+          >
             {t('blocks.header.browse_all', 'Browse all')} {parent.title}
           </Link>
         </li>
@@ -173,7 +185,12 @@ function NavColumn({
               <ArrowRightIcon className="site-nav-drawer__chevron" aria-hidden="true" />
             </button>
           ) : (
-            <Link to={item.url} className="site-nav-drawer__link" onClick={onClose}>
+            <Link
+              to={item.url}
+              className="site-nav-drawer__link"
+              onClick={onClose}
+              {...linkTarget(item)}
+            >
               <NavLabel item={item} withImage={!parent && hasImages} />
             </Link>
           )}

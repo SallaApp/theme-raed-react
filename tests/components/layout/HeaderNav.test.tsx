@@ -41,8 +41,14 @@ vi.mock('@salla.sa/twilight-theme-engine/api/menu', () => ({
 }));
 
 vi.mock('@salla.sa/twilight-theme-engine/common', () => ({
-  Link: ({ to, children, className, onClick }: Record<string, unknown>) => (
-    <a href={String(to)} className={className as string} onClick={onClick as () => void}>
+  Link: ({ to, children, className, onClick, target, rel }: Record<string, unknown>) => (
+    <a
+      href={String(to)}
+      className={className as string}
+      onClick={onClick as () => void}
+      target={target as string | undefined}
+      rel={rel as string | undefined}
+    >
       {children as React.ReactNode}
     </a>
   ),
@@ -228,5 +234,30 @@ describe('HeaderNav', () => {
     );
     expect(childRow?.querySelector('.site-nav-drawer__label')).toBeNull();
     expect(childRow?.querySelector('.site-nav-drawer__link-img-placeholder')).toBeNull();
+  });
+
+  it('opens the links the merchant set to a new tab in a new tab, as the desktop menu does', () => {
+    query.data = [
+      { id: 1, title: 'Blog', url: 'https://blog.example.com', target: '_blank' },
+      { id: 3, title: 'Offers', url: '/offers', target: '_self' },
+      {
+        id: 2,
+        title: 'Home',
+        url: '/home',
+        target: '_blank',
+        children: [{ id: 21, title: 'Living room', url: '/living' }],
+      },
+    ];
+    const { getByText } = render(<HeaderNav open onClose={() => {}} />);
+    const link = (text: string) => getByText(text).closest('a')!;
+
+    expect(link('Blog').target).toBe('_blank');
+    expect(link('Blog').rel).toBe('noopener noreferrer');
+    expect(link('Offers').hasAttribute('target')).toBe(false);
+
+    fireEvent.click(getByText('Home'));
+    expect(link('Living room').hasAttribute('target')).toBe(false);
+    // "Browse all Home" opens the parent's own page, so it takes the parent's target.
+    expect(getByText(/Browse all/).closest('a')!.target).toBe('_blank');
   });
 });
