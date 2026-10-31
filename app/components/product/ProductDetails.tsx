@@ -1,4 +1,4 @@
-import { Fragment, useState, type MouseEvent } from 'react';
+import { Fragment, useRef, useState, type MouseEvent } from 'react';
 import { HookSlot } from '@salla.sa/twilight-theme-engine/hooks';
 import { HookName } from '@salla.sa/twilight-theme-engine/types/hooks';
 import { useTranslation } from '@salla.sa/twilight-theme-engine/i18n';
@@ -241,6 +241,7 @@ function lazyIframes(html: string): string {
 function ProductDescription({ product }: { product: Product }) {
   const { t } = useTranslation();
   const [isExpanded, setIsExpanded] = useState(false);
+  const articleRef = useRef<HTMLElement>(null);
   // YouTube videos the shopper pressed play on; the rest stay thumbnails.
   const [playingVideos, setPlayingVideos] = useState<ReadonlySet<number>>(() => new Set());
 
@@ -264,17 +265,27 @@ function ProductDescription({ product }: { product: Product }) {
     return (
       <div className="product__description leading-7 mb-3">
         <article
-          className="article article--main relative leading-8 overflow-hidden transition-[max-height] duration-300 py-4"
+          ref={articleRef}
+          className="article article--main relative leading-8 overflow-hidden transition-[max-height] duration-300 py-4 focus:outline-none"
           id="more-content"
+          tabIndex={-1}
           style={{ maxHeight: isExpanded ? 'none' : '5.25rem' }}
           onClick={playVideo}
           dangerouslySetInnerHTML={{ __html: description }}
         />
+        {/* Fades out once used, so it is also `inert`; focus moves to the text it revealed
+            rather than dropping to the top of the page. */}
         <button
           type="button"
           id="btn-show-more"
+          aria-expanded={isExpanded}
+          aria-controls="more-content"
+          inert={isExpanded}
           className={`link--primary inline-block mt-2 cursor-pointer bg-transparent border-0 p-0 ${isExpanded ? 'is-expanded' : ''}`}
-          onClick={() => setIsExpanded(true)}
+          onClick={() => {
+            setIsExpanded(true);
+            articleRef.current?.focus({ preventScroll: true });
+          }}
         >
           {t('pages.products.read_more')}
         </button>
