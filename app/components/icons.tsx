@@ -76,6 +76,31 @@ export const StarIcon = (props: SVGProps<SVGSVGElement>) => (
   </svg>
 );
 
+export const PauseIcon = (props: SVGProps<SVGSVGElement>) => (
+  <svg {...base} {...props}>
+    <rect x="5" y="4" width="5" height="16" rx="1.5" fill="currentColor" />
+    <rect x="14" y="4" width="5" height="16" rx="1.5" fill="currentColor" />
+  </svg>
+);
+
+export const PlayIcon = (props: SVGProps<SVGSVGElement>) => (
+  <svg {...base} {...props}>
+    <path
+      d="M7 4.5v15a1 1 0 0 0 1.5.86l12.5-7.5a1 1 0 0 0 0-1.72L8.5 3.64A1 1 0 0 0 7 4.5z"
+      fill="currentColor"
+    />
+  </svg>
+);
+
+export const QuoteIcon = (props: SVGProps<SVGSVGElement>) => (
+  <svg {...base} viewBox="0 0 30 24" {...props}>
+    <path
+      d="M13 0v5c-3.6 1.2-5.6 3.3-6 6.2h6V24H0V12.5C0 5.8 4.3 1.3 13 0zm17 0v5c-3.6 1.2-5.6 3.3-6 6.2h6V24H17V12.5C17 5.8 21.3 1.3 30 0z"
+      fill="currentColor"
+    />
+  </svg>
+);
+
 export const CloseIcon = (props: SVGProps<SVGSVGElement>) => (
   <svg {...base} {...props}>
     <path d="M6 6L18 18" {...stroke} />

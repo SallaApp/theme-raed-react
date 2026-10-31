@@ -15,7 +15,7 @@ export interface CustomTestimonialsProps {
 /**
  * `custom-testimonials` home block — merchant-authored reviews in the shared
  * {@link TestimonialsCarousel} (gray band via `.s-block--custom-testimonials`,
- * ~3.x cards per view, progress bar + prev/next controls).
+ * three cards per view, prev/next beside the title when they don't all fit).
  */
 export const CustomTestimonials = memo(function CustomTestimonials({
   data,

@@ -125,10 +125,10 @@ registerHomeComponentConfig({
     height: '144px', // .slide--cat-entry h-36 cards (square-links keeps the card look)
     placeholder: <SliderSkeleton />,
   },
-  // Taller cards than the engine's thin full-width banner strip — reserve
-  // more skeleton height so the real content doesn't shift the page on load.
+  // The centred banner (--stage-w in home-blocks.scss, at the usual 1.7 shape)
+  // plus its pager, so the real content doesn't shift the page on load.
   'photos-slider': {
-    height: 'clamp(210px, 32vw, 420px)',
+    height: 'calc(min(1260px, 100vw - 3rem, max(18rem, (100vh - 14rem) * 1.7)) / 1.7 + 3.25rem)',
     placeholder: <SliderSkeleton />,
     className: (data) =>
       `s-block s-block--photos-slider${data.is_repeated ? ' repeated-block' : ''}`,
