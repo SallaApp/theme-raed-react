@@ -3,8 +3,10 @@
     position: absolute;
     transform: translate(82px, -120px);
     background: #fff;
-    padding: 15px 15px 15px 36px;
-    text-align: right;
+    /* the end side keeps room for `.close-tooltip` */
+    padding: 15px;
+    padding-inline-end: 36px;
+    text-align: start;
     visibility: hidden;
     opacity: 0;
     transition: all 0.3s;
@@ -88,6 +90,6 @@
 .close-tooltip {
   position: absolute;
   top: 0;
-  left: 0;
+  inset-inline-end: 0;
   padding: 9px 7px !important;
 }
