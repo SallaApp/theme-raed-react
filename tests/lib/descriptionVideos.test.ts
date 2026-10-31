@@ -37,6 +37,32 @@ describe('youtubeFacades', () => {
     expect(html.match(/allow=/g)).toHaveLength(1);
   });
 
+  it.each([
+    ['embed/aaaaaaaaaaa#t=30', 'embed/aaaaaaaaaaa?autoplay=1#t=30'],
+    ['embed/aaaaaaaaaaa?start=30#t=30', 'embed/aaaaaaaaaaa?start=30&amp;autoplay=1#t=30'],
+    ['embed/aaaaaaaaaaa#a?b', 'embed/aaaaaaaaaaa?autoplay=1#a?b'],
+  ])('puts autoplay before the fragment of %s', (path, played) => {
+    const html = youtubeFacades(
+      `<iframe src="https://www.youtube.com/${path}"></iframe>`,
+      new Set([0]),
+      'Play'
+    );
+
+    expect(html).toContain(`src="https://www.youtube.com/${played}"`);
+  });
+
+  it('keeps a $ in the address as it is', () => {
+    const html = youtubeFacades(
+      `<iframe src="https://www.youtube.com/embed/aaaaaaaaaaa?si=a$&amp;b=$'"></iframe>`,
+      new Set([0]),
+      'Play'
+    );
+
+    expect(html).toContain(
+      `src="https://www.youtube.com/embed/aaaaaaaaaaa?si=a$&amp;b=$'&amp;autoplay=1"`
+    );
+  });
+
   it('leaves other iframes alone', () => {
     const vimeo = '<iframe src="https://player.vimeo.com/video/1"></iframe>';
     expect(youtubeFacades(vimeo, new Set(), 'Play')).toBe(vimeo);
