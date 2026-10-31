@@ -70,7 +70,6 @@ describe('MainLinks', () => {
     const [withImage, withIcon] = Array.from(container.querySelectorAll('.slide--cat-entry'));
     const img = withImage.querySelector('img');
     expect(img?.getAttribute('src')).toBe('perfume.png');
-    expect(img?.getAttribute('alt')).toBe('Perfume');
     expect(withImage.querySelector('i')).toBeNull();
     // No image: the icon, as before.
     expect(withIcon.querySelector('img')).toBeNull();
@@ -97,6 +96,20 @@ describe('MainLinks', () => {
     );
     const img = container.querySelector('.slide--cat-entry img');
     expect(img?.getAttribute('src')).toBe('cat2.jpg');
+  });
+
+  it.each([
+    ['link', { links: [{ url: '/perfume', image: 'perfume.png', title: 'Perfume' }] }],
+    [
+      'category',
+      { categories: [{ url: '/perfume', image: 'perfume.png', name: 'Perfume' }], show_cats: true },
+    ],
+  ])('names a %s with an image once, by the title shown beside it', (_kind, data) => {
+    const { container } = render(<MainLinks data={data} />);
+    const entry = container.querySelector('.slide--cat-entry')!;
+    // An empty alt leaves the image out of the link's name ("Perfume", not "Perfume Perfume").
+    expect(entry.querySelector('img')?.getAttribute('alt')).toBe('');
+    expect(entry.querySelector('h2')?.textContent).toBe('Perfume');
   });
 
   it('returns null when no links', () => {

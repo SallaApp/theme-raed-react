@@ -110,6 +110,14 @@ describe('Header', () => {
     expect(container.querySelector('[data-hook-slot="header:end"]')).toBeTruthy();
   });
 
+  it('names the logo link by the store name once', () => {
+    const { container } = render(<Header />);
+    const brand = container.querySelector('.site-header__brand')!;
+    // The sr-only name is the link's name; the logo adds nothing (no "Acme logo").
+    expect(brand.querySelector('img')?.getAttribute('alt')).toBe('');
+    expect(brand.querySelector('.sr-only')?.textContent).toBe('Acme');
+  });
+
   it('drops the menu button when the menu would open empty', () => {
     nav.hasContent = false;
     const { container, queryByLabelText } = render(<Header />);

@@ -256,7 +256,7 @@ export function Header({ navOpen: navOpenProp, onNavOpenChange }: HeaderProps = 
             <a className="site-header__brand" href={store?.url || '/'}>
               <Image
                 src={store?.logo}
-                alt={`${store?.name || 'Store'} logo`}
+                alt=""
                 priority
                 width={140}
                 height={48}

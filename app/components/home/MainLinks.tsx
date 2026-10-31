@@ -97,7 +97,8 @@ export const MainLinks = memo(function MainLinks({ data }: MainLinksProps) {
                           src={getCdnImageUrl(itemImage, { width: 128 }) ?? itemImage}
                           width="64"
                           height="64"
-                          alt={itemTitle || ''}
+                          // The title right after it names the link; an alt would say it twice.
+                          alt=""
                           loading="lazy"
                           decoding="async"
                         />

@@ -3,11 +3,15 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, waitFor, act } from '@testing-library/react';
 import { AddProductToast } from '../../../app/components/cart/AddProductToast';
 
+// Translations a test sets; other keys fall back. `vi.hoisted` shares them with
+// the hoisted `vi.mock` factory; `beforeEach` empties them.
+const translations = vi.hoisted<Record<string, string>>(() => ({}));
+
 vi.mock('@salla.sa/twilight-theme-engine/i18n', () => ({
   useTranslation: () => ({
     locale: 'ar',
     isRTL: true,
-    t: (_key: string, fallback?: string) => fallback ?? _key,
+    t: (key: string, fallback?: string) => translations[key] ?? fallback ?? key,
   }),
 }));
 
@@ -89,6 +93,7 @@ describe('AddProductToast', () => {
   };
 
   beforeEach(() => {
+    for (const key of Object.keys(translations)) delete translations[key];
     listeners = new Map();
     details = vi.fn().mockResolvedValue({ data: { cart: { items: CART_ITEMS } } });
     (window as unknown as { salla: unknown }).salla = {
@@ -117,6 +122,40 @@ describe('AddProductToast', () => {
     await waitFor(() => expect(screen.getAllByText('Added product').length).toBeGreaterThan(0));
     expect(screen.queryByText('Older line product')).toBeNull();
     expect(details).toHaveBeenCalledTimes(1);
+  });
+
+  it('labels its close button in the store language and hides the icon', async () => {
+    translations['blocks.header.close'] = 'إغلاق';
+    const { container } = render(<AddProductToast />);
+
+    emitAdd(addResponse(ALL_LINES), String(ADDED.product_id));
+
+    const close = await waitFor(() => {
+      const button = container.querySelector('.s-add-product-toast__close');
+      expect(button).toBeTruthy();
+      return button!;
+    });
+    expect(close.getAttribute('aria-label')).toBe('إغلاق');
+    expect(close.querySelector('.sicon-cancel')?.getAttribute('aria-hidden')).toBe('true');
+  });
+
+  it('announces the added product from a status region that was there before it', async () => {
+    translations['pages.cart.added_to_cart'] = 'تمت الإضافة إلى سلة التسوق';
+    const { container } = render(<AddProductToast />);
+    // Mounted, and empty, before anything is added: a region that appears with
+    // its text is often not read out.
+    const region = screen.getByRole('status');
+    expect(region.textContent).toBe('');
+
+    emitAdd(addResponse(ALL_LINES), String(ADDED.product_id));
+
+    await waitFor(() =>
+      expect(region.textContent).toBe('تمت الإضافة إلى سلة التسوق: Added product')
+    );
+    expect(screen.getByRole('status')).toBe(region);
+
+    act(() => (container.querySelector('.s-add-product-toast__close') as HTMLElement).click());
+    expect(region.textContent).toBe('');
   });
 
   it('draws its success icon inline, not from salla.url.asset', async () => {

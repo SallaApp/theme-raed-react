@@ -79,6 +79,26 @@ describe('EnhancedSquareBanners', () => {
     expect(container.firstChild).toBeNull();
   });
 
+  it('names an untitled banner by its description, or "Discover now" when it has no text', () => {
+    const { container } = render(
+      <EnhancedSquareBanners
+        data={{
+          banners: [
+            mockBanners[0],
+            { image: 'banner2.jpg', url: '/url2', description: 'Desc 2' },
+            mockBanners[2],
+          ],
+        }}
+      />
+    );
+    const [titled, described, bare] = Array.from(container.querySelectorAll('.banner-entry'));
+    expect(titled.getAttribute('aria-label')).toBe('Banner 1');
+    // Its own text names it.
+    expect(described.hasAttribute('aria-label')).toBe(false);
+    expect(described.textContent).toContain('Desc 2');
+    expect(bare.getAttribute('aria-label')).toBe('Discover now');
+  });
+
   describe('with 5 banners', () => {
     const fiveBanners = [
       { image: 'tl.jpg', url: '/tl', title: 'TL', description: 'Top left' },
@@ -112,6 +132,23 @@ describe('EnhancedSquareBanners', () => {
       const { container } = render(<EnhancedSquareBanners data={{ banners: noUrl }} />);
       const last = container.querySelectorAll('.enhanced-square-banner')[4];
       expect(last.querySelector('.enhanced-square-banner__cta')).toBeNull();
+    });
+
+    it('names an untitled banner by its own text, or "Discover now" when it has none', () => {
+      const untitled = [
+        { ...fiveBanners[0], title: undefined },
+        { image: 'center.jpg' },
+        ...fiveBanners.slice(2),
+      ];
+      const { container } = render(<EnhancedSquareBanners data={{ banners: untitled }} />);
+      const [described, bare, titled] = Array.from(
+        container.querySelectorAll('.enhanced-square-banner')
+      );
+      // The description and the CTA name it.
+      expect(described.hasAttribute('aria-label')).toBe(false);
+      expect(described.textContent).toContain('Top left');
+      expect(bare.getAttribute('aria-label')).toBe('Discover now');
+      expect(titled.getAttribute('aria-label')).toBe('TR');
     });
   });
 });
