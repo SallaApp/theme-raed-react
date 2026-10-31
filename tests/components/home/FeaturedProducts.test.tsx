@@ -183,6 +183,18 @@ describe('FeaturedProducts', () => {
     expect(panels[1].classList.contains('is-active')).toBe(true);
   });
 
+  it('tells screen readers which tab is showing, not only through its class', () => {
+    const { container, getAllByText } = render(
+      <FeaturedProducts data={{ items: [tab({ name: 'A' }), tab({ name: 'B' })] }} />
+    );
+    const pressed = () =>
+      [...container.querySelectorAll('.tab-trigger')].map((b) => b.getAttribute('aria-pressed'));
+
+    expect(pressed()).toEqual(['true', 'false']);
+    fireEvent.click(getAllByText('B')[0]);
+    expect(pressed()).toEqual(['false', 'true']);
+  });
+
   it('falls back to a numbered label when a tab has no name', () => {
     const { getAllByText } = render(
       <FeaturedProducts data={{ items: [tab({ name: '' }), tab({ name: undefined })] }} />

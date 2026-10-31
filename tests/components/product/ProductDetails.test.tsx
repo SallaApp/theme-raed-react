@@ -174,6 +174,16 @@ describe('ProductDetails wishlist heart', () => {
 
     await waitFor(() => expect(heart(container)?.className).toContain('is-added'));
   });
+
+  it('tells screen readers whether the product is saved, through the pressed state', async () => {
+    const { container } = render(<ProductDetails product={makeProduct({ id: 222 })} />);
+    await waitFor(() => expect(heart(container)?.getAttribute('aria-pressed')).toBe('false'));
+
+    act(() => onAdded.forEach((cb) => cb({}, 222)));
+
+    await waitFor(() => expect(heart(container)?.getAttribute('aria-pressed')).toBe('true'));
+    expect(heart(container)?.querySelector('i')?.getAttribute('aria-hidden')).toBe('true');
+  });
 });
 
 describe('ProductDetails price', () => {

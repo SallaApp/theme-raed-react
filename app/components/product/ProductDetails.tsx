@@ -192,6 +192,7 @@ function TitleWishlistButton({ productId }: { productId: number }) {
   return (
     <WishlistHeartButton
       productId={productId}
+      pressed={wishlist.has(productId)}
       className={`btn--wishlist animated hidden sm:inline-flex ${wishlist.has(productId) ? 'is-added' : 'not-added'}`}
       onClick={() => window.salla?.wishlist.toggle(productId)}
       ariaLabel={t('pages.products.add_to_wishlist', 'Add to wishlist')}
