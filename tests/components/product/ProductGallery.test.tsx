@@ -3,6 +3,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { act, render, waitFor, fireEvent } from '@testing-library/react';
 import { renderToString } from 'react-dom/server';
 import type { Product } from '@salla.sa/twilight-theme-engine/types';
+import { resetWishlistStore } from '@salla.sa/twilight-theme-engine/hooks/useWishlist';
 import { ProductGallery } from '../../../app/components/product/ProductGallery';
 
 vi.mock('@salla.sa/twilight-theme-engine/providers', () => ({
@@ -213,5 +214,24 @@ describe('ProductGallery in the Salla app', () => {
 
     expect(fireEvent.click(slides(container)[1])).toBe(false);
     expect(dispatch).toHaveBeenCalledWith('mobile::gallery.open', { images: legacyMedia });
+  });
+});
+
+describe('ProductGallery wishlist button', () => {
+  const heart = (container: HTMLElement) =>
+    container.querySelector('.product-gallery__bar-btn.btn--wishlist');
+
+  it('tells screen readers whether the product is saved, through the pressed state', async () => {
+    resetWishlistStore();
+    const { container, unmount } = render(<ProductGallery product={product} />);
+    await waitFor(() => expect(heart(container)?.getAttribute('aria-pressed')).toBe('false'));
+    unmount();
+
+    resetWishlistStore();
+    (window as unknown as { salla: { storage: { get: () => number[] } } }).salla.storage.get = () => [
+      product.id as number,
+    ];
+    const saved = render(<ProductGallery product={product} />);
+    await waitFor(() => expect(heart(saved.container)?.getAttribute('aria-pressed')).toBe('true'));
   });
 });

@@ -139,9 +139,11 @@ function TabTriggers({
   return (
     <div className={`tabs hide-scroll ${className}`}>
       {tabs.map((tab) => (
+        // Toggle buttons that say which one is showing; the active one was marked by its class alone.
         <button
           key={tab.key}
           type="button"
+          aria-pressed={active === tab.key}
           onClick={() => onSelect(tab.key)}
           className={`tab-trigger ${active === tab.key ? 'is-active' : ''}`}
         >
