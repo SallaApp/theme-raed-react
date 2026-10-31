@@ -35,10 +35,26 @@ function legacyGalleryMedia(images: ProductImage[]): GalleryMedia[] {
   });
 }
 
+const OBJECT_FITS = ['contain', 'cover'] as const;
+type ObjectFit = (typeof OBJECT_FITS)[number];
+
+/**
+ * Read the `slider_background_size` dropdown setting (string, or `[{value}]`). A store
+ * that never saved it gets `contain`, the default `twilight.json` declares.
+ */
+function sliderObjectFit(raw: unknown): ObjectFit {
+  const first = Array.isArray(raw) ? raw[0] : raw;
+  const value =
+    typeof first === 'string' ? first : (first as { value?: string } | undefined)?.value;
+  return (OBJECT_FITS as readonly string[]).includes(value ?? '')
+    ? (value as ObjectFit)
+    : 'contain';
+}
+
 /**
  * Theme fork of the engine `ProductGallery`.
  *
- * Differs from upstream in three ways:
+ * Differs from upstream in four ways:
  *  - the thumbnails slider runs `slidesPerView: 'auto'` (`thumbsConfig`). The
  *    theme sizes thumbs to a fixed 80px in `slider.scss`; with the engine
  *    default (`slidesPerView: 4`) Swiper lays the track out for quarter-width
@@ -50,6 +66,10 @@ function legacyGalleryMedia(images: ProductImage[]): GalleryMedia[] {
  *  - the Salla app's gallery opens through `salla.mobile.openGallery` on the
  *    tapped item, as the engine does from twilight-platform #439 (not in an
  *    engine release yet).
+ *  - the `slider_background_size` setting reaches `<Image>` as `objectFit`. Upstream
+ *    puts `object-${fit}` in `className`, but `<Image>` appends its own
+ *    `object-cover` default after it, and `.object-cover` comes later in the CSS,
+ *    so `contain` (the declared default) never applied and photos were cropped.
  *
  * Upgrade notes: `FORKS.md`.
  */
@@ -59,7 +79,7 @@ export function ProductGallery({ product }: ProductGalleryProps) {
   const { theme } = useTwilight();
   const sliderId = `details-slider-${product.id}`;
   const sliderRef = useRef<ComponentRef<typeof SallaSlider>>(null);
-  const objectFit = theme.settings.slider_background_size ?? 'cover';
+  const objectFit = sliderObjectFit(theme.settings.slider_background_size);
   const hydrated = useHydrated();
   const isMobile = useMobileViewport();
   // `onAfterInit` fires once Swiper actually finishes laying the slider out —
@@ -228,7 +248,8 @@ export function ProductGallery({ product }: ProductGalleryProps) {
           <Image
             src={posterUrl}
             alt=""
-            className={`h-full w-full object-${objectFit}`}
+            className="h-full w-full"
+            objectFit={objectFit}
             aspectRatio="1/1"
             priority
             noWrapper
@@ -345,7 +366,8 @@ function ImageSlide({
           id={String(image.id)}
           src={image.url}
           alt={image.alt || product.name}
-          className={`h-full w-full object-${objectFit}`}
+          className="h-full w-full"
+            objectFit={objectFit}
           aspectRatio="1/1"
           priority={index === 0}
           noWrapper

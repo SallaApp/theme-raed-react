@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { describe, it, expect, vi, beforeAll, beforeEach, afterEach } from 'vitest';
 import { render, waitFor, act, fireEvent } from '@testing-library/react';
 import { resetWishlistStore } from '@salla.sa/twilight-theme-engine/hooks/useWishlist';
@@ -13,6 +14,16 @@ vi.mock('@salla.sa/twilight-theme-engine/i18n', () => ({
 
 vi.mock('@salla.sa/twilight-theme-engine/hooks', () => ({
   HookSlot: ({ name }: { name: string }) => <div data-hook-slot={name} />,
+}));
+
+// The real `Image`, but a plain `<a>` for `Link`, which needs the router's LinkProvider.
+vi.mock('@salla.sa/twilight-theme-engine/common', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@salla.sa/twilight-theme-engine/common')>()),
+  Link: ({ to, children, className }: { to: string; children?: ReactNode; className?: string }) => (
+    <a href={to} className={className}>
+      {children}
+    </a>
+  ),
 }));
 
 // jsdom has no IntersectionObserver; report every element as visible so the
@@ -213,6 +224,26 @@ describe('ProductDetails remaining quantity', () => {
 
     await waitFor(() => expect(container.textContent).toContain('blocks.product.in_stock (19)'));
     expect(container.textContent).not.toContain('pages.products.remained');
+  });
+});
+
+describe('ProductDetails brand logo', () => {
+  it('contains the logo instead of cropping it with the Image default cover', async () => {
+    const { container } = render(
+      <ProductDetails
+        product={makeProduct({
+          brand: { id: 7, name: 'Brand', url: '/brand', logo: 'https://cdn.test/logo.png' },
+        } as Partial<Product>)}
+      />
+    );
+
+    const logo = await waitFor(() => {
+      const img = container.querySelector<HTMLImageElement>('.brand-logo img');
+      expect(img).toBeTruthy();
+      return img!;
+    });
+    expect(logo.classList.contains('object-contain')).toBe(true);
+    expect(logo.classList.contains('object-cover')).toBe(false);
   });
 });
 

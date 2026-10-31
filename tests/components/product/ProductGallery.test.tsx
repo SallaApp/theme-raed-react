@@ -5,8 +5,12 @@ import { renderToString } from 'react-dom/server';
 import type { Product } from '@salla.sa/twilight-theme-engine/types';
 import { ProductGallery } from '../../../app/components/product/ProductGallery';
 
+// The merchant settings each test sees. `vi.hoisted` shares them with the hoisted
+// `vi.mock` factory; `beforeEach` empties them.
+const settings = vi.hoisted<Record<string, unknown>>(() => ({}));
+
 vi.mock('@salla.sa/twilight-theme-engine/providers', () => ({
-  useTwilight: () => ({ theme: { settings: {} } }),
+  useTwilight: () => ({ theme: { settings } }),
 }));
 
 vi.mock('@salla.sa/twilight-theme-engine/i18n', () => ({
@@ -67,6 +71,7 @@ const slides = (container: HTMLElement) => [
 ];
 
 beforeEach(() => {
+  for (const key of Object.keys(settings)) delete settings[key];
   (window as unknown as { salla: unknown }).salla = {
     event: { on: vi.fn(), off: vi.fn() },
     storage: { get: vi.fn(() => []) },
@@ -100,6 +105,40 @@ describe('ProductGallery media', () => {
     fireEvent.click(slides(container)[2]);
 
     await waitFor(() => expect(document.querySelector('.fslightbox-container')).toBeTruthy());
+  });
+});
+
+describe('ProductGallery image fit', () => {
+  // Every slide image and the server-rendered poster.
+  const fitClasses = (container: HTMLElement) =>
+    [...container.querySelectorAll('img')]
+      .filter((img) => img.alt !== '' || img.closest('.product-gallery__poster'))
+      .map((img) => [...img.classList].filter((c) => c.startsWith('object-')).join(' '));
+
+  it("contains the images when the merchant never saved the setting, as twilight.json's default", () => {
+    const { container } = render(<ProductGallery product={product} />);
+
+    expect(fitClasses(container).length).toBeGreaterThan(0);
+    expect(new Set(fitClasses(container))).toEqual(new Set(['object-contain']));
+  });
+
+  it.each([
+    ['a string', 'cover'],
+    ['a dropdown value', [{ value: 'cover' }]],
+  ])('covers the images when the setting arrives as %s', (_shape, value) => {
+    settings.slider_background_size = value;
+    const { container } = render(<ProductGallery product={product} />);
+
+    expect(new Set(fitClasses(container))).toEqual(new Set(['object-cover']));
+  });
+
+  it('server-renders the poster contained, without the Image default cover', () => {
+    settings.slider_background_size = [{ value: 'contain' }];
+    const html = renderToString(<ProductGallery product={product} />);
+    const poster = html.match(/product-gallery__poster[^]*?<img[^>]*class="([^"]*)"/)?.[1];
+
+    expect(poster?.split(' ')).toContain('object-contain');
+    expect(poster?.split(' ')).not.toContain('object-cover');
   });
 });
 
