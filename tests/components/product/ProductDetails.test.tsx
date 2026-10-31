@@ -214,6 +214,27 @@ describe('ProductDetails remaining quantity', () => {
     await waitFor(() => expect(container.textContent).toContain('blocks.product.in_stock (19)'));
     expect(container.textContent).not.toContain('pages.products.remained');
   });
+
+  // The sold / remaining box (`mb-5 inline-flex text-sm`).
+  const quantityBox = (container: HTMLElement) =>
+    container.querySelector('div.mb-5.inline-flex.text-sm');
+
+  it('leaves no empty gap for a product that sold 0 with the remaining count hidden', async () => {
+    const { container } = render(
+      <ProductDetails product={makeProduct({ sold_quantity: 0, can_show_remained_quantity: false })} />
+    );
+
+    await waitFor(() => expect(container.textContent).toContain('Product'));
+    expect(quantityBox(container)).toBeNull();
+  });
+
+  it('still shows the sold count once something has sold', async () => {
+    const { container } = render(
+      <ProductDetails product={makeProduct({ sold_quantity: 3, can_show_remained_quantity: false })} />
+    );
+
+    await waitFor(() => expect(quantityBox(container)?.textContent).toContain('pages.products.sold'));
+  });
 });
 
 describe('ProductDetails description embeds', () => {

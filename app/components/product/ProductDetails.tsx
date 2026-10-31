@@ -295,7 +295,9 @@ function ProductDescription({ product }: { product: Product }) {
 
 function ProductQuantityInfo({ product }: { product: Product }) {
   const { t } = useTranslation();
-  if (product.sold_quantity == null && !product.can_show_remained_quantity) {
+  // Like Twig's `{% if product.sold_quantity or product.can_show_remained_quantity %}`:
+  // a product that sold 0 has nothing to show either, and the `mb-5` box would be an empty gap.
+  if (!((product.sold_quantity ?? 0) > 0) && !product.can_show_remained_quantity) {
     return null;
   }
 
