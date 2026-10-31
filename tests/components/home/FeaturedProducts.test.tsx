@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, fireEvent } from '@testing-library/react';
 import {
   FeaturedProducts,
@@ -6,6 +6,11 @@ import {
   FeaturedProductsWithSpecialProduct,
   featuredProductsConfig,
 } from '../../../app/components/home/FeaturedProducts';
+
+const cardLayout = { value: 'vertical' as 'vertical' | 'horizontal' };
+vi.mock('../../../app/hooks/useProductCardLayout', () => ({
+  useProductCardLayout: () => cardLayout.value,
+}));
 
 // Only the module under test, not the whole barrel and everything it re-exports.
 vi.mock('../../../app/components/product', async () => ({
@@ -48,13 +53,15 @@ vi.mock('@salla.sa/twilight-components-react', () => ({
   SallaProductsList: ({
     loader,
     children,
+    itemsClassName,
   }: {
     loader: () => unknown;
     children: (items: unknown[]) => unknown;
+    itemsClassName?: string;
   }) => {
     loader();
     return (
-      <div data-testid="salla-products-list">
+      <div data-testid="salla-products-list" className={itemsClassName}>
         {
           children([
             { id: 1, name: 'Full P1' },
@@ -73,6 +80,10 @@ const tab = (over: Record<string, unknown> = {}) => ({
 });
 
 describe('FeaturedProducts', () => {
+  beforeEach(() => {
+    cardLayout.value = 'vertical';
+  });
+
   it('renders nothing without sections', () => {
     const { container } = render(<FeaturedProducts data={{}} />);
     expect(container.firstChild).toBeNull();
@@ -184,6 +195,32 @@ describe('FeaturedProducts', () => {
     const { container } = render(<FeaturedProducts data={{ items: [tab()] }} />);
     expect(container.querySelector('.tabs')).toBeNull();
     expect(container.querySelector('.tabs-wrapper .tabs__item.is-active')).toBeTruthy();
+  });
+
+  it.each([
+    ['one tab', [tab()]],
+    ['several tabs', [tab(), tab({ name: 'Second' })]],
+  ])('follows the store card layout with %s', (_label, items) => {
+    cardLayout.value = 'horizontal';
+    const { container } = render(<FeaturedProducts data={{ items }} />);
+    const panel = container.querySelector('.tabs__item.is-active')!;
+    expect(panel.querySelector('.s-products-list-horizontal-cards')).toBeTruthy();
+    const cards = panel.querySelectorAll('[data-testid="product-card"]');
+    expect(cards.length).toBeGreaterThan(0);
+    cards.forEach((card) => expect(card.getAttribute('data-layout')).toBe('horizontal'));
+  });
+
+  it('keeps vertical cards beside a special offer whatever the store card layout', () => {
+    cardLayout.value = 'horizontal';
+    const { container } = render(
+      <FeaturedProductsSpecialOffer
+        data={{ main_product: { id: 9, name: 'Hero' }, items: [tab()] }}
+      />
+    );
+    const panel = container.querySelector('.tabs__item.is-active')!;
+    panel
+      .querySelectorAll('[data-testid="product-card"]')
+      .forEach((card) => expect(card.getAttribute('data-layout')).toBe('vertical'));
   });
 
   it('renders the main product and title for special_offer_with_products', () => {

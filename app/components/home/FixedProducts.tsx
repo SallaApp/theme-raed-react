@@ -6,6 +6,8 @@ import { useTranslation } from '@salla.sa/twilight-theme-engine/i18n';
 import { product, type ProductsListSource } from '@salla.sa/twilight-theme-engine/api/product';
 import { ProductCard } from '../product';
 import { blockLimit } from '../../lib/blockLimit';
+import { showsDisplayAll } from '../../lib/displayAll';
+import { useProductCardLayout } from '../../hooks/useProductCardLayout';
 
 export interface FixedProductsProps {
   data: {
@@ -39,7 +41,8 @@ export function FixedProducts({ data }: FixedProductsProps) {
 
   const title = data.title;
   const limit = blockLimit(data.limit);
-  const isVertical = data.isVertical ?? true;
+  // The store-wide horizontal layout wins; otherwise the block's own choice.
+  const isVertical = useProductCardLayout() === 'vertical' && data.isVertical !== false;
 
   const { data: result, isLoading } = useQuery(
     product.queries.list({
@@ -57,6 +60,10 @@ export function FixedProducts({ data }: FixedProductsProps) {
 
   if (!products.length) return null;
 
+  const displayAllUrl = showsDisplayAll(data.products.source, products.length, limit, result?.next)
+    ? data.display_all_url
+    : null;
+
   return (
     <Suspense fallback={<FixedProductsSkeleton />}>
       {title && (
@@ -64,8 +71,8 @@ export function FixedProducts({ data }: FixedProductsProps) {
           <div className="right-side">
             <h2>{title}</h2>
           </div>
-          {data.display_all_url && (
-            <Link to={data.display_all_url} className="s-block__display-all">
+          {displayAllUrl && (
+            <Link to={displayAllUrl} className="s-block__display-all">
               {t('blocks.home.display_all', 'View All')}
               <i className="sicon-arrow-left"></i>
             </Link>
@@ -79,7 +86,11 @@ export function FixedProducts({ data }: FixedProductsProps) {
         }
       >
         {products.slice(0, limit).map((product) => (
-          <ProductCard key={product.id} product={product} />
+          <ProductCard
+            key={product.id}
+            product={product}
+            layout={isVertical ? 'vertical' : 'horizontal'}
+          />
         ))}
       </div>
     </Suspense>

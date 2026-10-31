@@ -4,6 +4,7 @@ import { useRouterState } from '@tanstack/react-router';
 import { Link } from '@salla.sa/twilight-theme-engine/common';
 import { useTranslation } from '@salla.sa/twilight-theme-engine/i18n';
 import { useMobileViewport } from '../../hooks/useMobileViewport';
+import { useNavHasContent } from '../../hooks/useNavHasContent';
 import {
   DashboardSquare01Icon,
   HomeIcon,
@@ -328,6 +329,7 @@ export function MobileBottomBar({
   const { t } = useTranslation();
   const cartCount = useCartCount();
   const isMobile = useMobileViewport();
+  const navHasContent = useNavHasContent();
   const searchOpen = useSearchOpen(isMobile);
   const headerMenuOpen = useUserMenuOpen(isMobile);
   // The second-level sheets live under the More tab too -- light it the same way.
@@ -387,18 +389,20 @@ export function MobileBottomBar({
             onClick={() => openTab('home')}
           />
 
-          <button
-            type="button"
-            className={`mobile-bottom-bar__item${active === 'categories' ? ' is-active' : ''}`}
-            aria-expanded={active === 'categories'}
-            data-testid="mobile-bottom-bar-categories"
-            onClick={handleCategories}
-          >
-            <span className="mobile-bottom-bar__icon">
-              <DashboardSquare01Icon aria-hidden="true" />
-            </span>
-            <span className="mobile-bottom-bar__label">{labels.categories}</span>
-          </button>
+          {navHasContent && (
+            <button
+              type="button"
+              className={`mobile-bottom-bar__item${active === 'categories' ? ' is-active' : ''}`}
+              aria-expanded={active === 'categories'}
+              data-testid="mobile-bottom-bar-categories"
+              onClick={handleCategories}
+            >
+              <span className="mobile-bottom-bar__icon">
+                <DashboardSquare01Icon aria-hidden="true" />
+              </span>
+              <span className="mobile-bottom-bar__label">{labels.categories}</span>
+            </button>
+          )}
 
           <button
             type="button"

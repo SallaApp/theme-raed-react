@@ -39,6 +39,11 @@ vi.mock('@tanstack/react-router', () => ({
     select({ location: { pathname: route.pathname } }),
 }));
 
+const nav = { hasContent: true };
+vi.mock('../../../app/hooks/useNavHasContent', () => ({
+  useNavHasContent: () => nav.hasContent,
+}));
+
 vi.mock('@salla.sa/twilight-theme-engine/common', () => ({
   Link: ({ to, children, className, ...rest }: Record<string, unknown>) => (
     <a href={String(to)} className={className as string} {...(rest as Record<string, unknown>)}>
@@ -67,6 +72,7 @@ vi.mock('@salla.sa/twilight-theme-engine/i18n', () => ({
 beforeEach(() => {
   route.pathname = '/';
   route.locale = 'en';
+  nav.hasContent = true;
   delete (window as unknown as { salla?: unknown }).salla;
 });
 
@@ -88,6 +94,14 @@ describe('MobileBottomBar', () => {
     expect(screen.getByText('Menu')).toBeTruthy();
     expect(screen.getByText('Cart')).toBeTruthy();
     expect(screen.getByText('My Account')).toBeTruthy();
+  });
+
+  it('drops the Menu tab when the menu would open empty', () => {
+    nav.hasContent = false;
+    render(<MobileBottomBar navOpen={false} onOpenNav={noop} />);
+
+    expect(screen.queryByTestId('mobile-bottom-bar-categories')).toBeNull();
+    expect(screen.getByText('Home')).toBeTruthy();
   });
 
   it('uses the user line icon for the My Account tab', () => {

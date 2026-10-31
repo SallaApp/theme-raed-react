@@ -11,6 +11,7 @@ import { Image } from '@salla.sa/twilight-theme-engine/common';
 import { MapPinIcon, SearchIcon, ShoppingBagIcon } from '../icons';
 import { useHydrated } from '../../hooks/useHydrated';
 import { useAppSafeAreaTop } from '../../hooks/useAppSafeAreaTop';
+import { useNavHasContent } from '../../hooks/useNavHasContent';
 import { HOME_ROUTE_ID, PRODUCT_ROUTE_ID } from '../../lib/routeIds';
 import { HeaderMainMenu } from './HeaderMainMenu';
 import { HeaderNav } from './HeaderNav';
@@ -121,6 +122,7 @@ export function Header({ navOpen: navOpenProp, onNavOpenChange }: HeaderProps = 
   const { t } = useTranslation();
   const isDefaultLayout = theme?.settings?.header_layout === 'default';
   const stickyEnabled = theme?.settings?.header_is_sticky !== false;
+  const navHasContent = useNavHasContent();
   const [navOpenState, setNavOpenState] = useState(false);
   const navOpen = navOpenProp ?? navOpenState;
   const setNavOpen = (open: boolean) => {
@@ -230,22 +232,25 @@ export function Header({ navOpen: navOpenProp, onNavOpenChange }: HeaderProps = 
       <div className="site-header__bar-outer">
         <div className={`site-header__bar${scrolled ? ' is-scrolled' : ''}`}>
           <div className="container site-header__bar-inner">
+            {/* The cell stays when the button goes, so the logo keeps its place. */}
             <div className="site-header__nav-toggle">
-              <button
-                type="button"
-                className="header-action"
-                aria-label={t('blocks.header.main_menu', 'Menu')}
-                aria-expanded={navOpen}
-                onClick={() => setNavOpen(true)}
-              >
-                {/* CSS burger — staggered bars that even out on hover/focus
-                    (styles: header.scss `.site-header__burger`). */}
-                <span className="site-header__burger" aria-hidden="true">
-                  <span />
-                  <span />
-                  <span />
-                </span>
-              </button>
+              {navHasContent && (
+                <button
+                  type="button"
+                  className="header-action"
+                  aria-label={t('blocks.header.main_menu', 'Menu')}
+                  aria-expanded={navOpen}
+                  onClick={() => setNavOpen(true)}
+                >
+                  {/* CSS burger — staggered bars that even out on hover/focus
+                      (styles: header.scss `.site-header__burger`). */}
+                  <span className="site-header__burger" aria-hidden="true">
+                    <span />
+                    <span />
+                    <span />
+                  </span>
+                </button>
+              )}
             </div>
 
             <a className="site-header__brand" href={store?.url || '/'}>

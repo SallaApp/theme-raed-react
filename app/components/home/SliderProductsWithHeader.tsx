@@ -92,7 +92,7 @@ export function SliderProductsWithHeader({ data }: SliderProductsWithHeaderProps
             blockTitle=" "
             {...(displayAllUrl ? { displayAllUrl } : {})}
           >
-            {(product) => <ProductCard product={product} />}
+            {(product) => <ProductCard product={product} layout="vertical" />}
           </SallaProductsSlider>
         </Suspense>
       </div>

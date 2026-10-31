@@ -1435,6 +1435,20 @@ salla-reviews:not(:has(.s-reviews-swiper-slide)) {
       flex-basis: calc((100% - 4.5rem) / 4);
     }
   }
+
+  /* Horizontal cards (`product_card_layout`) need a wider slide: one and a
+     peek on phones, two across from tablets, three on desktop. */
+  &--horizontal &__slide {
+    flex-basis: 85%;
+
+    @media (min-width: 768px) {
+      flex-basis: 48%;
+    }
+
+    @media (min-width: 1024px) {
+      flex-basis: 32%;
+    }
+  }
 }
 
 .s-block--main-links {

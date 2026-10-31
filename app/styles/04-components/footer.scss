@@ -21,8 +21,8 @@
   /* Footer menu — `<salla-menu source="footer">` renders a bare
      `.s-menu-footer-list` of `.s-menu-footer-item` anchors (no list markup).
      Two presentations, picked by the modifier class `Footer` adds:
-       `--stacked` (columns layout) — a vertical list, splitting into two
-       columns once it has 6+ links;
+       `--stacked` (columns layout) — a single vertical column, however many
+       links there are;
        `--inline`  (centered layout) — a single pipe-separated row. */
   &__menu {
     @apply block;
@@ -30,20 +30,11 @@
     &--stacked {
       .s-menu-footer-list {
         @apply block;
-
-        /* 6+ links → two columns on desktop (`:nth-child(6)` = "a 6th item exists") */
-        @media (min-width: 1024px) {
-          &:has(> .s-menu-footer-item:nth-child(6)) {
-            column-count: 2;
-            column-gap: 2.5rem;
-          }
-        }
       }
 
       .s-menu-footer-item {
         @apply block text-[15px] leading-snug text-gray-600;
         margin-bottom: 0.625rem;
-        break-inside: avoid;
 
         &:last-child {
           margin-bottom: 0;

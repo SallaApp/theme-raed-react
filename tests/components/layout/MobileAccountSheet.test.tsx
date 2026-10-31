@@ -97,7 +97,7 @@ vi.mock('@salla.sa/twilight-theme-engine/common', () => ({
   ),
 }));
 
-vi.mock('@salla.sa/twilight-theme-engine/layout', () => ({
+vi.mock('../../../app/components/layout/Footer', () => ({
   Footer: ({ inSheet }: { inSheet?: boolean }) => (
     <div data-in-sheet={String(!!inSheet)}>
       <a href="/">Acme</a>

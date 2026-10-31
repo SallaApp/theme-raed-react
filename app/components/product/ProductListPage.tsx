@@ -26,6 +26,7 @@ import { useAppliedFilters } from '@salla.sa/twilight-theme-engine/routes/produc
 import type { ProductListFilters } from '@salla.sa/twilight-theme-engine/api/product';
 import { BlockHookSlot, BottomSheet } from '../common';
 import { useAppSafeAreaTop } from '../../hooks/useAppSafeAreaTop';
+import { useProductCardLayout } from '../../hooks/useProductCardLayout';
 import { useScrollDirection } from '../../hooks/useScrollDirection';
 import {
   ChevronDownIcon,
@@ -49,12 +50,13 @@ function usePref<T extends string>(
       // This fills the hook's own state from localStorage; no parent is
       // involved: see .react-doctor/false-positives.md.
       // react-doctor-disable-next-line react-doctor/no-pass-data-to-parent
-      if (stored && values.includes(stored)) setValue(stored);
+      // A new key (or default) with nothing stored goes back to the default.
+      setValue(stored && values.includes(stored) ? stored : initial);
     } catch {
-      /* private mode */
+      setValue(initial);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [key]);
+  }, [key, initial]);
   const set = useCallback(
     (v: T) => {
       setValue(v);
@@ -186,14 +188,13 @@ function MobileStickyToolbar({ children }: { children: ReactNode }) {
   );
 }
 
-/** Filter show/hide (desktop toggle + mobile trigger) at the start, product
- * count + grid/list switch + sort select at the end. */
+/** Filter show/hide (desktop toggle + mobile trigger) at the start, grid/list
+ * switch + sort select at the end. */
 function CatalogToolbar({
   showFilters,
   filtersHidden,
   onToggleFiltersHidden,
   onOpenMobileFilters,
-  productsCount,
   view,
   onViewChange,
   selectedSort,
@@ -205,10 +206,6 @@ function CatalogToolbar({
   filtersHidden: '0' | '1';
   onToggleFiltersHidden: () => void;
   onOpenMobileFilters: () => void;
-  /** `undefined` when the true total isn't known (more pages beyond this
-   * one) — the API is cursor-paginated with no total-count field, so
-   * `products.length` is only accurate once there's nothing left to load. */
-  productsCount: number | undefined;
   view: View;
   onViewChange: (view: View) => void;
   selectedSort: string;
@@ -246,12 +243,6 @@ function CatalogToolbar({
       )}
 
       <div className="s-catalog-toolbar__group s-catalog-toolbar__options">
-        {productsCount !== undefined && (
-          <span className="s-catalog-toolbar__count hidden sm:inline">
-            {productsCount} {t('blocks.catalog.products_count', 'products')}
-          </span>
-        )}
-
         <div
           className="s-catalog-toolbar__views"
           role="group"
@@ -444,7 +435,15 @@ export function ProductListPage({
 
   const selectedSort = query.sort;
   const [filtersOpen, setFiltersOpen] = useState(false);
-  const [view, setView] = usePref<View>('catalog-view', ['grid', 'list'], 'grid');
+  // The merchant's card layout picks the view until the visitor switches it.
+  // The visitor's choice is kept per layout, so changing the setting applies
+  // again, also live in the theme editor.
+  const cardLayout = useProductCardLayout();
+  const [view, setView] = usePref<View>(
+    `catalog-view-${cardLayout}`,
+    ['grid', 'list'],
+    cardLayout === 'horizontal' ? 'list' : 'grid'
+  );
   const [filtersHidden, setFiltersHidden] = usePref<'0' | '1'>(
     'catalog-filters-hidden',
     ['0', '1'],
@@ -557,11 +556,6 @@ export function ProductListPage({
           filtersHidden={filtersHidden}
           onToggleFiltersHidden={() => setFiltersHidden(filtersHidden === '1' ? '0' : '1')}
           onOpenMobileFilters={() => setFiltersOpen(true)}
-          // `pagination.next` truthy means more pages exist beyond this one —
-          // `products.length` (this page only) isn't the true total then, and
-          // the API's cursor pagination has no total-count field to fall back
-          // to, so show nothing rather than a number that's quietly wrong.
-          productsCount={shownNext ? undefined : shownProducts.length}
           view={view}
           onViewChange={setView}
           selectedSort={selectedSort}

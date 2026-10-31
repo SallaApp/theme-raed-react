@@ -6,6 +6,11 @@ import { ProductsSlider } from '../../../app/components/home/ProductsSlider';
 const listMock = vi.fn();
 
 // Only the module under test, not the whole barrel and everything it re-exports.
+const cardLayout = { value: 'vertical' as 'vertical' | 'horizontal' };
+vi.mock('../../../app/hooks/useProductCardLayout', () => ({
+  useProductCardLayout: () => cardLayout.value,
+}));
+
 vi.mock('../../../app/components/common', async () => ({
   ScrollCarousel: (await vi.importActual<typeof import('../../../app/components/common/ScrollCarousel')>(
     '../../../app/components/common/ScrollCarousel'
@@ -39,8 +44,16 @@ vi.mock('@salla.sa/twilight-components-react', () => ({
 }));
 
 vi.mock('../../../app/components/product', () => ({
-  ProductCard: ({ product }: { product: { id?: number; name?: string } }) => (
-    <div data-testid="product-card">{product.name}</div>
+  ProductCard: ({
+    product,
+    layout,
+  }: {
+    product: { id?: number; name?: string };
+    layout?: string;
+  }) => (
+    <div data-testid="product-card" data-layout={layout}>
+      {product.name}
+    </div>
   ),
 }));
 
@@ -61,9 +74,22 @@ beforeEach(() => {
     ],
   });
   Element.prototype.scrollBy = vi.fn();
+  cardLayout.value = 'vertical';
 });
 
 describe('ProductsSlider', () => {
+  it('always uses vertical cards, even when the store layout is horizontal', async () => {
+    cardLayout.value = 'horizontal';
+    const { container, getAllByTestId } = renderWithClient(
+      <ProductsSlider data={{ products: { source: 'related', source_value: 1 } }} />
+    );
+    await waitFor(() => expect(getAllByTestId('product-card').length).toBe(3));
+    for (const card of getAllByTestId('product-card')) {
+      expect(card.getAttribute('data-layout')).toBe('vertical');
+    }
+    expect(container.querySelector('.s-products-carousel--vertical')).toBeTruthy();
+  });
+
   it('renders nothing without a products source', () => {
     const { container } = renderWithClient(<ProductsSlider data={{}} />);
     expect(container.firstChild).toBeNull();

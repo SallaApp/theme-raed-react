@@ -7,6 +7,7 @@ import { ProductsListSkeleton } from '@salla.sa/twilight-components-react';
 import { ScrollCarousel } from '../common';
 import { ProductCard } from '../product';
 import { blockLimit } from '../../lib/blockLimit';
+import { showsDisplayAll } from '../../lib/displayAll';
 
 export interface ProductsSliderProps {
   data: {
@@ -47,7 +48,9 @@ function ProductsHeading({ title, displayAllUrl }: { title?: string; displayAllU
  *
  * Replaces the engine's Swiper (`<salla-products-slider>`) with the theme's
  * {@link ScrollCarousel} — a native row of whole cards with its arrows beside the
- * title, matching the homepage testimonials. Styling: `04-components/home-blocks.scss`.
+ * title, matching the homepage testimonials. Cards are always vertical: the store's
+ * `product_card_layout` applies to grids and lists, not sliders.
+ * Styling: `04-components/home-blocks.scss`.
  */
 export function ProductsSlider({ data, onResolve }: ProductsSliderProps) {
   const { t } = useTranslation();
@@ -103,14 +106,22 @@ export function ProductsSlider({ data, onResolve }: ProductsSliderProps) {
 
   const { title } = data;
   const displayAll = data.display_all_url;
-  const displayAllUrl = displayAll && displayAll !== '' && displayAll !== '#' ? displayAll : '';
+  const displayAllUrl =
+    displayAll &&
+    displayAll !== '#' &&
+    // A `latest` block waits for its count, so the link doesn't flash in and out.
+    (isSuccess
+      ? showsDisplayAll(source, items?.length ?? 0, limit, result?.next)
+      : source !== 'latest')
+      ? displayAll
+      : '';
 
   const heading = (title || displayAllUrl) && (
     <ProductsHeading title={title} displayAllUrl={displayAllUrl} />
   );
 
   return (
-    <div className="s-products-carousel">
+    <div className="s-products-carousel s-products-carousel--vertical">
       {!isSuccess ? (
         <>
           {heading && <div className="scroll-carousel__head">{heading}</div>}
@@ -124,7 +135,7 @@ export function ProductsSlider({ data, onResolve }: ProductsSliderProps) {
         >
           {(items ?? []).map((item) => (
             <div key={item.id} className="s-products-carousel__slide">
-              <ProductCard product={item} />
+              <ProductCard product={item} layout="vertical" />
             </div>
           ))}
         </ScrollCarousel>

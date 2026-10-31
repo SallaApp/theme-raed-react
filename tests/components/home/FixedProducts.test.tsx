@@ -5,6 +5,11 @@ import { FixedProducts } from '../../../app/components/home/FixedProducts';
 
 const listMock = vi.fn();
 
+const cardLayout = { value: 'vertical' as 'vertical' | 'horizontal' };
+vi.mock('../../../app/hooks/useProductCardLayout', () => ({
+  useProductCardLayout: () => cardLayout.value,
+}));
+
 vi.mock('@salla.sa/twilight-theme-engine/i18n', () => ({
   useTranslation: () => ({ t: (_k: string, fb?: string) => fb ?? _k }),
 }));
@@ -31,8 +36,16 @@ vi.mock('@salla.sa/twilight-components-react', () => ({
 }));
 
 vi.mock('../../../app/components/product', () => ({
-  ProductCard: ({ product }: { product: { id: number; name?: string } }) => (
-    <div data-testid={`home-fixed-products-card-${product.id}`}>{product.name}</div>
+  ProductCard: ({
+    product,
+    layout,
+  }: {
+    product: { id: number; name?: string };
+    layout?: string;
+  }) => (
+    <div data-testid={`home-fixed-products-card-${product.id}`} data-layout={layout}>
+      {product.name}
+    </div>
   ),
 }));
 
@@ -54,6 +67,7 @@ function renderBlock(data: Record<string, unknown>) {
 
 beforeEach(() => {
   listMock.mockReset();
+  cardLayout.value = 'vertical';
 });
 
 describe('FixedProducts', () => {
@@ -76,5 +90,53 @@ describe('FixedProducts', () => {
     const { container } = renderBlock({});
     await waitFor(() => expect(cards(container)).toHaveLength(6));
     expect(listMock).toHaveBeenCalledWith(expect.objectContaining({ perPage: undefined }));
+  });
+
+  it('drops "View All" when a latest block came back short of its limit', async () => {
+    listMock.mockResolvedValue({ items: products(2) });
+    const { container, queryByText } = renderBlock({
+      limit: 4,
+      title: 'Latest',
+      display_all_url: '/latest-products',
+    });
+    await waitFor(() => expect(cards(container)).toHaveLength(2));
+    expect(queryByText('View All')).toBeNull();
+  });
+
+  it('keeps "View All" when a latest block filled its limit', async () => {
+    listMock.mockResolvedValue({ items: products(4) });
+    const { findByText } = renderBlock({
+      limit: 4,
+      title: 'Latest',
+      display_all_url: '/latest-products',
+    });
+    expect(await findByText('View All')).toBeTruthy();
+  });
+
+  it('keeps "View All" on other sources, however few products came back', async () => {
+    listMock.mockResolvedValue({ items: products(2) });
+    const { findByText } = renderBlock({
+      products: { source: 'categories', source_value: [1] },
+      limit: 4,
+      title: 'Dresses',
+      display_all_url: '/dresses',
+    });
+    expect(await findByText('View All')).toBeTruthy();
+  });
+
+  it('uses horizontal cards when the store layout is horizontal', async () => {
+    cardLayout.value = 'horizontal';
+    listMock.mockResolvedValue({ items: products(2) });
+    const { container } = renderBlock({ isVertical: true });
+    await waitFor(() => expect(cards(container)).toHaveLength(2));
+    expect(cards(container)[0].getAttribute('data-layout')).toBe('horizontal');
+    expect(container.querySelector('.s-products-list-horizontal-cards')).toBeTruthy();
+  });
+
+  it("keeps a block's own horizontal choice under the vertical store layout", async () => {
+    listMock.mockResolvedValue({ items: products(2) });
+    const { container } = renderBlock({ isVertical: false });
+    await waitFor(() => expect(cards(container)).toHaveLength(2));
+    expect(cards(container)[0].getAttribute('data-layout')).toBe('horizontal');
   });
 });
