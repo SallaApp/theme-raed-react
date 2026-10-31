@@ -17,7 +17,7 @@ vi.mock('@salla.sa/twilight-theme-engine/i18n', () => ({
 vi.mock('@salla.sa/twilight-theme-engine/hooks/useUser', () => ({
   useUser: () => ({ isLoggedIn: true }),
 }));
-vi.mock('@salla.sa/twilight-theme-engine/layout', () => ({ Footer: () => null }));
+vi.mock('../../../app/components/layout/Footer', () => ({ Footer: () => null }));
 vi.mock('../../../app/components/layout/Header', () => ({ Header: () => null }));
 vi.mock('../../../app/components/layout/ImportantLinksSheet', () => ({
   ImportantLinksSheet: () => null,

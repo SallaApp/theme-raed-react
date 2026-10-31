@@ -5,6 +5,7 @@ import { useTranslation } from '@salla.sa/twilight-theme-engine/i18n';
 import { parseNextPageToken, product } from '@salla.sa/twilight-theme-engine/api/product';
 import type { Product } from '@salla.sa/twilight-theme-engine/types';
 import { ProductCard } from '../product';
+import { useProductCardLayout } from '../../hooks/useProductCardLayout';
 
 export interface LatestProductsProps {
   data: {
@@ -27,6 +28,7 @@ export interface LatestProductsProps {
  */
 export function LatestProducts({ data }: LatestProductsProps) {
   const { t } = useTranslation();
+  const layout = useProductCardLayout();
   const nextRef = useRef<string | null>(null);
 
   const loader = useCallback(async () => {
@@ -43,7 +45,7 @@ export function LatestProducts({ data }: LatestProductsProps) {
       <SallaProductsList<Product>
         loader={loader}
         mode="infinite"
-        itemsClassName="s-products-list-vertical-cards"
+        itemsClassName={`s-products-list-${layout}-cards`}
         skeleton={<ProductCardSkeleton />}
         skeletonType="item"
         skeletonCount={8}
@@ -60,6 +62,7 @@ export function LatestProducts({ data }: LatestProductsProps) {
             <ProductCard
               key={item.id}
               product={item}
+              layout={layout}
               imagePriority={!!data.priority && index < 2}
             />
           ))

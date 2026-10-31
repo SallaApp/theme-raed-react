@@ -40,6 +40,40 @@
   ],
   "settings": [
     {
+      "id": "product_card_layout",
+      "type": "items",
+      "format": "dropdown-list",
+      "icon": "sicon-layout-01",
+      "label": "شكل بطاقة المنتج",
+      "description": "يطبَّق على بطاقات المنتجات في عناصر الصفحة الرئيسية، وهو العرض الافتراضي في صفحات قوائم المنتجات (يستطيع الزائر تغييره).",
+      "source": "Manual",
+      "required": true,
+      "selected": [
+        {
+          "label": "عمودي",
+          "value": "vertical",
+          "key": "product-card-layout-vertical"
+        }
+      ],
+      "options": [
+        {
+          "label": "عمودي",
+          "value": "vertical",
+          "key": "product-card-layout-vertical"
+        },
+        {
+          "label": "أفقي",
+          "value": "horizontal",
+          "key": "product-card-layout-horizontal"
+        }
+      ]
+    },
+    {
+      "type": "static",
+      "id": "static-line0",
+      "format": "line"
+    },
+    {
       "type": "static",
       "format": "title",
       "id": "static-label2",
