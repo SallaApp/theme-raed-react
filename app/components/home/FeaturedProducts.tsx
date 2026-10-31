@@ -12,6 +12,9 @@ import { SallaProductsList, ProductsListSkeleton } from '@salla.sa/twilight-comp
  * `component-featured-products` feature. Each tab names its own source
  * (`items[].type` + category / tag / chosen products) and loads its products
  * lazily through `product.list`, so no server-side hydration is needed.
+ * Every list is `mode="once"`: the loaders always fetch the first page, so the
+ * default `infinite` mode would fetch it again each time a list's end scrolled
+ * into view.
  *
  * Keeps the engine/Twig class names (`s-block__title`, `tabs`, `tabs-wrapper`,
  * `tabs__item`, `tab-trigger`) so `04-components/home-blocks.scss` styles it.
@@ -171,7 +174,11 @@ function TabProductGrid({
 
   return (
     <Suspense fallback={<ProductsListSkeleton />}>
-      <SallaProductsList loader={loader} itemsClassName={`s-products-list-${layout}-cards`}>
+      <SallaProductsList
+        loader={loader}
+        mode="once"
+        itemsClassName={`s-products-list-${layout}-cards`}
+      >
         {(items: Product[]) =>
           items
             .slice(0, limit)
@@ -192,7 +199,7 @@ function SpecialProduct({ value }: { value: FeaturedProductsData['main_product']
 
   return (
     <Suspense fallback={<ProductsListSkeleton />}>
-      <SallaProductsList loader={loader} itemsClassName="featured-products__special-list">
+      <SallaProductsList loader={loader} mode="once" itemsClassName="featured-products__special-list">
         {(items: Product[]) =>
           items
             .slice(0, 1)
@@ -381,6 +388,7 @@ function ColumnFromSource({
     <Suspense fallback={<ProductsListSkeleton />}>
       <SallaProductsList
         loader={loader}
+        mode="once"
         itemsClassName="s-products-list-horizontal-cards featured-products__column-grid"
       >
         {(items: Product[]) =>

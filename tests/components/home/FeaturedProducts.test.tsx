@@ -1,5 +1,5 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, fireEvent } from '@testing-library/react';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { render, fireEvent, act, waitFor } from '@testing-library/react';
 import {
   FeaturedProducts,
   FeaturedProductsSpecialOffer,
@@ -48,30 +48,37 @@ vi.mock('@salla.sa/twilight-theme-engine/product', () => ({
   ),
 }));
 
-vi.mock('@salla.sa/twilight-components-react', () => ({
-  ProductsListSkeleton: () => <div data-testid="list-skeleton" />,
-  SallaProductsList: ({
-    loader,
-    children,
-    itemsClassName,
-  }: {
-    loader: () => unknown;
-    children: (items: unknown[]) => unknown;
-    itemsClassName?: string;
-  }) => {
-    loader();
-    return (
-      <div data-testid="salla-products-list" className={itemsClassName}>
-        {
-          children([
-            { id: 1, name: 'Full P1' },
-            { id: 2, name: 'Full P2' },
-          ]) as never
-        }
-      </div>
-    );
-  },
-}));
+// Set by the loading tests at the end to render the real SallaProductsList.
+// `vi.hoisted` shares it with the hoisted `vi.mock` factory.
+const realList = vi.hoisted(() => ({ on: false }));
+
+vi.mock('@salla.sa/twilight-components-react', async () => {
+  const actual = await vi.importActual<typeof import('@salla.sa/twilight-components-react')>(
+    '@salla.sa/twilight-components-react'
+  );
+  return {
+    ProductsListSkeleton: () => <div data-testid="list-skeleton" />,
+    SallaProductsList: (props: {
+      loader: () => unknown;
+      children: (items: unknown[]) => unknown;
+      itemsClassName?: string;
+    }) => {
+      if (realList.on) return <actual.SallaProductsList {...(props as never)} />;
+      const { loader, children, itemsClassName } = props;
+      loader();
+      return (
+        <div data-testid="salla-products-list" className={itemsClassName}>
+          {
+            children([
+              { id: 1, name: 'Full P1' },
+              { id: 2, name: 'Full P2' },
+            ]) as never
+          }
+        </div>
+      );
+    },
+  };
+});
 
 const tab = (over: Record<string, unknown> = {}) => ({
   name: 'Tab',
@@ -373,5 +380,87 @@ describe('featuredProductsConfig.className', () => {
   it('adds two-cols only for a multi-section grid (style 3)', () => {
     expect(cls({ view_style: 'style3', items: [{}, {}] })).toContain('two-cols');
     expect(cls({ view_style: 'style3', items: [{}] })).not.toContain('two-cols');
+  });
+});
+
+describe('loading with the real SallaProductsList', () => {
+  // A first page with a next cursor, as `product.list` returns it when there are more.
+  const firstPage = {
+    items: [
+      { id: 1, name: 'Full P1' },
+      { id: 2, name: 'Full P2' },
+    ],
+    next: 'https://store.test/api/products?source=latest&page=2',
+  };
+  /** The elements being observed (each list's end sentinel), with their observer's callback. */
+  const observed = new Map<Element, IntersectionObserverCallback>();
+  let defaultList: ReturnType<typeof listMock.getMockImplementation>;
+
+  /** Scrolls every observed list end into view, lets a load finish, then scrolls it out. */
+  const scrollPast = async () => {
+    for (const isIntersecting of [true, false]) {
+      await act(async () => {
+        observed.forEach((callback, target) =>
+          callback(
+            [{ target, isIntersecting, intersectionRatio: isIntersecting ? 1 : 0 } as IntersectionObserverEntry],
+            {} as IntersectionObserver
+          )
+        );
+      });
+    }
+  };
+
+  beforeEach(() => {
+    realList.on = true;
+    defaultList = listMock.getMockImplementation();
+    listMock.mockClear().mockResolvedValue(firstPage);
+    observed.clear();
+    vi.stubGlobal(
+      'IntersectionObserver',
+      class {
+        callback: IntersectionObserverCallback;
+        constructor(callback: IntersectionObserverCallback) {
+          this.callback = callback;
+        }
+        observe(target: Element) {
+          observed.set(target, this.callback);
+        }
+        unobserve(target: Element) {
+          observed.delete(target);
+        }
+        disconnect() {}
+        takeRecords() {
+          return [];
+        }
+      }
+    );
+  });
+
+  afterEach(() => {
+    realList.on = false;
+    listMock.mockImplementation(defaultList!);
+    vi.unstubAllGlobals();
+  });
+
+  it.each([
+    ['a tab grid', () => <FeaturedProducts data={{ items: [tab()] }} />, 1],
+    [
+      'a special offer and its tab grid',
+      () => <FeaturedProductsSpecialOffer data={{ main_product: [7], items: [tab()] }} />,
+      2,
+    ],
+    [
+      'a column without a picked product',
+      () => <FeaturedProductsWithSpecialProduct data={{ items: [tab({ special_product: [] })] }} />,
+      1,
+    ],
+  ])('fetches %s once, however often the list end scrolls into view', async (_label, ui, lists) => {
+    const { findAllByTestId } = render(ui());
+    expect((await findAllByTestId('product-card')).length).toBeGreaterThan(0);
+    await waitFor(() => expect(listMock).toHaveBeenCalledTimes(lists));
+
+    for (let pass = 0; pass < 3; pass++) await scrollPast();
+
+    expect(listMock).toHaveBeenCalledTimes(lists);
   });
 });
