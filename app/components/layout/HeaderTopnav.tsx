@@ -66,7 +66,8 @@ function TopnavContacts({ phone, email }: { phone?: string; email?: string }) {
 
 /**
  * Top bar for the "default" header layout — the footer menu on the start side
- * and the language / branch / currency switchers on the end side. Desktop only
+ * (unless the merchant turns `important_links` off, as in the engine Header) and
+ * the language / branch / currency switchers on the end side. Desktop only
  * (`lg+`); on smaller screens the header collapses to the shared mobile bar.
  * Each opens through `openStoreSwitcher` (`lib/storeSwitchers.ts`): the
  * shared modals on the web, the app's own sheets for language and currency
@@ -75,7 +76,9 @@ function TopnavContacts({ phone, email }: { phone?: string; email?: string }) {
  */
 export function HeaderTopnav() {
   const { t, languageName } = useTranslation();
-  const { store, currency } = useTwilight();
+  const { store, currency, theme } = useTwilight();
+  // Declared in `twilight.json` with a default of on, so only an explicit `false` hides it.
+  const showImportantLinks = theme?.settings?.important_links !== false;
 
   const currencyLabel = currency?.name || currency?.symbol || currency?.code || 'SAR';
   const scopeLabel = store?.scope?.name || t('blocks.header.branches', 'Branches');
@@ -104,12 +107,14 @@ export function HeaderTopnav() {
   return (
     <div className="site-header__topnav">
       <div className="container site-header__topnav-inner">
-        <SallaMenu
-          source="footer"
-          topnav
-          className="site-header__topnav-menu"
-          suppressHydrationWarning
-        />
+        {showImportantLinks && (
+          <SallaMenu
+            source="footer"
+            topnav
+            className="site-header__topnav-menu"
+            suppressHydrationWarning
+          />
+        )}
 
         <div className="site-header__topnav-actions">
           <salla-bullet-delivery-tag data-testid="store-header-bullet-delivery-desktop" />

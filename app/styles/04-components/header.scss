@@ -756,8 +756,10 @@
   }
 }
 
+/* `ms-auto` keeps the switchers on the end side when `important_links` is off
+   and they are the bar's only child. */
 .site-header__topnav-actions {
-  @apply flex shrink-0 items-center gap-1;
+  @apply ms-auto flex shrink-0 items-center gap-1;
 }
 
 .site-header__topnav-action {
