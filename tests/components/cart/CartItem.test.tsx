@@ -158,6 +158,71 @@ describe('CartItem quantity', () => {
     fireEvent.blur(box);
     expect(box.value).toBe('12');
   });
+
+  /** Makes each `updateItem` call wait until the test resolves it. */
+  function holdUpdates() {
+    const resolvers: Array<() => void> = [];
+    updateItem.mockImplementation(
+      () => new Promise<void>((resolve) => void resolvers.push(resolve))
+    );
+    return {
+      finish: async (index: number) => {
+        await act(async () => resolvers[index]());
+      },
+    };
+  }
+
+  it('sends quantity changes one at a time, in the order they were made', async () => {
+    const updates = holdUpdates();
+    render(<CartItem item={item} />);
+    const plus = screen.getByLabelText('pages.products.quantity +');
+
+    fireEvent.click(plus);
+    await act(async () => void vi.advanceTimersByTime(400));
+    fireEvent.click(plus);
+    await act(async () => void vi.advanceTimersByTime(400));
+
+    // The second change waits for the first, so it can't reach the server first.
+    expect(sentQuantities()).toEqual(['2']);
+    await updates.finish(0);
+    expect(sentQuantities()).toEqual(['2', '3']);
+  });
+
+  it("keeps the newest quantity while an earlier update's refetch comes back", async () => {
+    const updates = holdUpdates();
+    const { rerender } = render(<CartItem item={item} />);
+    const box = screen.getByLabelText<HTMLInputElement>('pages.products.quantity');
+    const plus = screen.getByLabelText('pages.products.quantity +');
+
+    fireEvent.click(plus);
+    await act(async () => void vi.advanceTimersByTime(400));
+    fireEvent.click(plus);
+    await act(async () => void vi.advanceTimersByTime(400));
+    await updates.finish(0);
+
+    // The cart refetched after the first update, while the second is still running.
+    rerender(<CartItem item={{ ...item, quantity: 2 }} />);
+    expect(box.value).toBe('3');
+
+    await updates.finish(1);
+    rerender(<CartItem item={{ ...item, quantity: 3 }} />);
+    expect(box.value).toBe('3');
+  });
+
+  it('follows the server quantity again once the updates are done', async () => {
+    const updates = holdUpdates();
+    const { rerender } = render(<CartItem item={{ ...item, quantity: 3 }} />);
+    const box = screen.getByLabelText<HTMLInputElement>('pages.products.quantity');
+
+    fireEvent.click(screen.getByLabelText('pages.products.quantity +'));
+    await act(async () => void vi.advanceTimersByTime(400));
+    expect(box.value).toBe('4');
+    await updates.finish(0);
+
+    // The refetch after the last update: the store only had 2 left.
+    rerender(<CartItem item={{ ...item, quantity: 2 }} />);
+    expect(box.value).toBe('2');
+  });
 });
 
 describe('CartItem delete', () => {
