@@ -132,7 +132,8 @@ function WeightAndSizeGuideSection({ product }: { product: Product }) {
 }
 
 /** The note / file-upload tabs and their collapse panels. Renders nothing for a
- * product with neither. */
+ * product with neither. A closed panel is only collapsed visually, so it is
+ * also `inert`: Tab skips its field until the tab opens it. */
 function AttachmentsSection({
   product,
   activeCollapse,
@@ -160,6 +161,8 @@ function AttachmentsSection({
               <button
                 type="button"
                 onClick={() => onToggle(noteId)}
+                aria-expanded={activeCollapse === noteId}
+                aria-controls={`${noteId}_panel`}
                 className={`btn-tab btn--collapse ${activeCollapse === noteId ? 'is-opened' : 'is-closed'}`}
               >
                 <i className="font-medium sicon-chat-conversation-alt rtl:ml-1.5 ltr:mr-1.5"></i>
@@ -170,6 +173,8 @@ function AttachmentsSection({
               <button
                 type="button"
                 onClick={() => onToggle(fileId)}
+                aria-expanded={activeCollapse === fileId}
+                aria-controls={`${fileId}_panel`}
                 className={`btn-tab btn--collapse ${activeCollapse === fileId ? 'is-opened' : 'is-closed'}`}
               >
                 <i className="font-medium sicon-paperclip rtl:ml-1.5 ltr:mr-1.5"></i>
@@ -180,6 +185,8 @@ function AttachmentsSection({
 
           {product.can_add_note && (
             <div
+              id={`${noteId}_panel`}
+              inert={activeCollapse !== noteId}
               className={`collapse-content ${activeCollapse === noteId ? 'is-opened' : 'is-closed'}`}
             >
               <div className="pt-4">
@@ -197,6 +204,8 @@ function AttachmentsSection({
 
           {product.can_upload_file && (
             <div
+              id={`${fileId}_panel`}
+              inert={activeCollapse !== fileId}
               className={`collapse-content ${activeCollapse === fileId ? 'is-opened' : 'is-closed'}`}
             >
               <div className="pt-4 px-1">
