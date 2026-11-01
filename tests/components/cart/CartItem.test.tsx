@@ -145,6 +145,19 @@ describe('CartItem quantity', () => {
     expect(box.value).toBe('4');
     expect(sentQuantities()).toEqual(['4']);
   });
+
+  it('sends nothing when 12 is cleared one digit at a time, and puts 12 back on blur', async () => {
+    render(<CartItem item={{ ...item, quantity: 12 }} />);
+    const box = screen.getByLabelText<HTMLInputElement>('pages.products.quantity');
+
+    fireEvent.change(box, { target: { value: '1' } });
+    fireEvent.change(box, { target: { value: '' } });
+    await act(async () => void vi.advanceTimersByTime(400));
+    expect(updateItem).not.toHaveBeenCalled();
+
+    fireEvent.blur(box);
+    expect(box.value).toBe('12');
+  });
 });
 
 describe('CartItem delete', () => {

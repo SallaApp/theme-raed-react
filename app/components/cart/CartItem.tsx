@@ -122,7 +122,13 @@ function CartQuantity({
             // Clearing the box to type a new number must not send 1 first (and turn
             // the next digit into "15"): wait until it holds a quantity.
             if (n >= 1) commit(n);
-            else setDraft(digits);
+            else {
+              // Drop a send queued by the previous keystroke (12 -> "1" -> "").
+              clearTimeout(timer.current);
+              pending.current = false;
+              setQty(value);
+              setDraft(digits);
+            }
           }}
           onBlur={() => setDraft(null)}
         />
