@@ -234,10 +234,15 @@ function scrollUnderThen(container: HTMLElement, pointerY: number, then: () => v
   timer = window.setTimeout(done, SCROLL_FALLBACK_MS);
 }
 
+/** With fewer options than this there's nothing worth collapsing. */
+const MIN_COLLAPSIBLE_OPTIONS = 3;
+
 /**
  * A product's options, on the product page and on each cart item: in the collapsible
  * panel, or as the plain `<salla-product-options>` element when the merchant turns
- * `product_options_collapsible` off. A store that hasn't saved the setting gets the panel.
+ * `product_options_collapsible` off or the product has two options or fewer. A store
+ * that hasn't saved the setting gets the panel. Conditional options count, since they
+ * can appear; layout-only ones don't.
  */
 export function ProductOptionsPanel({
   options,
@@ -249,7 +254,9 @@ export function ProductOptionsPanel({
   const { theme } = useTwilight();
   const collapsible =
     (theme?.settings as { product_options_collapsible?: boolean } | undefined)
-      ?.product_options_collapsible !== false;
+      ?.product_options_collapsible !== false &&
+    options.filter((option) => !SKIPPED_TYPES.has(option.type ?? '')).length >=
+      MIN_COLLAPSIBLE_OPTIONS;
 
   if (!collapsible) return <div className="options-plain">{children}</div>;
   return <CollapsibleOptions options={options}>{children}</CollapsibleOptions>;
@@ -264,7 +271,7 @@ export function ProductOptionsPanel({
  * collapsed, so the surrounding form still posts the options, and the panel
  * opens when the form's validation flags a field inside it.
  */
-function CollapsibleOptions({
+export function CollapsibleOptions({
   options,
   children,
 }: {
