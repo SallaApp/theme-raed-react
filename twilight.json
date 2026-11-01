@@ -69,6 +69,45 @@
       ]
     },
     {
+      "id": "product_card_img_ratio",
+      "type": "items",
+      "format": "dropdown-list",
+      "icon": "sicon-image",
+      "label": "شكل صورة بطاقة المنتج",
+      "description": "يطبَّق على بطاقات المنتجات العمودية. عند اختيار «حسب شكل الصورة» يأخذ إطار الصورة شكل الصورة الأصلي، وتتساوى بطاقات الصف الواحد مع أطولها فتُقص الصور الأقصر منها.",
+      "source": "Manual",
+      "required": true,
+      "selected": [
+        {
+          "label": "حسب شكل الصورة",
+          "value": "auto",
+          "key": "product-card-img-ratio-auto"
+        }
+      ],
+      "options": [
+        {
+          "label": "حسب شكل الصورة",
+          "value": "auto",
+          "key": "product-card-img-ratio-auto"
+        },
+        {
+          "label": "مربعة (1:1)",
+          "value": "square",
+          "key": "product-card-img-ratio-square"
+        },
+        {
+          "label": "مستطيلة أفقية (4:3)",
+          "value": "landscape",
+          "key": "product-card-img-ratio-landscape"
+        },
+        {
+          "label": "طولية (3:4)",
+          "value": "portrait",
+          "key": "product-card-img-ratio-portrait"
+        }
+      ]
+    },
+    {
       "type": "static",
       "id": "static-line0",
       "format": "line"
