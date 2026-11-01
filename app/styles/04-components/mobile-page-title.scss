@@ -38,10 +38,13 @@ body.product-single .mobile-page-title {
      · `.main-content > h1` on the account pages (orders / profile / wallet /
        wishlist / notifications). Keyed off `.profile-header`, which only the
        engine's CustomerLayout renders: the engine sets no `customer-*` body
-       class on the /account/* routes (see user-pages.scss). */
+       class on the /account/* routes (see user-pages.scss).
+     · `.content--single-page > h1` — a static page's title (`PageSingle`).
+   Each is an `<h1>`, as the bar's title is, so hiding them leaves one on phones. */
 @media (max-width: 767px) {
   #page-main-title,
-  body:has(.profile-header) .main-content > h1 {
+  body:has(.profile-header) .main-content > h1,
+  .content--single-page > h1 {
     @apply hidden;
   }
 }
