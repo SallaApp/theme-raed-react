@@ -687,106 +687,85 @@
     @apply justify-center overflow-hidden cursor-auto;
   }
 
+  /* The enhanced slider's controls (`.s-block--enhanced-slider` below): chevrons
+     and dots in one row. As there, the row's centre line sits at bottom-6 / sm:bottom-8. */
+  &__nav {
+    @apply absolute inset-x-0 bottom-6 z-1 mx-auto flex w-fit translate-y-1/2 items-center justify-center sm:bottom-8;
+  }
+
   &__arrow {
-    @apply absolute top-1/2 z-1 hidden h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full bg-white text-gray-900 transition-colors hover:bg-primary hover:text-primary-reverse md:inline-flex;
-    box-shadow:
-      0 1px 2px rgb(17 24 39 / 12%),
-      0 6px 20px rgb(17 24 39 / 14%);
+    @apply inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-full text-white transition-colors hover:bg-white/15;
 
     /* The chevrons are drawn for RTL, where prev sits on the right and points
        right; in LTR both point the other way. */
     svg {
-      @apply h-5 w-5 ltr:-scale-x-100;
+      @apply h-6 w-6 ltr:-scale-x-100;
     }
 
     &:focus-visible {
-      @apply outline outline-2 outline-offset-2 outline-primary;
-    }
-
-    /* Straddling the banner's edge, and on screen however narrow the gutter. */
-    &--prev {
-      inset-inline-start: max(0.5rem, calc((100% - var(--stage-w)) / 2 - 1.5rem));
-    }
-
-    &--next {
-      inset-inline-end: max(0.5rem, calc((100% - var(--stage-w)) / 2 - 1.5rem));
+      @apply outline outline-2 outline-white;
     }
   }
 
-  /* A segment on desktop, a dot on phones: the same button, 24px tall to tap. */
-  &__pager {
-    @apply mt-2 flex flex-wrap items-center justify-center md:mt-3 md:gap-1.5;
-  }
-
-  &__pause {
-    @apply hidden h-8 w-8 items-center justify-center rounded-full text-gray-700 transition-colors hover:bg-gray-100 md:inline-flex;
-
-    svg {
-      @apply h-3.5 w-3.5;
-    }
+  /* 24px tall to tap; the side padding makes the 6px gap between the bars. */
+  &__dot {
+    @apply flex h-6 items-center justify-center px-[3px] py-0;
 
     &:focus-visible {
-      @apply outline outline-2 outline-offset-2 outline-primary;
-    }
-  }
-
-  &__segment {
-    @apply flex h-6 w-6 items-center justify-center p-0 md:w-11;
-
-    &:focus-visible {
-      @apply outline outline-2 outline-primary;
+      @apply outline outline-2 outline-white;
     }
   }
 
   &__bar {
-    @apply block h-1.5 w-1.5 overflow-hidden rounded-full bg-gray-300 md:h-1 md:w-full md:bg-gray-200;
+    @apply block h-1.5 w-1.5 rounded-full bg-white/40;
     transition:
-      width 0.2s ease,
-      background-color 0.2s ease;
+      width 0.25s ease,
+      background-color 0.25s ease;
   }
 
-  &__segment.is-active &__bar {
-    @apply w-[18px] bg-primary md:w-full;
+  &__dot.is-active &__bar {
+    @apply w-6 bg-white;
   }
 
-  /* The fill is the timer: PhotosSlider moves on when it ends. It never runs on
-     phones, so nothing there moves on its own. */
-  &__fill {
-    @apply hidden h-full w-full bg-primary origin-left rtl:origin-right md:block;
-    animation: photos-stage-fill 5s linear forwards;
-    will-change: transform;
-  }
-
-  @media (min-width: 768px) {
-    &.is-playing &__segment.is-active &__bar {
-      @apply bg-gray-200;
-    }
+  /* Draws nothing: PhotosSlider moves on when this animation ends. It never runs
+     on phones, so nothing there moves on its own. */
+  &__timer {
+    @apply hidden md:block;
+    animation: photos-stage-timer 5s linear forwards;
   }
 
   /* Hovering, keyboard focus or leaving the screen holds the timer where it is. */
   @media (hover: hover) {
-    &:hover &__fill {
+    &:hover &__timer {
       animation-play-state: paused;
     }
   }
 
-  &:has(:focus-visible) &__fill,
-  &.is-offscreen &__fill {
+  &:has(:focus-visible) &__timer,
+  &.is-offscreen &__timer {
     animation-play-state: paused;
+  }
+
+  /* Banners have no overlay like the enhanced slider's, so the white controls get
+     a dark edge to stay visible on a pale one. */
+  &:not(.is-single) .s-photos-slider__slide::after {
+    @apply pointer-events-none absolute inset-x-0 bottom-0 h-24;
+    content: '';
+    background: linear-gradient(to top, rgb(0 0 0 / 35%), transparent);
   }
 }
 
-@keyframes photos-stage-fill {
+@keyframes photos-stage-timer {
   from {
-    transform: scaleX(0);
+    opacity: 0;
   }
   to {
-    transform: scaleX(1);
+    opacity: 0;
   }
 }
 
 .s-photos-slider__slide {
-  @apply block shrink-0 rounded-2xl overflow-hidden bg-gray-100;
+  @apply relative block shrink-0 rounded-2xl overflow-hidden bg-gray-100;
   flex: 0 0 var(--stage-w);
   aspect-ratio: var(--stage-ratio);
   scroll-snap-align: center;
@@ -802,6 +781,17 @@
   &.is-current {
     opacity: 1;
     transform: none;
+  }
+
+  /* A press on a neighbour brings it to the centre (useLoopCarousel). */
+  &:not(.is-current) {
+    @apply cursor-pointer;
+
+    @media (hover: hover) {
+      &:hover {
+        opacity: 0.7;
+      }
+    }
   }
 
   @media (prefers-reduced-motion: reduce) {

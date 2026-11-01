@@ -76,22 +76,6 @@ export const StarIcon = (props: SVGProps<SVGSVGElement>) => (
   </svg>
 );
 
-export const PauseIcon = (props: SVGProps<SVGSVGElement>) => (
-  <svg {...base} {...props}>
-    <rect x="5" y="4" width="5" height="16" rx="1.5" fill="currentColor" />
-    <rect x="14" y="4" width="5" height="16" rx="1.5" fill="currentColor" />
-  </svg>
-);
-
-export const PlayIcon = (props: SVGProps<SVGSVGElement>) => (
-  <svg {...base} {...props}>
-    <path
-      d="M7 4.5v15a1 1 0 0 0 1.5.86l12.5-7.5a1 1 0 0 0 0-1.72L8.5 3.64A1 1 0 0 0 7 4.5z"
-      fill="currentColor"
-    />
-  </svg>
-);
-
 export const QuoteIcon = (props: SVGProps<SVGSVGElement>) => (
   <svg {...base} viewBox="0 0 30 24" {...props}>
     <path

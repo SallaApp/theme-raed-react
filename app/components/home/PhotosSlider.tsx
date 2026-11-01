@@ -2,7 +2,7 @@ import { memo, useEffect, useRef, useState } from 'react';
 import type { CSSProperties, RefObject } from 'react';
 import { Link, Image } from '@salla.sa/twilight-theme-engine/common';
 import { useTranslation } from '@salla.sa/twilight-theme-engine/i18n';
-import { ArrowLeftIcon, ArrowRightIcon, PauseIcon, PlayIcon } from '../icons';
+import { ArrowLeftIcon, ArrowRightIcon } from '../icons';
 import { useLoopCarousel } from '../../hooks/useLoopCarousel';
 
 interface PhotoItem {
@@ -100,84 +100,58 @@ function StageSlide({
   );
 }
 
-function StageArrows({ onStep }: { onStep: (dir: 1 | -1) => void }) {
+/** The enhanced slider's controls: chevrons either side of the dots, on the banner's bottom edge. */
+function StageNav({
+  items,
+  active,
+  autoPlay,
+  onStep,
+  onPick,
+}: {
+  items: PhotoItem[];
+  active: number;
+  autoPlay: boolean;
+  onStep: (dir: 1 | -1) => void;
+  onPick: (index: number) => void;
+}) {
   const { t } = useTranslation();
+
   return (
-    <>
+    <div className="s-photos-stage__nav">
       <button
         type="button"
-        className="s-photos-stage__arrow s-photos-stage__arrow--prev"
+        className="s-photos-stage__arrow"
         aria-label={t('blocks.home.reviews_prev', 'Previous')}
         onClick={() => onStep(-1)}
       >
         <ArrowRightIcon aria-hidden="true" />
       </button>
-      <button
-        type="button"
-        className="s-photos-stage__arrow s-photos-stage__arrow--next"
-        aria-label={t('blocks.home.reviews_next', 'Next')}
-        onClick={() => onStep(1)}
-      >
-        <ArrowLeftIcon aria-hidden="true" />
-      </button>
-    </>
-  );
-}
-
-function StagePager({
-  items,
-  active,
-  autoPlay,
-  paused,
-  onPause,
-  onPick,
-  onFilled,
-}: {
-  items: PhotoItem[];
-  active: number;
-  autoPlay: boolean;
-  paused: boolean;
-  onPause: () => void;
-  onPick: (index: number) => void;
-  onFilled: () => void;
-}) {
-  const { t } = useTranslation();
-  const playing = autoPlay && !paused;
-
-  return (
-    <div className="s-photos-stage__pager">
-      {autoPlay && (
-        <button
-          type="button"
-          className="s-photos-stage__pause"
-          aria-label={
-            paused
-              ? t('blocks.home.slider_play', 'Play slides')
-              : t('blocks.home.slider_pause', 'Pause slides')
-          }
-          onClick={onPause}
-        >
-          {paused ? <PlayIcon aria-hidden="true" /> : <PauseIcon aria-hidden="true" />}
-        </button>
-      )}
       {items.map((item, index) => (
         <button
           // Positions in a static settings list, whose items may repeat or have no id.
           // react-doctor-disable-next-line react-doctor/no-array-index-as-key
           key={index}
           type="button"
-          className={`s-photos-stage__segment${index === active ? ' is-active' : ''}`}
+          className={`s-photos-stage__dot${index === active ? ' is-active' : ''}`}
           aria-label={`${t('blocks.home.slider_page', 'Slide')} ${index + 1}`}
           aria-current={index === active ? 'true' : undefined}
           onClick={() => onPick(index)}
         >
           <span className="s-photos-stage__bar">
-            {playing && index === active && (
-              <span className="s-photos-stage__fill" onAnimationEnd={onFilled} />
+            {autoPlay && index === active && (
+              <span className="s-photos-stage__timer" onAnimationEnd={() => onStep(1)} />
             )}
           </span>
         </button>
       ))}
+      <button
+        type="button"
+        className="s-photos-stage__arrow"
+        aria-label={t('blocks.home.reviews_next', 'Next')}
+        onClick={() => onStep(1)}
+      >
+        <ArrowLeftIcon aria-hidden="true" />
+      </button>
     </div>
   );
 }
@@ -185,9 +159,10 @@ function StagePager({
 /**
  * `photos-slider` home block: one centred banner with its neighbours on both
  * sides, endless in both directions. The banner is the container's width, and
- * less on a short screen so it stays above the fold. The current pager segment
- * fills over 5 seconds and that fill is the timer: hovering, focusing or leaving
- * the screen pauses it, and the block moves on when it ends. Phones have no fill,
+ * less on a short screen so it stays above the fold. Pressing a neighbour brings
+ * it to the centre; only the centred banner follows its link. An invisible 5-second CSS
+ * animation on the current dot is the timer: hovering, focusing or leaving the
+ * screen pauses it, and the block moves on when it ends. It doesn't run on phones,
  * so nothing moves on its own there. Styling: `04-components/home-blocks.scss`.
  */
 // Its branches are one flat list of class names and one- or many-banner switches.
@@ -201,7 +176,6 @@ export const PhotosSlider = memo(function PhotosSlider({ data }: PhotosSliderPro
   const root = useRef<HTMLDivElement>(null);
   const ratio = useBannerRatio(root, items[0]?.image);
   const offscreen = useOffscreen(root);
-  const [paused, setPaused] = useState(false);
 
   if (!count) return null;
 
@@ -228,7 +202,6 @@ export const PhotosSlider = memo(function PhotosSlider({ data }: PhotosSliderPro
         's-photos-stage',
         !multiple && 'is-single',
         multiple && !looped && 'is-static',
-        autoPlay && !paused && 'is-playing',
         offscreen && 'is-offscreen',
       ]
         .filter(Boolean)
@@ -257,20 +230,10 @@ export const PhotosSlider = memo(function PhotosSlider({ data }: PhotosSliderPro
           {looped && copies('after', items)}
         </div>
 
-        {multiple && <StageArrows onStep={step} />}
+        {multiple && (
+          <StageNav items={items} active={active} autoPlay={autoPlay} onStep={step} onPick={goTo} />
+        )}
       </div>
-
-      {multiple && (
-        <StagePager
-          items={items}
-          active={active}
-          autoPlay={autoPlay}
-          paused={paused}
-          onPause={() => setPaused(!paused)}
-          onPick={goTo}
-          onFilled={() => step(1)}
-        />
-      )}
     </div>
   );
 });

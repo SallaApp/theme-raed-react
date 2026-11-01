@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import type { MouseEvent as ReactMouseEvent } from 'react';
 import { useDragScroll } from './useDragScroll';
 import { useMotionAllowed } from './useMotionAllowed';
 
@@ -115,8 +116,30 @@ export function useLoopCarousel(count: number) {
     if (looped) scrollToSlide(count + index);
   };
 
+  /**
+   * For a track's `onClickCapture`: a press on a slide beside the centred one brings
+   * it to the centre instead of following its link. In the capture phase, because the
+   * slide's own link handles the click first otherwise. The keyboard (no click count)
+   * and a modified click (a new tab) still follow the link.
+   */
+  const bringToCentre = (event: ReactMouseEvent<HTMLDivElement>) => {
+    const el = track.current;
+    if (!el || !looped) return;
+    if (!event.detail || event.metaKey || event.ctrlKey || event.shiftKey) return;
+    const index = [...el.children].findIndex((slide) => slide.contains(event.target as Node));
+    if (index < 0 || index === (target.current ?? nearestIn(el))) return;
+    event.preventDefault();
+    event.stopPropagation();
+    scrollToSlide(index);
+  };
+
   const trackProps = {
     ...drag,
+    // The end of a drag is no press: the drag handler swallows that click first.
+    onClickCapture: (event: ReactMouseEvent<HTMLDivElement>) => {
+      drag.onClickCapture(event);
+      if (!event.isPropagationStopped()) bringToCentre(event);
+    },
     ref: track,
     onScroll: () => {
       const el = track.current;

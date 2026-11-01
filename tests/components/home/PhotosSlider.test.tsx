@@ -127,14 +127,14 @@ describe('PhotosSlider', () => {
     expect(scrollTo).toHaveBeenCalledWith(expect.objectContaining({ behavior: 'instant' }));
   });
 
-  it('shows one banner alone: no copies, arrows or pager', () => {
+  it('shows one banner alone: no copies, arrows or dots', () => {
     const { container, queryByLabelText } = render(
       <PhotosSlider data={{ items: items.slice(0, 1) }} />
     );
     expect(container.querySelectorAll('.s-photos-slider__slide')).toHaveLength(1);
     expect(container.querySelector('.s-photos-stage')?.classList.contains('is-single')).toBe(true);
     expect(queryByLabelText('Next')).toBeNull();
-    expect(container.querySelector('.s-photos-stage__pager')).toBeNull();
+    expect(container.querySelector('.s-photos-stage__nav')).toBeNull();
   });
 
   it('moves one banner along on the arrows', () => {
@@ -157,14 +157,14 @@ describe('PhotosSlider', () => {
     expect(scrollTo).toHaveBeenLastCalledWith({ left: 100, behavior: 'smooth' });
   });
 
-  it('goes to the banner of the segment it was clicked on, by its middle copy', () => {
+  it('goes to the banner of the dot it was clicked on, by its middle copy', () => {
     const { container, getByLabelText } = render(<PhotosSlider data={{ items }} />);
     layOut(container);
     fireEvent.click(getByLabelText('Slide 3'));
     expect(scrollTo).toHaveBeenLastCalledWith({ left: 500, behavior: 'smooth' });
   });
 
-  it('marks the banner and its segment as the row moves, on every copy', () => {
+  it('marks the banner and its dot as the row moves, on every copy', () => {
     const { container, getByLabelText } = render(<PhotosSlider data={{ items }} />);
     const track = layOut(container);
     expect(getByLabelText('Slide 1').getAttribute('aria-current')).toBe('true');
@@ -244,38 +244,87 @@ describe('PhotosSlider', () => {
     expect(fireEvent.dragStart(img)).toBe(false);
   });
 
+  describe('pressing a banner', () => {
+    /** The row on real banner 1 (child 3), with the children either side of it. */
+    function onFirstBanner(container: HTMLElement) {
+      const track = layOut(container);
+      scrollRowTo(track, 300);
+      scrollTo.mockClear();
+      return track.children;
+    }
+
+    it('brings the next or previous banner to the centre instead of following its link', () => {
+      const { container } = render(<PhotosSlider data={{ items }} />);
+      const slides = onFirstBanner(container);
+
+      expect(fireEvent.click(slides[4], { detail: 1 })).toBe(false);
+      expect(scrollTo).toHaveBeenLastCalledWith({ left: 400, behavior: 'smooth' });
+
+      scrollRowTo(container.querySelector('.s-photos-stage__track') as HTMLElement, 300);
+      expect(fireEvent.click(slides[2], { detail: 1 })).toBe(false);
+      expect(scrollTo).toHaveBeenLastCalledWith({ left: 200, behavior: 'smooth' });
+    });
+
+    it('works from the picture inside a banner', () => {
+      const { container } = render(<PhotosSlider data={{ items }} />);
+      const slides = onFirstBanner(container);
+      expect(fireEvent.click(slides[4].querySelector('img')!, { detail: 1 })).toBe(false);
+      expect(scrollTo).toHaveBeenLastCalledWith({ left: 400, behavior: 'smooth' });
+    });
+
+    it('follows the link of the centred banner', () => {
+      const { container } = render(<PhotosSlider data={{ items }} />);
+      const slides = onFirstBanner(container);
+      expect(fireEvent.click(slides[3], { detail: 1 })).toBe(true);
+      expect(scrollTo).not.toHaveBeenCalled();
+    });
+
+    it('leaves the keyboard and a click for a new tab to the link', () => {
+      const { container } = render(<PhotosSlider data={{ items }} />);
+      const slides = onFirstBanner(container);
+      expect(fireEvent.click(slides[4], { detail: 0 })).toBe(true);
+      expect(fireEvent.click(slides[4], { detail: 1, metaKey: true })).toBe(true);
+      expect(fireEvent.click(slides[4], { detail: 1, ctrlKey: true })).toBe(true);
+      expect(scrollTo).not.toHaveBeenCalled();
+    });
+
+    it('does nothing at the end of a drag that started on a neighbour', () => {
+      const { container } = render(<PhotosSlider data={{ items }} />);
+      const slides = onFirstBanner(container);
+      const track = container.querySelector('.s-photos-stage__track') as HTMLElement;
+      fireEvent.pointerDown(track, { pointerType: 'mouse', button: 0, clientX: 200 });
+      fireEvent.pointerMove(track, { clientX: 120 });
+      fireEvent.pointerUp(track, { clientX: 120 });
+      scrollTo.mockClear();
+
+      expect(fireEvent.click(slides[4], { detail: 1 })).toBe(false);
+      expect(scrollTo).not.toHaveBeenCalled();
+    });
+  });
+
   describe('autoplay', () => {
-    it('moves on when the current segment finishes filling', () => {
+    it('moves on when the current dot\'s timer ends', () => {
       const { container } = render(<PhotosSlider data={{ items }} />);
       const track = layOut(container);
       scrollRowTo(track, 300);
       scrollTo.mockClear();
 
-      const fill = container.querySelector('.s-photos-stage__fill') as HTMLElement;
-      expect(fill.closest('.s-photos-stage__segment')?.getAttribute('aria-current')).toBe('true');
+      const timer = container.querySelector('.s-photos-stage__timer') as HTMLElement;
+      expect(timer.closest('.s-photos-stage__dot')?.getAttribute('aria-current')).toBe('true');
       // React listens under whichever name the environment's styles suggest; jsdom's is prefixed.
-      fireEvent(fill, new Event('webkitAnimationEnd', { bubbles: true }));
+      fireEvent(timer, new Event('webkitAnimationEnd', { bubbles: true }));
       expect(scrollTo).toHaveBeenLastCalledWith({ left: 400, behavior: 'smooth' });
     });
 
-    it('stops on the pause button and starts again on play', () => {
-      const { container, getByLabelText } = render(<PhotosSlider data={{ items }} />);
-      fireEvent.click(getByLabelText('Pause slides'));
-      expect(container.querySelector('.s-photos-stage__fill')).toBeNull();
-      expect(container.querySelector('.s-photos-stage')?.classList.contains('is-playing')).toBe(
-        false
-      );
-
-      fireEvent.click(getByLabelText('Play slides'));
-      expect(container.querySelector('.s-photos-stage__fill')).toBeTruthy();
+    it('has no pause button, as in the enhanced slider', () => {
+      const { queryByLabelText, container } = render(<PhotosSlider data={{ items }} />);
+      expect(queryByLabelText('Pause slides')).toBeNull();
+      expect(container.querySelectorAll('.s-photos-stage__nav button')).toHaveLength(items.length + 2);
     });
 
-    it('can be switched off, which also takes the pause button away', () => {
-      const { container, queryByLabelText } = render(
-        <PhotosSlider data={{ items, auto_play: false }} />
-      );
-      expect(container.querySelector('.s-photos-stage__fill')).toBeNull();
-      expect(queryByLabelText('Pause slides')).toBeNull();
+    it('can be switched off', () => {
+      const { container } = render(<PhotosSlider data={{ items, auto_play: false }} />);
+      expect(container.querySelector('.s-photos-stage__timer')).toBeNull();
     });
 
     it('does nothing with reduced motion', () => {
@@ -283,7 +332,7 @@ describe('PhotosSlider', () => {
         (query) => ({ matches: query.includes('reduced-motion'), media: query }) as MediaQueryList
       );
       const { container, queryByLabelText } = render(<PhotosSlider data={{ items }} />);
-      expect(container.querySelector('.s-photos-stage__fill')).toBeNull();
+      expect(container.querySelector('.s-photos-stage__timer')).toBeNull();
       expect(queryByLabelText('Pause slides')).toBeNull();
     });
 
