@@ -1052,6 +1052,17 @@
   margin-top: 2em;
 }
 
+/* The whole photo by default, as in Twig. `ThemeLayout` adds `square-photos--cover`
+   when the merchant's `squar_photo_bg_image_size` asks for cover. Both need
+   `!important` to beat `.banner-entry`'s `!bg-cover`. */
+.banner-entry.square-photos {
+  background-size: contain !important;
+}
+
+.square-photos--cover .banner-entry.square-photos {
+  background-size: cover !important;
+}
+
 .s-block--brands {
   @extend .s-block--full-bg;
   @apply bg-gray-100 pt-8 sm:pt-12 pb-8 sm:pb-20;

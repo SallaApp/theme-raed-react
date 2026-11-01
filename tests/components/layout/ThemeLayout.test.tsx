@@ -145,3 +145,29 @@ describe('ThemeLayout product card image ratio', () => {
     }
   });
 });
+
+describe('ThemeLayout square photos image size', () => {
+  afterEach(() => {
+    theme.settings = {};
+    cleanup();
+  });
+
+  const hasCover = (settings: Record<string, unknown>) => {
+    theme.settings = settings;
+    const { container, unmount } = render(<ThemeLayout />);
+    const cover = container.querySelector('.app-inner')!.classList.contains('square-photos--cover');
+    unmount();
+    return cover;
+  };
+
+  it('shows the whole photo unless the merchant asks for cover', () => {
+    expect(hasCover({})).toBe(false);
+    expect(hasCover({ squar_photo_bg_image_size: 'contain' })).toBe(false);
+    expect(hasCover({ squar_photo_bg_image_size: [{ value: 'contain' }] })).toBe(false);
+  });
+
+  it('covers when the merchant asks for it, as a saved dropdown or a plain string', () => {
+    expect(hasCover({ squar_photo_bg_image_size: [{ value: 'cover' }] })).toBe(true);
+    expect(hasCover({ squar_photo_bg_image_size: 'cover' })).toBe(true);
+  });
+});

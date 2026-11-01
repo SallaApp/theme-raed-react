@@ -61,6 +61,14 @@ function productImageRatio(raw: unknown): ImgRatio {
   return (IMG_RATIOS as readonly string[]).includes(value ?? '') ? (value as ImgRatio) : 'auto';
 }
 
+/** Whether the merchant's `squar_photo_bg_image_size` dropdown asks for cover. */
+function squarePhotosCover(raw: unknown): boolean {
+  const first = Array.isArray(raw) ? raw[0] : raw;
+  const value =
+    typeof first === 'string' ? first : (first as { value?: string } | undefined)?.value;
+  return value === 'cover';
+}
+
 /**
  * The engine's shared modals ThemeLayout mounts globally, each gated on
  * whether the store actually needs it: the offer modal always, the
@@ -152,11 +160,14 @@ export function ThemeLayout({ children }: ThemeLayoutProps) {
   }, []);
 
   const imgRatio = productImageRatio(theme?.settings?.product_card_img_ratio);
+  const squarePhotos = squarePhotosCover(theme?.settings?.squar_photo_bg_image_size)
+    ? ' square-photos--cover'
+    : '';
 
   return (
     <>
       <div
-        className={`app-inner flex flex-col min-h-full product-card-img--${imgRatio}`}
+        className={`app-inner flex flex-col min-h-full product-card-img--${imgRatio}${squarePhotos}`}
         suppressHydrationWarning
       >
         <Header navOpen={navOpen} onNavOpenChange={setNavOpen} />
