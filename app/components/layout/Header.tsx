@@ -4,12 +4,11 @@ import { SallaSearch } from '@salla.sa/twilight-components-react/search';
 import { SallaSocial } from '@salla.sa/twilight-components-react/social';
 import { SallaUserMenu } from '@salla.sa/twilight-components-react/user-menu';
 import { SallaCartSummary } from '@salla.sa/twilight-components-react/cart-summary';
-import { useTwilight, useIsHome } from '@salla.sa/twilight-theme-engine/providers';
+import { useTwilight } from '@salla.sa/twilight-theme-engine/providers';
 import { useTranslation } from '@salla.sa/twilight-theme-engine/i18n';
 import { HookSlot } from '@salla.sa/twilight-theme-engine/hooks';
 import { Image } from '@salla.sa/twilight-theme-engine/common';
 import { MapPinIcon, SearchIcon, ShoppingBagIcon } from '../icons';
-import { useHydrated } from '../../hooks/useHydrated';
 import { useAppSafeAreaTop } from '../../hooks/useAppSafeAreaTop';
 import { useNavHasContent } from '../../hooks/useNavHasContent';
 import { HOME_ROUTE_ID, PRODUCT_ROUTE_ID } from '../../lib/routeIds';
@@ -61,14 +60,12 @@ function ScopeButton({ label }: { label: string }) {
 
 /** Store name, description and social links, under the main bar. The store's
  *  phone and email are in the footer, under its description. */
-function HeaderIntro() {
+function HeaderIntro({ isHomePage }: { isHomePage: boolean }) {
   const { store } = useTwilight();
-  const isHome = useIsHome();
-  const hydrated = useHydrated();
-  // `useIsHome()` can resolve differently on the server (e.g. on a 404), and an
-  // `<h1>` ⇄ `<p>` swap is an unrecoverable hydration mismatch. Render `<p>`
-  // through SSR + first paint, then upgrade to `<h1>` on the home page.
-  const Title = hydrated && isHome ? 'h1' : 'p';
+  // The page's `<h1>` on home. `isHomePage` is the route match, which the server
+  // and the client agree on (unlike `useIsHome()`, e.g. on a 404), so the `<h1>`
+  // is in the SSR HTML without a hydration mismatch.
+  const Title = isHomePage ? 'h1' : 'p';
   const hasSocial = hasSocialLinks(store?.social);
 
   return (
@@ -154,6 +151,7 @@ export function Header({ navOpen: navOpenProp, onNavOpenChange }: HeaderProps = 
     !isDefaultLayout &&
     introSettings?.header_show_store_info === true &&
     (introSettings?.header_store_info_home_only === false || isHomePage);
+  const BrandName = isHomePage && !showIntro ? 'h1' : 'span';
   // Marker in the flow, right where the main bar sits. The bar pins once this
   // scrolls out the top of the viewport (see below).
   const stickySentinelRef = useRef<HTMLDivElement>(null);
@@ -261,7 +259,9 @@ export function Header({ navOpen: navOpenProp, onNavOpenChange }: HeaderProps = 
                 width={140}
                 height={48}
               />
-              <span className="sr-only">{store?.name || 'Store'}</span>
+              {/* With no intro row, the home page's only `<h1>` is the store name here,
+                  as in the engine Header. */}
+              <BrandName className="sr-only">{store?.name || 'Store'}</BrandName>
             </a>
 
             {isDefaultLayout && (
@@ -287,7 +287,7 @@ export function Header({ navOpen: navOpenProp, onNavOpenChange }: HeaderProps = 
         </div>
       </div>
 
-      {showIntro && <HeaderIntro />}
+      {showIntro && <HeaderIntro isHomePage={isHomePage} />}
 
       <HeaderNav open={navOpen} onClose={() => setNavOpen(false)} />
 

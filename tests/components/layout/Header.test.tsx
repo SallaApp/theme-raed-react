@@ -1,6 +1,7 @@
 import React from 'react';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, fireEvent, act } from '@testing-library/react';
+import { renderToString } from 'react-dom/server';
 import { Header } from '../../../app/components/layout/Header';
 import { HOME_ROUTE_ID } from '../../../app/lib/routeIds';
 
@@ -199,6 +200,33 @@ describe('Header', () => {
     state.routeIds = [HOME_ROUTE_ID];
     const { container } = render(<Header />);
     expect(container.querySelector('h1.site-header__intro-title')?.textContent).toBe('Acme');
+  });
+
+  it('server-renders one <h1> on the homepage: the intro title when the row shows', () => {
+    state.routeIds = [HOME_ROUTE_ID];
+    const html = renderToString(<Header />);
+
+    expect(html.match(/<h1\b/g)).toHaveLength(1);
+    expect(html).toMatch(/<h1 class="site-header__intro-title">Acme<\/h1>/);
+  });
+
+  it('server-renders one <h1> on the homepage: the store name in the logo link when the intro row is off', () => {
+    state.theme = { settings: {} };
+    state.routeIds = [HOME_ROUTE_ID];
+    const html = renderToString(<Header />);
+
+    expect(html.match(/<h1\b/g)).toHaveLength(1);
+    expect(html).toMatch(/site-header__brand[^]*<h1 class="sr-only">Acme<\/h1>/);
+  });
+
+  it('leaves the <h1> to the page everywhere but the homepage', () => {
+    state.theme = { settings: { header_show_store_info: true, header_store_info_home_only: false } };
+    state.routeIds = ['/{-$locale}/cart'];
+    state.isHome = false;
+    const html = renderToString(<Header />);
+
+    expect(html).not.toMatch(/<h1\b/);
+    expect(html).toContain('<span class="sr-only">Acme</span>');
   });
 
   it('shows the store info row on the homepage only by default', () => {
