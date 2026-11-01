@@ -1,6 +1,7 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, afterEach } from 'vitest';
 import { render, screen, fireEvent, act } from '@testing-library/react';
 import {
+  CollapsibleOptions,
   ProductOptionsPanel,
   type PanelOption,
 } from '../../../app/components/common/ProductOptionsPanel';
@@ -8,6 +9,15 @@ import {
 vi.mock('@salla.sa/twilight-theme-engine/i18n', () => ({
   useTranslation: () => ({ t: (key: string) => key }),
 }));
+
+const theme = vi.hoisted(() => ({ settings: {} as Record<string, unknown> }));
+vi.mock('@salla.sa/twilight-theme-engine/providers', () => ({
+  useTwilight: () => ({ theme }),
+}));
+
+afterEach(() => {
+  theme.settings = {};
+});
 
 const size: PanelOption = {
   id: 1,
@@ -48,11 +58,67 @@ function OptionFields({ ids }: { ids: number[] }) {
 }
 
 describe('ProductOptionsPanel', () => {
+  it('is the collapsed panel when the setting is on, or was never saved', () => {
+    for (const settings of [{}, { product_options_collapsible: true }]) {
+      theme.settings = settings;
+      const { container, unmount } = render(
+        <ProductOptionsPanel options={[size, color, note]}>
+          <OptionFields ids={[1, 2, 3]} />
+        </ProductOptionsPanel>
+      );
+      expect(container.querySelectorAll('.options-panel__chip')).toHaveLength(3);
+      expect(fieldsHidden(container)).toBe(true);
+      unmount();
+    }
+  });
+
+  it('shows the fields alone when the product has two options or fewer', () => {
+    const { container } = render(
+      <ProductOptionsPanel options={[size, color]}>
+        <OptionFields ids={[1, 2]} />
+      </ProductOptionsPanel>
+    );
+    expect(container.querySelector('.options-panel')).toBeNull();
+    expect(screen.getByLabelText('field-1')).toBeTruthy();
+    expect(screen.getByLabelText('field-2')).toBeTruthy();
+  });
+
+  it("doesn't count a layout-only option, but counts a conditional one", () => {
+    const splitter: PanelOption = { id: 5, name: 'Line', type: 'splitter' };
+    const { container, rerender } = render(
+      <ProductOptionsPanel options={[size, color, splitter]}>
+        <OptionFields ids={[1, 2]} />
+      </ProductOptionsPanel>
+    );
+    expect(container.querySelector('.options-panel')).toBeNull();
+
+    const conditional: PanelOption = { ...note, visibility_condition: { option: 1 } };
+    rerender(
+      <ProductOptionsPanel options={[size, color, conditional]}>
+        <OptionFields ids={[1, 2, 3]} />
+      </ProductOptionsPanel>
+    );
+    expect(container.querySelector('.options-panel')).not.toBeNull();
+  });
+
+  it('shows the fields alone, with no panel, when the merchant turns the setting off', () => {
+    theme.settings = { product_options_collapsible: false };
+    const { container } = render(
+      <ProductOptionsPanel options={[size, color, note]}>
+        <OptionFields ids={[1, 2, 3]} />
+      </ProductOptionsPanel>
+    );
+    expect(container.querySelector('.options-panel')).toBeNull();
+    expect(container.querySelector('.options-panel__chip')).toBeNull();
+    expect(screen.queryByRole('button')).toBeNull();
+    expect(screen.getByLabelText('field-1')).toBeTruthy();
+  });
+
   it('starts collapsed with a chip per option and its answer', () => {
     const { container } = render(
-      <ProductOptionsPanel options={[size, color, note, location]}>
+      <CollapsibleOptions options={[size, color, note, location]}>
         <OptionFields ids={[]} />
-      </ProductOptionsPanel>
+      </CollapsibleOptions>
     );
 
     expect(fieldsHidden(container)).toBe(true);
@@ -67,9 +133,9 @@ describe('ProductOptionsPanel', () => {
   it('shows a picked color as its circle alone, named for screen readers', () => {
     const picker: PanelOption = { id: 5, name: 'Ink', type: 'color_picker', value: '#00ff00' };
     const { container } = render(
-      <ProductOptionsPanel options={[color, picker]}>
+      <CollapsibleOptions options={[color, picker]}>
         <OptionFields ids={[]} />
-      </ProductOptionsPanel>
+      </CollapsibleOptions>
     );
 
     expect(chipTexts(container)).toEqual(['Color', 'Ink']);
@@ -81,9 +147,9 @@ describe('ProductOptionsPanel', () => {
   it('stays collapsed, and flags the chip, while a required option is unanswered', () => {
     const unanswered = { ...size, details: size.details!.map((d) => ({ ...d, is_selected: false })) };
     const { container } = render(
-      <ProductOptionsPanel options={[unanswered]}>
+      <CollapsibleOptions options={[unanswered]}>
         <OptionFields ids={[]} />
-      </ProductOptionsPanel>
+      </CollapsibleOptions>
     );
 
     expect(fieldsHidden(container)).toBe(true);
@@ -101,27 +167,27 @@ describe('ProductOptionsPanel', () => {
       ],
     };
     const { container } = render(
-      <ProductOptionsPanel options={[productSize]}>
+      <CollapsibleOptions options={[productSize]}>
         <OptionFields ids={[]} />
-      </ProductOptionsPanel>
+      </CollapsibleOptions>
     );
     expect(chipTexts(container)).toEqual(['SizeM']);
   });
 
   it('keeps the options element mounted while collapsed, so the form still posts it', () => {
     const { container } = render(
-      <ProductOptionsPanel options={[size]}>
+      <CollapsibleOptions options={[size]}>
         <salla-product-options options={JSON.stringify([size])} product-id={7} />
-      </ProductOptionsPanel>
+      </CollapsibleOptions>
     );
     expect(container.querySelector('salla-product-options')?.getAttribute('product-id')).toBe('7');
   });
 
   it("opens on a chip's option and focuses its field", () => {
     const { container } = render(
-      <ProductOptionsPanel options={[size, note]}>
+      <CollapsibleOptions options={[size, note]}>
         <OptionFields ids={[1, 3]} />
-      </ProductOptionsPanel>
+      </CollapsibleOptions>
     );
 
     fireEvent.click(screen.getByText('Note').closest('button')!);
@@ -134,14 +200,14 @@ describe('ProductOptionsPanel', () => {
     const ink: PanelOption = { id: 5, name: 'Ink', type: 'color_picker', value: '#00ff00' };
     const place: PanelOption = { id: 6, name: 'Place', type: 'map' };
     const { container } = render(
-      <ProductOptionsPanel options={[ink, place]}>
+      <CollapsibleOptions options={[ink, place]}>
         <div data-option-id="5">
           <salla-color-picker />
         </div>
         <div data-option-id="6">
           <salla-map />
         </div>
-      </ProductOptionsPanel>
+      </CollapsibleOptions>
     );
     const openPicker = vi.fn(() => Promise.resolve());
     const openMap = vi.fn(() => Promise.resolve());
@@ -162,13 +228,13 @@ describe('ProductOptionsPanel', () => {
     window.scrollBy = scrollBy as typeof window.scrollBy;
     const ink: PanelOption = { id: 5, name: 'Ink', type: 'color_picker', value: '#00ff00' };
     const { container } = render(
-      <ProductOptionsPanel options={[ink]}>
+      <CollapsibleOptions options={[ink]}>
         <div data-option-id="5">
           <salla-color-picker>
             <div className="picker_wrapper popup" />
           </salla-color-picker>
         </div>
-      </ProductOptionsPanel>
+      </CollapsibleOptions>
     );
     Object.assign(container.querySelector('salla-color-picker')!, {
       openPicker: () => Promise.resolve(),
@@ -192,13 +258,13 @@ describe('ProductOptionsPanel', () => {
     const showPicker = vi.fn();
     HTMLSelectElement.prototype.showPicker = showPicker;
     render(
-      <ProductOptionsPanel options={[size]}>
+      <CollapsibleOptions options={[size]}>
         <div data-option-id="1">
           <select aria-label="size" name="options[1]">
             <option value="11">S</option>
           </select>
         </div>
-      </ProductOptionsPanel>
+      </CollapsibleOptions>
     );
 
     fireEvent.click(screen.getByText('Size').closest('button')!);
@@ -212,9 +278,9 @@ describe('ProductOptionsPanel', () => {
     const scrollBy = vi.fn();
     window.scrollBy = scrollBy as typeof window.scrollBy;
     render(
-      <ProductOptionsPanel options={[note]}>
+      <CollapsibleOptions options={[note]}>
         <OptionFields ids={[3]} />
-      </ProductOptionsPanel>
+      </CollapsibleOptions>
     );
     const field = screen.getByLabelText('field-3');
     // The opened field sits at 400–440px; the shopper pressed the chip at 100px.
@@ -233,9 +299,9 @@ describe('ProductOptionsPanel', () => {
     const scrollBy = vi.fn();
     window.scrollBy = scrollBy as typeof window.scrollBy;
     render(
-      <ProductOptionsPanel options={[note]}>
+      <CollapsibleOptions options={[note]}>
         <OptionFields ids={[3]} />
-      </ProductOptionsPanel>
+      </CollapsibleOptions>
     );
     const chip = screen.getByText('Note').closest('button')!;
     chip.getBoundingClientRect = () => ({ top: 80, height: 40 }) as DOMRect;
@@ -259,9 +325,9 @@ describe('ProductOptionsPanel', () => {
       return { left: 0, right } as DOMRect;
     });
     const { container } = render(
-      <ProductOptionsPanel options={[size, color, note]}>
+      <CollapsibleOptions options={[size, color, note]}>
         <OptionFields ids={[]} />
-      </ProductOptionsPanel>
+      </CollapsibleOptions>
     );
     offsetTop.mockRestore();
     rect.mockRestore();
@@ -279,18 +345,18 @@ describe('ProductOptionsPanel', () => {
 
   it('shows no "…" when every chip fits on the first row', () => {
     render(
-      <ProductOptionsPanel options={[size, note]}>
+      <CollapsibleOptions options={[size, note]}>
         <OptionFields ids={[]} />
-      </ProductOptionsPanel>
+      </CollapsibleOptions>
     );
     expect(screen.queryByLabelText('blocks.product_options.more')).toBeNull();
   });
 
   it('toggles open and closed with the chevron', () => {
     const { container } = render(
-      <ProductOptionsPanel options={[size]}>
+      <CollapsibleOptions options={[size]}>
         <OptionFields ids={[]} />
-      </ProductOptionsPanel>
+      </CollapsibleOptions>
     );
     const toggle = screen.getByLabelText('blocks.product_options.title');
 
@@ -306,7 +372,7 @@ describe('ProductOptionsPanel', () => {
   it("follows the shopper's answers as they change them", () => {
     const { container } = render(
       <form>
-        <ProductOptionsPanel options={[size, note]}>
+        <CollapsibleOptions options={[size, note]}>
           <div data-option-id="1">
             <select aria-label="size" name="options[1]" defaultValue="12">
               <option value="11">S</option>
@@ -316,7 +382,7 @@ describe('ProductOptionsPanel', () => {
           <div data-option-id="3">
             <input aria-label="note" name="options[3]" defaultValue="Happy birthday" />
           </div>
-        </ProductOptionsPanel>
+        </CollapsibleOptions>
       </form>
     );
 
@@ -329,9 +395,9 @@ describe('ProductOptionsPanel', () => {
   it('opens when the form flags an invalid field inside it', () => {
     const { container } = render(
       <form>
-        <ProductOptionsPanel options={[size]}>
+        <CollapsibleOptions options={[size]}>
           <OptionFields ids={[1]} />
-        </ProductOptionsPanel>
+        </CollapsibleOptions>
       </form>
     );
     const input = screen.getByLabelText('field-1') as HTMLInputElement;

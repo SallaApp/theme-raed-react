@@ -376,6 +376,17 @@
     {
       "type": "boolean",
       "icon": "sicon-toggle-off",
+      "label": "عرض خيارات المنتج في لوحة قابلة للطي",
+      "description": "تظهر الخيارات ملخّصة في صف واحد ويفتحها الزائر عند الحاجة، في صفحة المنتج والسلة. عند الإيقاف تظهر الخيارات كاملة مباشرة. ملاحظة: المنتجات التي لها خياران أو أقل تعرض خياراتها كاملة دائمًا، حتى عند تفعيل هذا الخيار.",
+      "id": "product_options_collapsible",
+      "format": "switch",
+      "required": false,
+      "value": true,
+      "selected": true
+    },
+    {
+      "type": "boolean",
+      "icon": "sicon-toggle-off",
       "label": "اظهار الوسوم",
       "description": null,
       "id": "show_tags",
