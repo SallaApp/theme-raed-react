@@ -31,7 +31,9 @@ interface ProductDetailsProps {
  * Differs from the engine version: the data-column blocks (title, SKU row,
  * availability, sold / remaining quantity) render flat: no `bg-white`, no
  * `rounded`, no card padding. The `.product-form` `gap` / element `mb`
- * classes control the vertical rhythm. Upgrade notes: `FORKS.md`.
+ * classes control the vertical rhythm. The brand logo passes `objectFit="contain"`
+ * to `<Image>` rather than an `object-contain` class, which the component's own
+ * `object-cover` default overrides. Upgrade notes: `FORKS.md`.
  */
 export function ProductDetails({
   product,
@@ -54,7 +56,8 @@ export function ProductDetails({
         <div className="product-brand mb-5 w-12">
           <Link className="brand-logo" to={product.brand.url || '#'} title={product.brand.name}>
             <Image
-              className="max-h-full object-contain"
+              className="max-h-full"
+              objectFit="contain"
               src={product.brand.logo}
               title={product.brand.name}
               alt={product.brand.name}
