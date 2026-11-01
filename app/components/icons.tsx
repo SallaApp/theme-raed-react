@@ -76,6 +76,15 @@ export const StarIcon = (props: SVGProps<SVGSVGElement>) => (
   </svg>
 );
 
+export const QuoteIcon = (props: SVGProps<SVGSVGElement>) => (
+  <svg {...base} viewBox="0 0 30 24" {...props}>
+    <path
+      d="M13 0v5c-3.6 1.2-5.6 3.3-6 6.2h6V24H0V12.5C0 5.8 4.3 1.3 13 0zm17 0v5c-3.6 1.2-5.6 3.3-6 6.2h6V24H17V12.5C17 5.8 21.3 1.3 30 0z"
+      fill="currentColor"
+    />
+  </svg>
+);
+
 export const CloseIcon = (props: SVGProps<SVGSVGElement>) => (
   <svg {...base} {...props}>
     <path d="M6 6L18 18" {...stroke} />

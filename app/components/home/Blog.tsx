@@ -121,24 +121,28 @@ export const Blog = memo(function Blog({ data }: BlogProps) {
   return (
     // The band is on the block's own wrapper: the engine's section takes a class, not a style.
     <div className="s-blog" style={background ? { backgroundColor: background } : undefined}>
-      {(title || description) && (
-        <div className="container s-blog__head">
-          {title && <h2 className="s-blog__title">{title}</h2>}
-          {description && <p className="s-blog__desc">{description}</p>}
-        </div>
-      )}
-      <ScrollCarousel
-        prevLabel={t('blocks.home.reviews_prev', 'Previous')}
-        nextLabel={t('blocks.home.reviews_next', 'Next')}
-      >
-        {slots.map(({ id, article }, index) =>
-          article ? (
-            <ArticleCard key={`${id}:${index}`} article={article} />
-          ) : (
-            <div key={`${id}:${index}`} className="s-blog-card is-loading" />
-          )
-        )}
-      </ScrollCarousel>
+      <div className="container">
+        <ScrollCarousel
+          heading={
+            (title || description) && (
+              <>
+                {title && <h2 className="s-blog__title">{title}</h2>}
+                {description && <p className="s-blog__desc">{description}</p>}
+              </>
+            )
+          }
+          prevLabel={t('blocks.home.reviews_prev', 'Previous')}
+          nextLabel={t('blocks.home.reviews_next', 'Next')}
+        >
+          {slots.map(({ id, article }, index) =>
+            article ? (
+              <ArticleCard key={`${id}:${index}`} article={article} />
+            ) : (
+              <div key={`${id}:${index}`} className="s-blog-card is-loading" />
+            )
+          )}
+        </ScrollCarousel>
+      </div>
     </div>
   );
 });

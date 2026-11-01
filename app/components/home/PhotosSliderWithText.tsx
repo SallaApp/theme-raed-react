@@ -65,9 +65,9 @@ function SlideCard({
 }
 
 /**
- * `photos-slider-with-text` home block: the photos slider's two-per-row cards
- * ({@link ScrollCarousel}) with the enhanced slider's per-slide title, text,
- * button and background video. Styling: `04-components/home-blocks.scss`.
+ * `photos-slider-with-text` home block: two cards in a row ({@link ScrollCarousel})
+ * with the enhanced slider's per-slide title, text, button and background video.
+ * Styling: `04-components/home-blocks.scss`.
  */
 export const PhotosSliderWithText = memo(function PhotosSliderWithText({
   data,
