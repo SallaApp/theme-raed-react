@@ -273,6 +273,12 @@
   }
 }
 
+/* The fit-height card's image grows with a taller card in its row (`sm:flex-1`,
+   further down), which would bend the ratio: its text takes that room instead. */
+[class*='product-card-img--'] .s-product-card-vertical.s-product-card-fit-height .s-product-card-image {
+  flex: 0 0 auto;
+}
+
 .product-card-img--square .s-product-card-vertical .s-product-card-image {
   padding-bottom: 100%;
 }

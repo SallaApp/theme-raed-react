@@ -3,13 +3,15 @@ import { describe, it, expect, vi, afterEach } from 'vitest';
 import { render, cleanup } from '@testing-library/react';
 // Its theme translations are the real locale files (`tests/stubs/theme-translations.ts`).
 import { ThemeLayout } from '../../../app/components/layout/ThemeLayout';
+import manifest from '../../../twilight.json';
 
 vi.mock('@tanstack/react-router', () => ({
   useRouterState: ({ select }: { select: (s: unknown) => unknown }) =>
     select({ location: { pathname: '/ar' } }),
 }));
+const theme = vi.hoisted(() => ({ settings: {} as Record<string, unknown> }));
 vi.mock('@salla.sa/twilight-theme-engine/providers', () => ({
-  useTwilight: () => ({ theme: { settings: {} }, store: {} }),
+  useTwilight: () => ({ theme, store: {} }),
 }));
 vi.mock('@salla.sa/twilight-theme-engine/i18n', () => ({
   useTranslation: () => ({ t: (_k: string, fb?: string) => fb ?? _k }),
@@ -95,5 +97,50 @@ describe("ThemeLayout's component translations", () => {
   it('renders without the SDK, as on the server', () => {
     const { getByText } = render(<ThemeLayout>page</ThemeLayout>);
     expect(getByText('page')).toBeTruthy();
+  });
+});
+
+describe('ThemeLayout product card image ratio', () => {
+  afterEach(() => {
+    theme.settings = {};
+    cleanup();
+  });
+
+  const wrapper = (container: HTMLElement) => container.querySelector('.app-inner')!;
+
+  it('takes each shape the merchant setting offers', () => {
+    const setting = manifest.settings.find((item) => item.id === 'product_card_img_ratio') as {
+      options: { value: string }[];
+      selected: { value: string }[];
+    };
+    expect(setting.selected[0].value).toBe('square');
+    expect(setting.options.map((option) => option.value)).toEqual([
+      'square',
+      'landscape',
+      'portrait',
+    ]);
+
+    for (const { value } of setting.options) {
+      // A saved dropdown arrives as `[{ value }]`.
+      theme.settings = { product_card_img_ratio: [{ value }] };
+      const { container, unmount } = render(<ThemeLayout />);
+      expect(wrapper(container).classList.contains(`product-card-img--${value}`)).toBe(true);
+      unmount();
+    }
+  });
+
+  it('reads a plain string too', () => {
+    theme.settings = { product_card_img_ratio: 'portrait' };
+    const { container } = render(<ThemeLayout />);
+    expect(wrapper(container).classList.contains('product-card-img--portrait')).toBe(true);
+  });
+
+  it('is square when the setting is missing or unknown', () => {
+    for (const settings of [{}, { product_card_img_ratio: 'round' }]) {
+      theme.settings = settings;
+      const { container, unmount } = render(<ThemeLayout />);
+      expect(wrapper(container).classList.contains('product-card-img--square')).toBe(true);
+      unmount();
+    }
   });
 });
