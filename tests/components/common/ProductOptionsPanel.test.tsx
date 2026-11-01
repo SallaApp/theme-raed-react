@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, afterEach } from 'vitest';
 import { render, screen, fireEvent, act } from '@testing-library/react';
 import {
   ProductOptionsPanel,
@@ -8,6 +8,15 @@ import {
 vi.mock('@salla.sa/twilight-theme-engine/i18n', () => ({
   useTranslation: () => ({ t: (key: string) => key }),
 }));
+
+const theme = vi.hoisted(() => ({ settings: {} as Record<string, unknown> }));
+vi.mock('@salla.sa/twilight-theme-engine/providers', () => ({
+  useTwilight: () => ({ theme }),
+}));
+
+afterEach(() => {
+  theme.settings = {};
+});
 
 const size: PanelOption = {
   id: 1,
@@ -48,6 +57,33 @@ function OptionFields({ ids }: { ids: number[] }) {
 }
 
 describe('ProductOptionsPanel', () => {
+  it('is the collapsed panel when the setting is on, or was never saved', () => {
+    for (const settings of [{}, { product_options_collapsible: true }]) {
+      theme.settings = settings;
+      const { container, unmount } = render(
+        <ProductOptionsPanel options={[size]}>
+          <OptionFields ids={[1]} />
+        </ProductOptionsPanel>
+      );
+      expect(chipTexts(container)).toEqual(['SizeM']);
+      expect(fieldsHidden(container)).toBe(true);
+      unmount();
+    }
+  });
+
+  it('shows the fields alone, with no panel, when the merchant turns the setting off', () => {
+    theme.settings = { product_options_collapsible: false };
+    const { container } = render(
+      <ProductOptionsPanel options={[size]}>
+        <OptionFields ids={[1]} />
+      </ProductOptionsPanel>
+    );
+    expect(container.querySelector('.options-panel')).toBeNull();
+    expect(container.querySelector('.options-panel__chip')).toBeNull();
+    expect(screen.queryByRole('button')).toBeNull();
+    expect(screen.getByLabelText('field-1')).toBeTruthy();
+  });
+
   it('starts collapsed with a chip per option and its answer', () => {
     const { container } = render(
       <ProductOptionsPanel options={[size, color, note, location]}>

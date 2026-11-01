@@ -40,9 +40,10 @@
   }
 }
 
-/* A cart item's options panel (ProductOptionsPanel, options-panel.scss) lines up
-   with the item's name: image 96px + 16px gap. */
-.cart-item .options-panel {
+/* A cart item's options, in the panel or plain (ProductOptionsPanel,
+   options-panel.scss), line up with the item's name: image 96px + 16px gap. */
+.cart-item .options-panel,
+.cart-item .options-plain {
   @apply lg:ms-[112px];
 }
 

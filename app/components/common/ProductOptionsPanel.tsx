@@ -1,6 +1,7 @@
 import { useEffect, useId, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import { flushSync } from 'react-dom';
 import { useTranslation } from '@salla.sa/twilight-theme-engine/i18n';
+import { useTwilight } from '@salla.sa/twilight-theme-engine/providers';
 import { CheckCircleIcon, ChevronDownIcon } from '../icons';
 
 /**
@@ -234,6 +235,27 @@ function scrollUnderThen(container: HTMLElement, pointerY: number, then: () => v
 }
 
 /**
+ * A product's options, on the product page and on each cart item: in the collapsible
+ * panel, or as the plain `<salla-product-options>` element when the merchant turns
+ * `product_options_collapsible` off. A store that hasn't saved the setting gets the panel.
+ */
+export function ProductOptionsPanel({
+  options,
+  children,
+}: {
+  options: PanelOption[];
+  children: ReactNode;
+}) {
+  const { theme } = useTwilight();
+  const collapsible =
+    (theme?.settings as { product_options_collapsible?: boolean } | undefined)
+      ?.product_options_collapsible !== false;
+
+  if (!collapsible) return <div className="options-plain">{children}</div>;
+  return <CollapsibleOptions options={options}>{children}</CollapsibleOptions>;
+}
+
+/**
  * Product options as a collapsible panel, collapsed at first. A row of chips sums
  * up each option and its answer, following the shopper's picks as they make
  * them; pressing a chip opens the panel and focuses that option's field.
@@ -242,7 +264,7 @@ function scrollUnderThen(container: HTMLElement, pointerY: number, then: () => v
  * collapsed, so the surrounding form still posts the options, and the panel
  * opens when the form's validation flags a field inside it.
  */
-export function ProductOptionsPanel({
+function CollapsibleOptions({
   options,
   children,
 }: {
