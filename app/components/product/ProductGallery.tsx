@@ -151,6 +151,7 @@ export function ProductGallery({ product }: ProductGalleryProps) {
             data-id={product.id}
             onClick={() => window.salla?.wishlist?.toggle?.(product.id)}
             aria-label={t('pages.products.add_to_wishlist', 'Add to wishlist')}
+            aria-pressed={wishlist.has(Number(product.id))}
           >
             <i className="sicon-heart" aria-hidden="true" />
           </button>

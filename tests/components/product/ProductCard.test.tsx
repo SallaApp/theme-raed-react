@@ -101,6 +101,17 @@ describe('ProductCard', () => {
         's-product-card-wishlist-added'
       )
     );
+    expect(getByTestId('footer').querySelector('button')?.getAttribute('aria-pressed')).toBe('true');
+  });
+
+  it('reports an unsaved product as not pressed', async () => {
+    const { getByTestId } = render(<ProductCard product={product} />);
+
+    await waitFor(() =>
+      expect(getByTestId('footer').querySelector('button')?.getAttribute('aria-pressed')).toBe(
+        'false'
+      )
+    );
   });
 
   it('marks the heart with the product id, as Twig does, so wishlist apps can find it', async () => {
