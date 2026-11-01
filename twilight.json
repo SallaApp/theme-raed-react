@@ -74,17 +74,22 @@
       "format": "dropdown-list",
       "icon": "sicon-image",
       "label": "شكل صورة بطاقة المنتج",
-      "description": "يطبَّق على بطاقات المنتجات العمودية.",
+      "description": "يطبَّق على بطاقات المنتجات العمودية. عند اختيار «حسب شكل الصورة» يأخذ إطار الصورة شكل الصورة الأصلي، وتتساوى بطاقات الصف الواحد مع أطولها فتُقص الصور الأقصر منها.",
       "source": "Manual",
       "required": true,
       "selected": [
         {
-          "label": "مربعة (1:1)",
-          "value": "square",
-          "key": "product-card-img-ratio-square"
+          "label": "حسب شكل الصورة",
+          "value": "auto",
+          "key": "product-card-img-ratio-auto"
         }
       ],
       "options": [
+        {
+          "label": "حسب شكل الصورة",
+          "value": "auto",
+          "key": "product-card-img-ratio-auto"
+        },
         {
           "label": "مربعة (1:1)",
           "value": "square",

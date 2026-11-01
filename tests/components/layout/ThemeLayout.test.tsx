@@ -113,8 +113,9 @@ describe('ThemeLayout product card image ratio', () => {
       options: { value: string }[];
       selected: { value: string }[];
     };
-    expect(setting.selected[0].value).toBe('square');
+    expect(setting.selected[0].value).toBe('auto');
     expect(setting.options.map((option) => option.value)).toEqual([
+      'auto',
       'square',
       'landscape',
       'portrait',
@@ -135,11 +136,11 @@ describe('ThemeLayout product card image ratio', () => {
     expect(wrapper(container).classList.contains('product-card-img--portrait')).toBe(true);
   });
 
-  it('is square when the setting is missing or unknown', () => {
+  it('is auto, the old Twig card, when the setting is missing or unknown', () => {
     for (const settings of [{}, { product_card_img_ratio: 'round' }]) {
       theme.settings = settings;
       const { container, unmount } = render(<ThemeLayout />);
-      expect(wrapper(container).classList.contains('product-card-img--square')).toBe(true);
+      expect(wrapper(container).classList.contains('product-card-img--auto')).toBe(true);
       unmount();
     }
   });

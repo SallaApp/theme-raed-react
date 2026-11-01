@@ -47,15 +47,18 @@ export interface ThemeLayoutProps {
   children: ReactNode;
 }
 
-const IMG_RATIOS = ['square', 'landscape', 'portrait'] as const;
+const IMG_RATIOS = ['auto', 'square', 'landscape', 'portrait'] as const;
 type ImgRatio = (typeof IMG_RATIOS)[number];
 
-/** Read the `product_card_img_ratio` dropdown setting (string, or `[{value}]`). */
+/**
+ * Read the `product_card_img_ratio` dropdown setting (string, or `[{value}]`).
+ * No value means `auto`, the old Twig card, so a store moving over keeps its look.
+ */
 function productImageRatio(raw: unknown): ImgRatio {
   const first = Array.isArray(raw) ? raw[0] : raw;
   const value =
     typeof first === 'string' ? first : (first as { value?: string } | undefined)?.value;
-  return (IMG_RATIOS as readonly string[]).includes(value ?? '') ? (value as ImgRatio) : 'square';
+  return (IMG_RATIOS as readonly string[]).includes(value ?? '') ? (value as ImgRatio) : 'auto';
 }
 
 /**

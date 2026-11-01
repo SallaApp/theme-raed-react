@@ -231,9 +231,18 @@
 }
 
 /*
-  Product-card image ratio — square / landscape / portrait.
+  Product-card image ratio — auto / square / landscape / portrait.
   `ThemeLayout` puts `product-card-img--<ratio>` on `.app-inner` from the
   `product_card_img_ratio` theme setting.
+
+  `auto` is the old Twig Raed card, and what a store with no saved value gets, so
+  a store moving over looks the same: the image box takes the photo's own shape,
+  and the tallest card sets its row's height. A shorter photo in that row fills
+  its box and is cropped. Its `img` keeps the card's 300x300 attributes, so it holds a square until the photo loads. A skeleton
+  has no `img` and stays square. A `fit_type` card doesn't follow its photo: under
+  `auto` it is portrait (Twig gave it a 176-240px image instead).
+
+  The fixed ratios:
 
   Uses the padding-bottom % technique (like theme Matjar) rather than the
   `aspect-ratio` property: the image box height comes from `padding-bottom`, and
@@ -241,7 +250,8 @@
   own inline `aspect-ratio`), the `<picture>` and the `<img>` — is stretched
   absolutely to fill it.
 */
-[class*='product-card-img--'] .s-product-card-vertical .s-product-card-image {
+[class*='product-card-img--']:not(.product-card-img--auto) .s-product-card-vertical .s-product-card-image,
+.product-card-img--auto .s-product-card-vertical.s-product-card-fit-height .s-product-card-image {
   flex: 0 0 auto;
   position: relative;
   overflow: hidden;
@@ -279,13 +289,46 @@
   flex: 0 0 auto;
 }
 
+.product-card-img--auto .s-product-card-vertical:not(.s-product-card-fit-height) .s-product-card-image:has(img) {
+  display: flex;
+  flex: 1 1 auto;
+  height: auto;
+  aspect-ratio: auto;
+
+  /* Each level fills the one above it, so a stretched box reaches the photo. */
+  > a,
+  [style*='aspect-ratio'] {
+    display: flex;
+    flex: 1 1 auto;
+    width: 100%;
+    min-width: 0;
+  }
+
+  [style*='aspect-ratio'] {
+    aspect-ratio: auto !important;
+  }
+
+  img {
+    flex: 1 1 auto;
+    width: 100%;
+    min-width: 0;
+    height: auto;
+  }
+}
+
+/* A row's extra height goes to the photo, as in Twig, not to the text under it. */
+.product-card-img--auto .s-product-card-vertical:not(.s-product-card-fit-height) .s-product-card-content {
+  flex: 0 0 auto;
+}
+
 .product-card-img--square .s-product-card-vertical .s-product-card-image {
   padding-bottom: 100%;
 }
 .product-card-img--landscape .s-product-card-vertical .s-product-card-image {
   padding-bottom: 75%;
 }
-.product-card-img--portrait .s-product-card-vertical .s-product-card-image {
+.product-card-img--portrait .s-product-card-vertical .s-product-card-image,
+.product-card-img--auto .s-product-card-vertical.s-product-card-fit-height .s-product-card-image {
   padding-bottom: 133.3333%;
 }
 
