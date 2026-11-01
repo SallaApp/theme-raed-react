@@ -272,8 +272,18 @@ export function AddProductToast() {
   const handleMouseEnter = useCallback(() => setIsPaused(true), []);
   const handleMouseLeave = useCallback(() => setIsPaused(false), []);
 
+  // Read out from a region that is always mounted: screen readers often skip
+  // a live region that appears with its text already in it, as the toast does.
+  const status = (
+    <div className="sr-only" role="status">
+      {isVisible && product
+        ? `${t('pages.cart.added_to_cart', 'Added to Cart')}: ${product.name}`
+        : null}
+    </div>
+  );
+
   if (!isVisible || !product) {
-    return null;
+    return status;
   }
 
   const visibleOptions = product.options.slice(0, 3);
@@ -295,129 +305,132 @@ export function AddProductToast() {
   const originalPriceDisplay = product.originalPrice ? formatMoney(product.originalPrice) : null;
 
   return (
-    <div
-      className={`s-add-product-toast ${isVisible ? 's-add-product-toast--visible' : ''}`}
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
-      dir={isRTL ? 'rtl' : 'ltr'}
-    >
-      <div className="s-add-product-toast__progress">
-        <div
-          className="s-add-product-toast__progress-bar"
-          style={{ width: `${progressPercent}%` }}
-        />
-      </div>
-
-      <div className="s-add-product-toast__header">
-        <div className="s-add-product-toast__header-content">
-          {/* Inline, not `salla.url.asset('images/check.svg')`: that helper points at
-              a Twig theme's asset folder, which a React theme doesn't have
-              (`…/themes//images/check.svg`, a broken image). */}
-          <CheckCircleIcon className="s-add-product-toast__icon" aria-hidden="true" />
-          <span className="s-add-product-toast__title">
-            {t('pages.cart.added_to_cart', 'Added to Cart')}
-          </span>
+    <>
+      {status}
+      <div
+        className={`s-add-product-toast ${isVisible ? 's-add-product-toast--visible' : ''}`}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+        dir={isRTL ? 'rtl' : 'ltr'}
+      >
+        <div className="s-add-product-toast__progress">
+          <div
+            className="s-add-product-toast__progress-bar"
+            style={{ width: `${progressPercent}%` }}
+          />
         </div>
-        <button
-          type="button"
-          className="s-add-product-toast__close"
-          aria-label="Close"
-          onClick={close}
-        >
-          <i className="sicon-cancel" />
-        </button>
-      </div>
 
-      <div className="s-add-product-toast__divider" />
+        <div className="s-add-product-toast__header">
+          <div className="s-add-product-toast__header-content">
+            {/* Inline, not `salla.url.asset('images/check.svg')`: that helper points at
+                a Twig theme's asset folder, which a React theme doesn't have
+                (`…/themes//images/check.svg`, a broken image). */}
+            <CheckCircleIcon className="s-add-product-toast__icon" aria-hidden="true" />
+            <span className="s-add-product-toast__title">
+              {t('pages.cart.added_to_cart', 'Added to Cart')}
+            </span>
+          </div>
+          <button
+            type="button"
+            className="s-add-product-toast__close"
+            aria-label={t('blocks.header.close', 'Close')}
+            onClick={close}
+          >
+            <i className="sicon-cancel" aria-hidden="true" />
+          </button>
+        </div>
 
-      <div className="s-add-product-toast__body">
-        <Link to={product.url} className="s-add-product-toast__image" onClick={close}>
-          <img src={product.image} alt={product.name} width={80} height={80} loading="lazy" />
-        </Link>
-        <div className="s-add-product-toast__details">
-          <Link to={product.url} className="s-add-product-toast__name" onClick={close}>
-            {product.name}
+        <div className="s-add-product-toast__divider" />
+
+        <div className="s-add-product-toast__body">
+          <Link to={product.url} className="s-add-product-toast__image" onClick={close}>
+            <img src={product.image} alt={product.name} width={80} height={80} loading="lazy" />
           </Link>
-          {visibleOptions.length > 0 && (
-            <div className="s-add-product-toast__options">
-              {visibleOptions.map((opt, idx) => (
-                <span key={idx}>{opt.hideValue ? opt.name : `${opt.name}: ${opt.value}`}</span>
-              ))}
-              {showMoreButton && (
-                <Link to={cartUrl} className="s-add-product-toast__show-more" onClick={close}>
-                  {t('pages.checkout.show_more', 'Show more')}
-                </Link>
-              )}
-            </div>
-          )}
+          <div className="s-add-product-toast__details">
+            <Link to={product.url} className="s-add-product-toast__name" onClick={close}>
+              {product.name}
+            </Link>
+            {visibleOptions.length > 0 && (
+              <div className="s-add-product-toast__options">
+                {visibleOptions.map((opt, idx) => (
+                  <span key={idx}>{opt.hideValue ? opt.name : `${opt.name}: ${opt.value}`}</span>
+                ))}
+                {showMoreButton && (
+                  <Link to={cartUrl} className="s-add-product-toast__show-more" onClick={close}>
+                    {t('pages.checkout.show_more', 'Show more')}
+                  </Link>
+                )}
+              </div>
+            )}
+          </div>
+          <div className="s-add-product-toast__price">
+            {(product.hasDiscount || product.isOnSale) && originalPriceDisplay ? (
+              <>
+                <div className="s-add-product-toast__price-sale">{priceDisplay}</div>
+                <div className="s-add-product-toast__price-original">{originalPriceDisplay}</div>
+              </>
+            ) : (
+              <div>{priceDisplay}</div>
+            )}
+          </div>
         </div>
-        <div className="s-add-product-toast__price">
-          {(product.hasDiscount || product.isOnSale) && originalPriceDisplay ? (
-            <>
-              <div className="s-add-product-toast__price-sale">{priceDisplay}</div>
-              <div className="s-add-product-toast__price-original">{originalPriceDisplay}</div>
-            </>
-          ) : (
-            <div>{priceDisplay}</div>
-          )}
-        </div>
-      </div>
 
-      <div className="s-add-product-toast__actions">
-        <button
-          type="button"
-          className="s-add-product-toast__button s-add-product-toast__button--primary"
-          onClick={handleCheckout}
-        >
-          <span>{t('pages.cart.complete_order', 'Complete Order')}</span>
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-            <path
-              d="M2 12C2 8.46252 2 6.69377 3.0528 5.5129C3.22119 5.32403 3.40678 5.14935 3.60746 4.99087C4.86213 4 6.74142 4 10.5 4H13.5C17.2586 4 19.1379 4 20.3925 4.99087C20.5932 5.14935 20.7788 5.32403 20.9472 5.5129C22 6.69377 22 8.46252 22 12C22 15.5375 22 17.3062 20.9472 18.4871C20.7788 18.676 20.5932 18.8506 20.3925 19.0091C19.1379 20 17.2586 20 13.5 20H10.5C6.74142 20 4.86213 20 3.60746 19.0091C3.40678 18.8506 3.22119 18.676 3.0528 18.4871C2 17.3062 2 15.5375 2 12Z"
-              stroke="currentColor"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-            <path
-              d="M10 16H11.5"
-              stroke="currentColor"
-              strokeWidth="1.5"
-              strokeMiterlimit="10"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-            <path
-              d="M14.5 16L18 16"
-              stroke="currentColor"
-              strokeWidth="1.5"
-              strokeMiterlimit="10"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-            <path d="M2 9H22" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
-          </svg>
-        </button>
-        <Link
-          to={cartUrl}
-          className="s-add-product-toast__button s-add-product-toast__button--outline"
-          onClick={close}
-        >
-          <span>{t('pages.cart.view_cart', 'View Cart')}</span>
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-            <path
-              d="M3.06164 14.4413L3.42688 12.2985C3.85856 9.76583 4.0744 8.49951 4.92914 7.74975C5.78389 7 7.01171 7 9.46734 7H14.5327C16.9883 7 18.2161 7 19.0709 7.74975C19.9256 8.49951 20.1414 9.76583 20.5731 12.2985L20.9384 14.4413C21.5357 17.946 21.8344 19.6983 20.9147 20.8491C19.995 22 18.2959 22 14.8979 22H9.1021C5.70406 22 4.00504 22 3.08533 20.8491C2.16562 19.6983 2.4643 17.946 3.06164 14.4413Z"
-              stroke="currentColor"
-              strokeWidth="1.5"
-            />
-            <path
-              d="M7.5 9L7.71501 5.98983C7.87559 3.74176 9.7462 2 12 2C14.2538 2 16.1244 3.74176 16.285 5.98983L16.5 9"
-              stroke="currentColor"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-            />
-          </svg>
-        </Link>
+        <div className="s-add-product-toast__actions">
+          <button
+            type="button"
+            className="s-add-product-toast__button s-add-product-toast__button--primary"
+            onClick={handleCheckout}
+          >
+            <span>{t('pages.cart.complete_order', 'Complete Order')}</span>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+              <path
+                d="M2 12C2 8.46252 2 6.69377 3.0528 5.5129C3.22119 5.32403 3.40678 5.14935 3.60746 4.99087C4.86213 4 6.74142 4 10.5 4H13.5C17.2586 4 19.1379 4 20.3925 4.99087C20.5932 5.14935 20.7788 5.32403 20.9472 5.5129C22 6.69377 22 8.46252 22 12C22 15.5375 22 17.3062 20.9472 18.4871C20.7788 18.676 20.5932 18.8506 20.3925 19.0091C19.1379 20 17.2586 20 13.5 20H10.5C6.74142 20 4.86213 20 3.60746 19.0091C3.40678 18.8506 3.22119 18.676 3.0528 18.4871C2 17.3062 2 15.5375 2 12Z"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+              <path
+                d="M10 16H11.5"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeMiterlimit="10"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+              <path
+                d="M14.5 16L18 16"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeMiterlimit="10"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+              <path d="M2 9H22" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
+            </svg>
+          </button>
+          <Link
+            to={cartUrl}
+            className="s-add-product-toast__button s-add-product-toast__button--outline"
+            onClick={close}
+          >
+            <span>{t('pages.cart.view_cart', 'View Cart')}</span>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+              <path
+                d="M3.06164 14.4413L3.42688 12.2985C3.85856 9.76583 4.0744 8.49951 4.92914 7.74975C5.78389 7 7.01171 7 9.46734 7H14.5327C16.9883 7 18.2161 7 19.0709 7.74975C19.9256 8.49951 20.1414 9.76583 20.5731 12.2985L20.9384 14.4413C21.5357 17.946 21.8344 19.6983 20.9147 20.8491C19.995 22 18.2959 22 14.8979 22H9.1021C5.70406 22 4.00504 22 3.08533 20.8491C2.16562 19.6983 2.4643 17.946 3.06164 14.4413Z"
+                stroke="currentColor"
+                strokeWidth="1.5"
+              />
+              <path
+                d="M7.5 9L7.71501 5.98983C7.87559 3.74176 9.7462 2 12 2C14.2538 2 16.1244 3.74176 16.285 5.98983L16.5 9"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+              />
+            </svg>
+          </Link>
+        </div>
       </div>
-    </div>
+    </>
   );
 }
