@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, waitFor, cleanup } from '@testing-library/react';
 import { ProductCard } from '../../../app/components/product/ProductCard';
+import { PRODUCT_IMAGE_PLACEHOLDER } from '../../../app/lib/productImage';
 
 const wishlistState = { ids: [] as number[] };
 
@@ -13,10 +14,14 @@ vi.mock('@salla.sa/twilight-theme-engine/product', () => ({
     product,
     layout = 'vertical',
   }: {
-    product: { id: number; name: string };
+    product: { id: number; name: string; image?: { url?: string } };
     layout?: string;
   }) => (
-    <div className="s-product-card-vertical" data-testid="engine-card">
+    <div
+      className="s-product-card-vertical"
+      data-testid="engine-card"
+      data-image={product.image?.url}
+    >
       <div className="s-product-card-image">
         {layout !== 'horizontal' && (
           <button
@@ -58,6 +63,21 @@ beforeEach(() => {
 });
 
 describe('ProductCard', () => {
+  it('shows the placeholder, whole, for a product with no photo', () => {
+    const { getByTestId } = render(<ProductCard product={product} />);
+    const card = getByTestId('engine-card');
+    expect(card.getAttribute('data-image')).toBe(PRODUCT_IMAGE_PLACEHOLDER);
+    expect(card.parentElement?.hasAttribute('data-image-placeholder')).toBe(true);
+  });
+
+  it('leaves a product with a photo as it is', () => {
+    const photo = { id: 1, name: 'Photo', image: { url: 'https://example.com/a.jpg' } } as never;
+    const { getByTestId } = render(<ProductCard product={photo} />);
+    const card = getByTestId('engine-card');
+    expect(card.getAttribute('data-image')).toBe('https://example.com/a.jpg');
+    expect(card.parentElement?.hasAttribute('data-image-placeholder')).toBe(false);
+  });
+
   it('portals a wishlist toggle into the engine card footer instead of moving the image one', async () => {
     const { getByTestId, getByLabelText } = render(<ProductCard product={product} />);
 

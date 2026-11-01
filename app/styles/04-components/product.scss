@@ -230,6 +230,11 @@
   }
 }
 
+/* The placeholder is shown whole, as in Twig, whatever the store's image fit. */
+[data-image-placeholder] .s-product-card-image img {
+  object-fit: contain;
+}
+
 /*
   Product-card image ratio — auto / square / landscape / portrait.
   `ThemeLayout` puts `product-card-img--<ratio>` on `.app-inner` from the

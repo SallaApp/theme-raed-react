@@ -1,9 +1,10 @@
-import { useEffect, useRef, useState, type ComponentProps } from 'react';
+import { useEffect, useMemo, useRef, useState, type ComponentProps } from 'react';
 import { createPortal } from 'react-dom';
 import { ProductCard as EngineProductCard } from '@salla.sa/twilight-theme-engine/product';
 import { useWishlist } from '@salla.sa/twilight-theme-engine/hooks/useWishlist';
 import { useTranslation } from '@salla.sa/twilight-theme-engine/i18n';
 import { registerNativeBookingHook } from '../../lib/nativeBooking';
+import { withImageFallback } from '../../lib/productImage';
 import { WishlistHeartButton } from './WishlistHeartButton';
 
 type ProductCardProps = ComponentProps<typeof EngineProductCard>;
@@ -26,6 +27,8 @@ type ProductCardProps = ComponentProps<typeof EngineProductCard>;
  *    throwing `NotFoundError`. A portal keeps this button fully React-managed
  *    at its real DOM location instead.
  *  - sets `loader-position="center"` on the add-to-cart button (grid + list).
+ * A product with no photo shows the theme's placeholder, as the Twig card does
+ * (the engine `Image` renders nothing without a `src`).
  * Inside the Salla app, a booking product's "Book now" fires `mobile::booking.open`
  * instead of opening the booking page (`lib/nativeBooking.ts`).
  * Styling: `04-components/product.scss`.
@@ -33,6 +36,10 @@ type ProductCardProps = ComponentProps<typeof EngineProductCard>;
 export function ProductCard(props: ProductCardProps) {
   const ref = useRef<HTMLDivElement>(null);
   const [footerEl, setFooterEl] = useState<HTMLElement | null>(null);
+  const { product, isPlaceholder } = useMemo(
+    () => withImageFallback(props.product),
+    [props.product]
+  );
 
   useEffect(() => {
     registerNativeBookingHook();
@@ -64,8 +71,12 @@ export function ProductCard(props: ProductCardProps) {
   }, []);
 
   return (
-    <div ref={ref} style={{ display: 'contents' }}>
-      <EngineProductCard {...props} />
+    <div
+      ref={ref}
+      style={{ display: 'contents' }}
+      data-image-placeholder={isPlaceholder ? 'true' : undefined}
+    >
+      <EngineProductCard {...props} product={product} />
       {footerEl &&
         createPortal(
           // List responses send the id as a numeric string; the wishlist holds numbers.
