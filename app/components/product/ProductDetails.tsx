@@ -153,19 +153,21 @@ export function ProductDetails({
             </span>
             <div className="mt-1 sm:mt-0 sm:col-span-2 text-end">
               <div className="flex rtl:space-x-reverse space-x-3">
-                <a
-                  href="#!"
+                {/* A button, not `href="#!"`: it opens the branch picker and leaves the URL
+                    and history alone. `with-arrow` turns the arrow to the right in LTR (`ltr.scss`). */}
+                <button
+                  type="button"
                   onClick={() =>
                     window.salla?.event?.dispatch('scopes::open', {
                       mode: 'availability',
                       product_id: String(product.id),
                     })
                   }
-                  className="group text-primary flex items-center justify-center"
+                  className="group with-arrow text-primary flex items-center justify-center"
                 >
                   <span>{t('pages.products.select_branch')}</span>
-                  <span className="sicon-keyboard_arrow_left mr-2 transition-transform group-hover:-translate-x-1"></span>
-                </a>
+                  <span className="sicon-keyboard_arrow_left ms-2 transition-transform rtl:group-hover:-translate-x-1 ltr:group-hover:translate-x-1"></span>
+                </button>
               </div>
             </div>
           </div>

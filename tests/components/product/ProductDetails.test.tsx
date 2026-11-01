@@ -108,6 +108,64 @@ describe('ProductDetails barcode row', () => {
   });
 });
 
+describe('ProductDetails select branch', () => {
+  const dispatch = vi.fn();
+
+  beforeEach(() => {
+    dispatch.mockClear();
+    (window as unknown as { salla: unknown }).salla = {
+      event: { on: vi.fn(), off: vi.fn(), dispatch },
+    };
+  });
+
+  afterEach(() => {
+    delete (window as unknown as { salla?: unknown }).salla;
+  });
+
+  const selectBranch = async (container: HTMLElement) =>
+    waitFor(() => {
+      const label = [...container.querySelectorAll('span')].find(
+        (span) => span.textContent === 'pages.products.select_branch'
+      );
+      expect(label).toBeTruthy();
+      return label!.parentElement!;
+    });
+
+  it('is a button that opens the branch picker without changing the URL', async () => {
+    const { container } = render(
+      <ProductDetails product={makeProduct({ id: 42, show_availability: true })} />
+    );
+    const control = await selectBranch(container);
+
+    expect(control.tagName).toBe('BUTTON');
+    expect(control.getAttribute('type')).toBe('button');
+    expect(control.hasAttribute('href')).toBe(false);
+
+    fireEvent.click(control);
+    expect(dispatch).toHaveBeenCalledWith('scopes::open', {
+      mode: 'availability',
+      product_id: '42',
+    });
+  });
+
+  it('points its arrow forward in both directions, after the text', async () => {
+    const { container } = render(
+      <ProductDetails product={makeProduct({ show_availability: true })} />
+    );
+    const control = await selectBranch(container);
+    const arrow = control.querySelector('.sicon-keyboard_arrow_left')!;
+
+    // `ltr.scss` swaps the glyph to the right arrow under `.with-arrow`.
+    expect(control.classList.contains('with-arrow')).toBe(true);
+    expect(arrow.classList.contains('ms-2')).toBe(true);
+    expect(arrow.classList.contains('mr-2')).toBe(false);
+    // The hover nudge follows the arrow.
+    expect(arrow.classList.contains('rtl:group-hover:-translate-x-1')).toBe(true);
+    expect(arrow.classList.contains('ltr:group-hover:translate-x-1')).toBe(true);
+    expect(arrow.classList.contains('group-hover:-translate-x-1')).toBe(false);
+  });
+});
+
 describe('ProductDetails description hooks', () => {
   it('renders .start and description once, and leaves .end to the page after the form (as in Twig)', async () => {
     const { container } = render(<ProductDetails product={makeProduct()} />);
