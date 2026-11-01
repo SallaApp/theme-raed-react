@@ -38,6 +38,19 @@ describe('youtubeFacades', () => {
   });
 
   it.each([
+    ['embed/aaaaaaaaaaa?si=x&#38;start=30', 'embed/aaaaaaaaaaa?si=x&#38;start=30&amp;autoplay=1'],
+    ['embed/aaaaaaaaaaa?si=x&#038;start=30', 'embed/aaaaaaaaaaa?si=x&#038;start=30&amp;autoplay=1'],
+  ])('keeps the encoded ampersand in %s as part of the address', (path, played) => {
+    const html = youtubeFacades(
+      `<iframe src="https://www.youtube.com/${path}"></iframe>`,
+      new Set([0]),
+      'Play'
+    );
+
+    expect(html).toContain(`src="https://www.youtube.com/${played}"`);
+  });
+
+  it.each([
     ['embed/aaaaaaaaaaa#t=30', 'embed/aaaaaaaaaaa?autoplay=1#t=30'],
     ['embed/aaaaaaaaaaa?start=30#t=30', 'embed/aaaaaaaaaaa?start=30&amp;autoplay=1#t=30'],
     ['embed/aaaaaaaaaaa#a?b', 'embed/aaaaaaaaaaa?autoplay=1#a?b'],

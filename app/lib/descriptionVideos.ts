@@ -34,7 +34,8 @@ export function youtubeFacades(
     if (playing.has(index)) {
       // Played: the real player, starting at once (the click was the shopper's ask).
       // The param goes before any `#fragment`, where it would be ignored.
-      const hashAt = url.indexOf('#');
+      // Skips the `#` of an encoded character such as `&#38;`.
+      const hashAt = url.search(/#(?!x?[0-9a-f]+;)/i);
       const address = hashAt < 0 ? url : url.slice(0, hashAt);
       const fragment = hashAt < 0 ? '' : url.slice(hashAt);
       const autoplayUrl = `${address}${address.includes('?') ? '&amp;' : '?'}autoplay=1${fragment}`;
