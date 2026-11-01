@@ -19,6 +19,8 @@ module.exports = {
     // (SallaApp/twilight#2107), so the safelist is no longer compiled here.
     './node_modules/@salla.sa/twilight-components-react/dist/**/*.js',
   ],
+  // `<Image objectFit>` builds these at runtime, out of the scanner's sight.
+  safelist: ['object-contain', 'object-cover'],
   darkMode: 'class', // or 'media' or 'class'
   theme: {
     container: {

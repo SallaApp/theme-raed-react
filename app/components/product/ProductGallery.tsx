@@ -367,7 +367,7 @@ function ImageSlide({
           src={image.url}
           alt={image.alt || product.name}
           className="h-full w-full"
-            objectFit={objectFit}
+          objectFit={objectFit}
           aspectRatio="1/1"
           priority={index === 0}
           noWrapper
