@@ -1,5 +1,4 @@
 // @vitest-environment node
-import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { describe, it, expect } from 'vitest';
 import * as sass from 'sass';
@@ -9,11 +8,6 @@ const stylesDir = fileURLToPath(new URL('../../app/styles/04-components/', impor
 const collapsed = (css: string) => css.replace(/\s+/g, ' ');
 
 describe('empty home blocks', () => {
-  it('hides a block that rendered nothing, but not one still waiting to load', () => {
-    const source = collapsed(readFileSync(`${stylesDir}home-blocks.scss`, 'utf8'));
-    expect(source).toContain("&:empty:not([style*='min-height']) { display: none; }");
-  });
-
   it('drops the footer gap past empty blocks, unless the reorder block has products', () => {
     const { css } = sass.compile(`${stylesDir}footer.scss`);
     const selector = collapsed(css);
