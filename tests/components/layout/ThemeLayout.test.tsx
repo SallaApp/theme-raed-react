@@ -1,6 +1,7 @@
 import React from 'react';
 import { describe, it, expect, vi, afterEach } from 'vitest';
 import { render, cleanup } from '@testing-library/react';
+import { renderToString } from 'react-dom/server';
 // Its theme translations are the real locale files (`tests/stubs/theme-translations.ts`).
 import { ThemeLayout } from '../../../app/components/layout/ThemeLayout';
 import manifest from '../../../twilight.json';
@@ -19,7 +20,7 @@ vi.mock('@salla.sa/twilight-theme-engine/i18n', () => ({
 vi.mock('@salla.sa/twilight-theme-engine/hooks/useUser', () => ({
   useUser: () => ({ isLoggedIn: true }),
 }));
-vi.mock('../../../app/components/layout/Footer', () => ({ Footer: () => null }));
+vi.mock('../../../app/components/layout/Footer', () => ({ Footer: () => <footer /> }));
 vi.mock('../../../app/components/layout/Header', () => ({ Header: () => null }));
 vi.mock('../../../app/components/layout/ImportantLinksSheet', () => ({
   ImportantLinksSheet: () => null,
@@ -92,6 +93,13 @@ describe("ThemeLayout's component translations", () => {
     unmount();
 
     expect(unsubscribe).toHaveBeenCalledTimes(1);
+  });
+
+  // An app snippet can insert next to `.store-footer` once the SDK is ready, which can be before
+  // a Suspense boundary around the footer hydrates: React #418, and the app's nodes dropped.
+  it('server-renders the footer outside any Suspense boundary, so it hydrates with the page', () => {
+    const html = renderToString(<ThemeLayout>page</ThemeLayout>);
+    expect(html).toMatch(/<\/main><footer><\/footer>/);
   });
 
   it('renders without the SDK, as on the server', () => {

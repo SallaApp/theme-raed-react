@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, fireEvent, act, waitFor } from '@testing-library/react';
+import { renderToString } from 'react-dom/server';
 import {
   FeaturedProducts,
   FeaturedProductsSpecialOffer,
@@ -58,6 +59,7 @@ vi.mock('@salla.sa/twilight-components-react', async () => {
   );
   return {
     ProductsListSkeleton: () => <div data-testid="list-skeleton" />,
+    ProductCardSkeleton: () => <div data-testid="card-skeleton" />,
     SallaProductsList: (props: {
       loader: () => unknown;
       children: (items: unknown[]) => unknown;
@@ -474,6 +476,29 @@ describe('loading with the real SallaProductsList', () => {
     for (let pass = 0; pass < 3; pass++) await scrollPast();
 
     expect(listMock).toHaveBeenCalledTimes(lists);
+  });
+
+  // Lists load in the browser, so the server renders each in its loading state. The default
+  // loader there is `<salla-loading>`, which the web component fills before React hydrates the
+  // block: React #418 on 18 of 20 stores in the migration review.
+  it.each([
+    ['a tab grid', () => <FeaturedProducts data={{ items: [tab()] }} />],
+    [
+      'a special offer and its tab grid',
+      () => <FeaturedProductsSpecialOffer data={{ main_product: [7], items: [tab()] }} />,
+    ],
+    [
+      'columns with and without a picked product',
+      () => (
+        <FeaturedProductsWithSpecialProduct
+          data={{ items: [tab({ special_product: [3] }), tab({ special_product: [] })] }}
+        />
+      ),
+    ],
+  ])('server-renders %s with card skeletons, never a web component', (_label, ui) => {
+    const html = renderToString(ui());
+    expect(html).toContain('card-skeleton');
+    expect(html).not.toContain('<salla-');
   });
 
   // Twig picks random products in the database; the API has no random source.

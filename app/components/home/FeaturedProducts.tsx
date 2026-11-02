@@ -4,7 +4,11 @@ import { useTranslation } from '@salla.sa/twilight-theme-engine/i18n';
 import { product, type ProductsListSource } from '@salla.sa/twilight-theme-engine/api/product';
 import { ProductCard } from '../product';
 import { useProductCardLayout } from '../../hooks/useProductCardLayout';
-import { SallaProductsList, ProductsListSkeleton } from '@salla.sa/twilight-components-react';
+import {
+  SallaProductsList,
+  ProductsListSkeleton,
+  ProductCardSkeleton,
+} from '@salla.sa/twilight-components-react';
 
 /**
  * `featured-products` home block — a theme-owned custom component (declared in
@@ -14,7 +18,10 @@ import { SallaProductsList, ProductsListSkeleton } from '@salla.sa/twilight-comp
  * lazily through `product.list`, so no server-side hydration is needed.
  * Every list is `mode="once"`: the loaders always fetch the first page, so the
  * default `infinite` mode would fetch it again each time a list's end scrolled
- * into view.
+ * into view. Every list also names its skeleton: without one the server renders
+ * the list's default `<salla-loading>`, whose web component fills its light DOM
+ * before React hydrates the block, and React then finds children it never
+ * rendered (React #418).
  *
  * Keeps the engine/Twig class names (`s-block__title`, `tabs`, `tabs-wrapper`,
  * `tabs__item`, `tab-trigger`) so `04-components/home-blocks.scss` styles it.
@@ -216,6 +223,9 @@ function TabProductGrid({
         loader={loader}
         mode="once"
         itemsClassName={`s-products-list-${layout}-cards`}
+        skeleton={<ProductCardSkeleton />}
+        skeletonType="item"
+        skeletonCount={limit}
       >
         {(items: Product[]) =>
           items
@@ -237,7 +247,14 @@ function SpecialProduct({ value }: { value: FeaturedProductsData['main_product']
 
   return (
     <Suspense fallback={<ProductsListSkeleton />}>
-      <SallaProductsList loader={loader} mode="once" itemsClassName="featured-products__special-list">
+      <SallaProductsList
+        loader={loader}
+        mode="once"
+        itemsClassName="featured-products__special-list"
+        skeleton={<ProductCardSkeleton />}
+        skeletonType="item"
+        skeletonCount={1}
+      >
         {(items: Product[]) =>
           items
             .slice(0, 1)
@@ -425,6 +442,9 @@ function ColumnFromSource({ source, sourceValue, random }: TabSource) {
         loader={loader}
         mode="once"
         itemsClassName="s-products-list-horizontal-cards featured-products__column-grid"
+        skeleton={<ProductCardSkeleton />}
+        skeletonType="item"
+        skeletonCount={4}
       >
         {(items: Product[]) =>
           items

@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
+import { renderToString } from 'react-dom/server';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Footer } from '../../../app/components/layout/Footer';
 
@@ -7,6 +8,8 @@ const state = {
   store: {} as Record<string, unknown>,
   theme: { settings: {} as Record<string, unknown> },
   footerMenu: [] as unknown[],
+  /** Makes `ImageModal` suspend, as the engine's lazy one does until its code loads. */
+  modalPending: false,
 };
 
 vi.mock('@salla.sa/twilight-theme-engine/providers', () => ({
@@ -23,7 +26,12 @@ vi.mock('@salla.sa/twilight-theme-engine/common', () => ({
   Link: ({ children }: { children?: unknown }) => <a>{children as never}</a>,
   Image: () => <img alt="" />,
 }));
-vi.mock('@salla.sa/twilight-theme-engine/modal', () => ({ ImageModal: () => null }));
+vi.mock('@salla.sa/twilight-theme-engine/modal', () => ({
+  ImageModal: () => {
+    if (state.modalPending) throw new Promise(() => {});
+    return null;
+  },
+}));
 vi.mock('@salla.sa/twilight-theme-engine/layout', () => ({ MadeWithSalla: () => null }));
 vi.mock('@salla.sa/twilight-theme-engine/api/menu', () => ({
   menu: { footer: async () => state.footerMenu },
@@ -56,9 +64,30 @@ beforeEach(() => {
   state.store = { name: 'Acme', contacts: { whatsapp: '+966500000000', email: 'a@b.c' } };
   state.theme = { settings: {} };
   state.footerMenu = [{ id: 1, title: 'About', url: '/about' }];
+  state.modalPending = false;
 });
 
 describe('Footer', () => {
+  // The tax certificate's modal is lazy. Its own boundary keeps the footer from waiting on it,
+  // now that the footer hydrates with the page instead of in a boundary of its own.
+  it('renders while the tax certificate modal is still loading', () => {
+    state.store = {
+      ...state.store,
+      settings: { tax: { number: '300000000000003', certificate: 'https://cdn.test/c.png' } },
+    };
+    state.modalPending = true;
+    const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+
+    const html = renderToString(
+      <QueryClientProvider client={client}>
+        <Footer />
+      </QueryClientProvider>
+    );
+
+    expect(html).toContain('store-footer');
+    expect(html).toContain('300000000000003');
+  });
+
   it('lists the store contacts in their own column, not under the description', () => {
     renderFooter();
     expect(screen.getByText('Contact us')).toBeTruthy();

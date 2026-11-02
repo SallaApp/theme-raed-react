@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { Suspense, useState } from 'react';
 import { SallaAppsIcons } from '@salla.sa/twilight-components-react/apps-icons';
 import { SallaContacts } from '@salla.sa/twilight-components-react/contacts';
 import { SallaSocial } from '@salla.sa/twilight-components-react/social';
@@ -57,13 +57,17 @@ function FooterTax({ dark }: { dark: boolean }) {
               className="w-10 rounded-sm transition-opacity hover:opacity-80"
             />
           </button>
-          <ImageModal
-            isOpen={open}
-            onClose={() => setOpen(false)}
-            src={certificate}
-            alt={t('common.elements.tax_certificate', 'Tax Certificate')}
-            title={t('common.elements.tax_certificate', 'Tax Certificate')}
-          />
+          {/* Its own boundary: the modal's code loads lazily, and the footer must not wait for it
+              to hydrate (see `ThemeLayout`). */}
+          <Suspense fallback={null}>
+            <ImageModal
+              isOpen={open}
+              onClose={() => setOpen(false)}
+              src={certificate}
+              alt={t('common.elements.tax_certificate', 'Tax Certificate')}
+              title={t('common.elements.tax_certificate', 'Tax Certificate')}
+            />
+          </Suspense>
         </>
       )}
       <div>
