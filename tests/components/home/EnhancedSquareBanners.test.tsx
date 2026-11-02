@@ -41,10 +41,28 @@ describe('EnhancedSquareBanners', () => {
     expect(banners.length).toBe(3);
   });
 
-  it('adds has-overlay class when title exists', () => {
+  it('adds the overlay to a titled banner missing its description or url', () => {
+    const { container } = render(
+      <EnhancedSquareBanners
+        data={{
+          banners: [
+            { image: 'a.jpg', title: 'No url', description: 'Desc' },
+            { image: 'b.jpg', url: '/b', title: 'No description' },
+            { image: 'c.jpg', url: '/c' },
+          ],
+        }}
+      />
+    );
+    const [noUrl, noDescription, untitled] = Array.from(container.querySelectorAll('.banner-entry'));
+    expect(noUrl.className).toContain('has-overlay');
+    expect(noDescription.className).toContain('has-overlay');
+    expect(untitled.className).not.toContain('has-overlay');
+  });
+
+  it('removes the overlay from a banner with a title, description and url', () => {
     const { container } = render(<EnhancedSquareBanners data={{ banners: mockBanners }} />);
     const banner = container.querySelector('.banner-entry');
-    expect(banner?.className).toContain('has-overlay');
+    expect(banner?.className).not.toContain('has-overlay');
   });
 
   it('renders banner title', () => {
@@ -132,6 +150,21 @@ describe('EnhancedSquareBanners', () => {
       const { container } = render(<EnhancedSquareBanners data={{ banners: noUrl }} />);
       const last = container.querySelectorAll('.enhanced-square-banner')[4];
       expect(last.querySelector('.enhanced-square-banner__cta')).toBeNull();
+    });
+
+    it('removes the overlay only from banners with a title, description and url', () => {
+      const banners = [
+        fiveBanners[0],
+        { ...fiveBanners[1], url: undefined },
+        { ...fiveBanners[2], title: undefined },
+        { ...fiveBanners[3], description: undefined },
+        { image: 'br.jpg' },
+      ];
+      const { container } = render(<EnhancedSquareBanners data={{ banners }} />);
+      const overlaid = Array.from(container.querySelectorAll('.enhanced-square-banner')).map(
+        (banner) => banner.classList.contains('enhanced-square-banner--overlay')
+      );
+      expect(overlaid).toEqual([false, true, true, true, true]);
     });
 
     it('names an untitled banner by its own text, or "Discover now" when it has none', () => {

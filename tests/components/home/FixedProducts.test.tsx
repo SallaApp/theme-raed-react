@@ -10,6 +10,11 @@ vi.mock('../../../app/hooks/useProductCardLayout', () => ({
   useProductCardLayout: () => cardLayout.value,
 }));
 
+const themeSettings: { vertical_fixed_products?: boolean } = {};
+vi.mock('@salla.sa/twilight-theme-engine/providers', () => ({
+  useTwilight: () => ({ theme: { settings: themeSettings } }),
+}));
+
 vi.mock('@salla.sa/twilight-theme-engine/i18n', () => ({
   useTranslation: () => ({ t: (_k: string, fb?: string) => fb ?? _k }),
 }));
@@ -68,6 +73,7 @@ function renderBlock(data: Record<string, unknown>) {
 beforeEach(() => {
   listMock.mockReset();
   cardLayout.value = 'vertical';
+  delete themeSettings.vertical_fixed_products;
 });
 
 describe('FixedProducts', () => {
@@ -136,6 +142,44 @@ describe('FixedProducts', () => {
   it("keeps a block's own horizontal choice under the vertical store layout", async () => {
     listMock.mockResolvedValue({ items: products(2) });
     const { container } = renderBlock({ isVertical: false });
+    await waitFor(() => expect(cards(container)).toHaveLength(2));
+    expect(cards(container)[0].getAttribute('data-layout')).toBe('horizontal');
+  });
+
+  it('uses horizontal cards when vertical_fixed_products is off', async () => {
+    themeSettings.vertical_fixed_products = false;
+    listMock.mockResolvedValue({ items: products(2) });
+    const { container } = renderBlock({});
+    await waitFor(() => expect(cards(container)).toHaveLength(2));
+    expect(cards(container)[0].getAttribute('data-layout')).toBe('horizontal');
+    expect(container.querySelector('.s-products-list-horizontal-cards')).toBeTruthy();
+  });
+
+  it.each([true, undefined])(
+    'uses vertical cards when vertical_fixed_products is %s',
+    async (setting) => {
+      if (setting !== undefined) themeSettings.vertical_fixed_products = setting;
+      listMock.mockResolvedValue({ items: products(2) });
+      const { container } = renderBlock({});
+      await waitFor(() => expect(cards(container)).toHaveLength(2));
+      expect(cards(container)[0].getAttribute('data-layout')).toBe('vertical');
+      expect(container.querySelector('.s-products-list-vertical-cards')).toBeTruthy();
+    }
+  );
+
+  it("lets a block's own vertical choice beat vertical_fixed_products", async () => {
+    themeSettings.vertical_fixed_products = false;
+    listMock.mockResolvedValue({ items: products(2) });
+    const { container } = renderBlock({ isVertical: true });
+    await waitFor(() => expect(cards(container)).toHaveLength(2));
+    expect(cards(container)[0].getAttribute('data-layout')).toBe('vertical');
+  });
+
+  it('lets the store-wide horizontal layout beat vertical_fixed_products', async () => {
+    cardLayout.value = 'horizontal';
+    themeSettings.vertical_fixed_products = true;
+    listMock.mockResolvedValue({ items: products(2) });
+    const { container } = renderBlock({});
     await waitFor(() => expect(cards(container)).toHaveLength(2));
     expect(cards(container)[0].getAttribute('data-layout')).toBe('horizontal');
   });

@@ -25,12 +25,16 @@ export interface EnhancedSquareBannersProps {
 const bannerLabel = (banner: BannerItem, ctaLabel: string) =>
   banner.title || (banner.description ? undefined : ctaLabel);
 
+/** A banner with its title, description and link shows its photo without the dark overlay. */
+const isComplete = (banner: BannerItem) =>
+  Boolean(banner.title && banner.description && banner.url);
+
 function MosaicBanner({ banner, ctaLabel }: { banner: BannerItem; ctaLabel: string }) {
   return (
     <Link
       to={banner.url || '#'}
       aria-label={bannerLabel(banner, ctaLabel)}
-      className="enhanced-square-banner bg-no-repeat bg-cover bg-center"
+      className={`enhanced-square-banner bg-no-repeat bg-cover bg-center ${isComplete(banner) ? '' : 'enhanced-square-banner--overlay'}`}
       style={{ backgroundImage: `url(${banner.image})` }}
     >
       <span className="enhanced-square-banner__content">
@@ -80,7 +84,7 @@ export const EnhancedSquareBanners = memo(function EnhancedSquareBanners({
           key={index}
           to={banner.url || '#'}
           aria-label={bannerLabel(banner, ctaLabel)}
-          className={`banner-entry bg-no-repeat bg-cover bg-center ${banner.title ? 'has-overlay' : ''} ${hasTwoRows ? 'h-banner' : 'h-lg-banner'}`}
+          className={`banner-entry bg-no-repeat bg-cover bg-center ${banner.title && !isComplete(banner) ? 'has-overlay' : ''} ${hasTwoRows ? 'h-banner' : 'h-lg-banner'}`}
           style={{ backgroundImage: `url(${banner.image})` }}
         >
           <article className="banner-entry__text text-with-border">
