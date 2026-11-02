@@ -89,12 +89,12 @@ describe('topnav_is_dark (body.topnav-is-dark)', () => {
     expect(declarations(root, `${bar} .s-cart-summary-wrapper:hover`)).toEqual({});
   });
 
-  it('shows the lite bar login icon in white, with no hover background of its own', async () => {
+  it('shows the lite bar login icon in gray like the cart and search, with no hover background of its own', async () => {
     const root = await compile('header.scss');
     const login = 'body.topnav-is-dark .site-header--lite .site-header__bar .s-user-menu-login-btn';
 
-    expect(declarations(root, `${login} svg`).fill).toBe('#fff');
-    expect(declarations(root, login).color).toContain('rgb(255 255 255');
+    expect(declarations(root, `${login} svg`).fill).toBe('#d1d5db'); // gray-300
+    expect(declarations(root, login).color).toContain('rgb(209 213 219'); // gray-300
     expect(declarations(root, `${login}:hover`)['background-color']).toBe('transparent');
   });
 });
