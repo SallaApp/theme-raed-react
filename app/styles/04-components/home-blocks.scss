@@ -892,14 +892,6 @@
     @apply mt-5;
   }
 
-  /* A block that rendered nothing, such as a product list with no products. The
-     engine still leaves its `<section>`, whose margin shows as a gap. A block
-     waiting to load has a `min-height` until it mounts, and stays laid out so its
-     IntersectionObserver can fire. */
-  &:empty:not([style*='min-height']) {
-    display: none;
-  }
-
   &.skeleton-block-hero {
     min-height: 350px;
   }

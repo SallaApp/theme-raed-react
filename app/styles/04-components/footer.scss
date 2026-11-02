@@ -2,7 +2,7 @@
   When the page ends on a full-bleed block (`s-block--full-bg` — its own colour
   band runs edge-to-edge and butts against the footer), drop the gap above the
   footer. Trailing empty `<salla-hook>`s aren't the last block, so match the
-  last `<section>`, past up to two empty blocks (hidden in `home-blocks.scss`).
+  last `<section>`, past up to two empty blocks.
   The engine's reorder block sits after the rest in its own wrapper: when it has
   products it is the last block, and keeps the gap.
 */
