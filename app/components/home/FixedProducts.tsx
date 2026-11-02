@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { FixedProductsSkeleton } from '@salla.sa/twilight-components-react';
 import { Link } from '@salla.sa/twilight-theme-engine/common';
 import { useTranslation } from '@salla.sa/twilight-theme-engine/i18n';
+import { useTwilight } from '@salla.sa/twilight-theme-engine/providers';
 import { product, type ProductsListSource } from '@salla.sa/twilight-theme-engine/api/product';
 import { ProductCard } from '../product';
 import { blockLimit } from '../../lib/blockLimit';
@@ -41,8 +42,12 @@ export function FixedProducts({ data }: FixedProductsProps) {
 
   const title = data.title;
   const limit = blockLimit(data.limit);
-  // The store-wide horizontal layout wins; otherwise the block's own choice.
-  const isVertical = useProductCardLayout() === 'vertical' && data.isVertical !== false;
+  const { theme } = useTwilight();
+  // The store-wide horizontal layout wins; otherwise the block's own choice, then
+  // the merchant's `vertical_fixed_products` (default on, as in Twig Raed and the engine).
+  const isVertical =
+    useProductCardLayout() === 'vertical' &&
+    (data.isVertical ?? theme?.settings?.vertical_fixed_products ?? true);
 
   const { data: result, isLoading } = useQuery(
     product.queries.list({
