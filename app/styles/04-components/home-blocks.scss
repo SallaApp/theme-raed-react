@@ -1610,7 +1610,7 @@ salla-reviews:not(:has(.s-reviews-swiper-slide)) {
     aspect-ratio: 3 / 2;
   }
 
-  &::after {
+  &--overlay::after {
     content: '';
     @apply absolute inset-0 bg-black/35;
   }
