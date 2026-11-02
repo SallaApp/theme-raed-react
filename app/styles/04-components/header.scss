@@ -841,9 +841,22 @@ body.topnav-is-dark .site-header--lite .site-header__bar {
     @apply bg-dark border-gray-300/10;
   }
 
-  .header-action,
-  .s-cart-summary-wrapper {
+  .header-action {
     @apply text-gray-300 hover:bg-gray-100/[0.15] hover:text-gray-300 hover:opacity-80;
+  }
+
+  /* Inside a `.header-action`, whose circle is the only hover background. */
+  .s-cart-summary-wrapper {
+    @apply text-gray-300;
+  }
+
+  /* Also inside a `.header-action`. Twilight fills its icon with gray-700. */
+  .s-user-menu-login-btn {
+    @apply text-white hover:bg-transparent hover:text-white hover:opacity-100;
+
+    svg {
+      @apply fill-white;
+    }
   }
 }
 
