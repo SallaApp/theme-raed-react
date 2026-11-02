@@ -96,10 +96,32 @@ describe('SliderProductsWithHeader', () => {
     expect(product.list).toHaveBeenCalledWith(expect.objectContaining({ source: 'best_selling' }));
   });
 
-  it('returns null when no source can be resolved', () => {
-    const { container } = render(
-      <SliderProductsWithHeader data={{ ...mockData, products: undefined }} />
+  it.each([
+    ['no products field', undefined],
+    ['an empty product list', []],
+    ['a source config with no source', { source: '' }],
+  ])('keeps the header but not the slider with %s', (_case, products) => {
+    const { container } = render(<SliderProductsWithHeader data={{ ...mockData, products }} />);
+    expect(container.querySelector('.slider-bg')?.getAttribute('style')).toContain('bg.jpg');
+    expect(container.querySelector('h3')?.textContent).toBe('Featured Products');
+    expect(container.querySelector('.line-clamp-2')?.textContent).toBe(
+      'Check out our best products'
     );
+    expect(container.querySelector('[data-testid="salla-products-slider"]')).toBeNull();
+    expect(container.querySelector('.-mt-62')).toBeNull();
+  });
+
+  it.each([
+    ['a background', { background: 'bg.jpg' }],
+    ['a title', { title: 'Featured Products' }],
+    ['a description', { description: 'Check out our best products' }],
+  ])('keeps the header with only %s and no products', (_case, data) => {
+    const { container } = render(<SliderProductsWithHeader data={data} />);
+    expect(container.querySelector('.slider-bg')).toBeTruthy();
+  });
+
+  it('returns null with no products and nothing to show in the header', () => {
+    const { container } = render(<SliderProductsWithHeader data={{}} />);
     expect(container.firstChild).toBeNull();
   });
 });

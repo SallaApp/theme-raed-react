@@ -68,7 +68,8 @@ export function SliderProductsWithHeader({ data }: SliderProductsWithHeaderProps
     [resolvedSource, resolvedSourceValue]
   );
 
-  if (!resolvedSource) return null;
+  // With no products selected the merchant's header still shows, as in Twig Raed.
+  if (!resolvedSource && !background && !title && !description) return null;
 
   return (
     <>
@@ -84,18 +85,20 @@ export function SliderProductsWithHeader({ data }: SliderProductsWithHeaderProps
         </div>
       </div>
 
-      <div className="container -mt-62 relative overflow-hidden">
-        <Suspense fallback={<ProductsSliderSkeleton />}>
-          <SallaProductsSlider
-            loader={loader}
-            sliderProps={{ id: `slider-with-bg-${position}` }}
-            blockTitle=" "
-            {...(displayAllUrl ? { displayAllUrl } : {})}
-          >
-            {(product) => <ProductCard product={product} layout="vertical" />}
-          </SallaProductsSlider>
-        </Suspense>
-      </div>
+      {resolvedSource && (
+        <div className="container -mt-62 relative overflow-hidden">
+          <Suspense fallback={<ProductsSliderSkeleton />}>
+            <SallaProductsSlider
+              loader={loader}
+              sliderProps={{ id: `slider-with-bg-${position}` }}
+              blockTitle=" "
+              {...(displayAllUrl ? { displayAllUrl } : {})}
+            >
+              {(product) => <ProductCard product={product} layout="vertical" />}
+            </SallaProductsSlider>
+          </Suspense>
+        </div>
+      )}
     </>
   );
 }
