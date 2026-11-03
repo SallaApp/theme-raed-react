@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, fireEvent, act, waitFor } from '@testing-library/react';
+import { renderToString } from 'react-dom/server';
 import {
   FeaturedProducts,
   FeaturedProductsSpecialOffer,
@@ -58,6 +59,7 @@ vi.mock('@salla.sa/twilight-components-react', async () => {
   );
   return {
     ProductsListSkeleton: () => <div data-testid="list-skeleton" />,
+    ProductCardSkeleton: () => <div data-testid="card-skeleton" />,
     SallaProductsList: (props: {
       loader: () => unknown;
       children: (items: unknown[]) => unknown;
@@ -474,5 +476,71 @@ describe('loading with the real SallaProductsList', () => {
     for (let pass = 0; pass < 3; pass++) await scrollPast();
 
     expect(listMock).toHaveBeenCalledTimes(lists);
+  });
+
+  // Lists load in the browser, so the server renders each in its loading state. The default
+  // loader there is `<salla-loading>`, which the web component fills before React hydrates the
+  // block: React #418 on 18 of 20 stores in the migration review.
+  it.each([
+    ['a tab grid', () => <FeaturedProducts data={{ items: [tab()] }} />],
+    [
+      'a special offer and its tab grid',
+      () => <FeaturedProductsSpecialOffer data={{ main_product: [7], items: [tab()] }} />,
+    ],
+    [
+      'columns with and without a picked product',
+      () => (
+        <FeaturedProductsWithSpecialProduct
+          data={{ items: [tab({ special_product: [3] }), tab({ special_product: [] })] }}
+        />
+      ),
+    ],
+  ])('server-renders %s with card skeletons, never a web component', (_label, ui) => {
+    const html = renderToString(ui());
+    expect(html).toContain('card-skeleton');
+    expect(html).not.toContain('<salla-');
+  });
+
+  // Twig picks random products in the database; the API has no random source.
+  describe('a random_products tab', () => {
+    const pool = Array.from({ length: 32 }, (_, i) => ({ id: i + 1, name: `P${i + 1}` }));
+    const names = (cards: HTMLElement[]) => cards.map((card) => card.textContent);
+
+    beforeEach(() => {
+      listMock.mockResolvedValue({ items: pool, next: 'https://store.test/api/products?page=2' });
+      vi.spyOn(Math, 'random').mockReturnValue(0);
+    });
+
+    afterEach(() => {
+      vi.restoreAllMocks();
+    });
+
+    it('shows a shuffled few of the newest products, from one page of them', async () => {
+      const { findAllByTestId } = render(
+        <FeaturedProducts data={{ items: [tab({ type: [{ value: 'random_products' }] })] }} />
+      );
+
+      const shown = names(await findAllByTestId('product-card'));
+      expect(listMock).toHaveBeenCalledWith(expect.objectContaining({ source: 'latest', perPage: 32 }));
+      expect(shown).toHaveLength(10);
+      expect(new Set(shown).size).toBe(10);
+      expect(shown.every((name) => pool.some((p) => p.name === name))).toBe(true);
+      expect(shown).not.toEqual(names(pool.slice(0, 10) as never));
+
+      for (let pass = 0; pass < 3; pass++) await scrollPast();
+      expect(listMock).toHaveBeenCalledTimes(1);
+    });
+
+    it("fills a column's featured product and three cards from the pool", async () => {
+      const { findAllByTestId, container } = render(
+        <FeaturedProductsWithSpecialProduct
+          data={{ items: [tab({ type: 'random_products', special_product: [] })] }}
+        />
+      );
+
+      expect(await findAllByTestId('product-card')).toHaveLength(4);
+      expect(listMock).toHaveBeenCalledWith(expect.objectContaining({ source: 'latest', perPage: 32 }));
+      expect(container.querySelectorAll('[data-layout="special"]')).toHaveLength(1);
+    });
   });
 });

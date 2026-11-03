@@ -175,9 +175,11 @@ export function ThemeLayout({ children }: ThemeLayoutProps) {
         <main id="main-content" className="flex-1">
           {children}
         </main>
-        <Suspense fallback={null}>
-          <Footer />
-        </Suspense>
+        {/* Not in a Suspense boundary, so the footer hydrates with the page. App snippets run
+            once the SDK is ready, which can be before a boundary hydrates, and some insert next
+            to `.store-footer` (a "recently viewed" section on agran): inside a boundary still
+            waiting, React found their nodes, failed to hydrate (React #418) and dropped them. */}
+        <Footer />
         <MobileBottomBar
           navOpen={navOpen}
           onOpenNav={() => setNavOpen(true)}

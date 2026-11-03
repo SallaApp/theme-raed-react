@@ -4,7 +4,11 @@ import { useTranslation } from '@salla.sa/twilight-theme-engine/i18n';
 import { product, type ProductsListSource } from '@salla.sa/twilight-theme-engine/api/product';
 import { ProductCard } from '../product';
 import { useProductCardLayout } from '../../hooks/useProductCardLayout';
-import { SallaProductsList, ProductsListSkeleton } from '@salla.sa/twilight-components-react';
+import {
+  SallaProductsList,
+  ProductsListSkeleton,
+  ProductCardSkeleton,
+} from '@salla.sa/twilight-components-react';
 
 /**
  * `featured-products` home block — a theme-owned custom component (declared in
@@ -14,7 +18,10 @@ import { SallaProductsList, ProductsListSkeleton } from '@salla.sa/twilight-comp
  * lazily through `product.list`, so no server-side hydration is needed.
  * Every list is `mode="once"`: the loaders always fetch the first page, so the
  * default `infinite` mode would fetch it again each time a list's end scrolled
- * into view.
+ * into view. Every list also names its skeleton: without one the server renders
+ * the list's default `<salla-loading>`, whose web component fills its light DOM
+ * before React hydrates the block, and React then finds children it never
+ * rendered (React #418).
  *
  * Keeps the engine/Twig class names (`s-block__title`, `tabs`, `tabs-wrapper`,
  * `tabs__item`, `tab-trigger`) so `04-components/home-blocks.scss` styles it.
@@ -36,7 +43,18 @@ const TYPE_TO_SOURCE: Record<string, ProductsListSource> = {
   chosen_products: 'selected',
   top_rated_products: 'top-rated',
   tag: 'tags',
+  random_products: 'latest',
 };
+
+/**
+ * `random_products` tabs. Twig asks the database for random products
+ * (`inRandomOrder`) and lists their ids, but the storefront API has no random
+ * source, so such a tab loads a pool of the newest products, as many as the API
+ * returns in one page, and shows a shuffled few. The list loads in the browser,
+ * so the server never renders a different shuffle.
+ */
+const RANDOM_TYPE = 'random_products';
+const RANDOM_POOL = 32;
 
 /** The block's layouts; each is its own home block (see {@link FeaturedProductsSpecialOffer}). */
 export type FeaturedProductsShowMethod =
@@ -81,6 +99,28 @@ interface Tab {
   label: string;
   source?: ProductsListSource;
   sourceValue?: number[];
+  /** Show a shuffled few of the source's first page (see {@link RANDOM_TYPE}). */
+  random?: boolean;
+}
+
+/** What a list loads: a tab's source, its ids, and whether to shuffle them. */
+type TabSource = Required<Pick<Tab, 'source'>> & Pick<Tab, 'sourceValue' | 'random'>;
+
+function shuffled<T>(items: readonly T[]): T[] {
+  const out = [...items];
+  for (let i = out.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [out[i], out[j]] = [out[j], out[i]];
+  }
+  return out;
+}
+
+/** Loads a tab's first `perPage` products; a random tab's come shuffled from a larger pool. */
+async function loadTab({ source, sourceValue, random }: TabSource, perPage: number) {
+  if (!random) return product.list({ source, sourceValue, perPage });
+  const pool = await product.list({ source, sourceValue, perPage: RANDOM_POOL });
+  // No next page: a second one would be the next-newest products, not more random ones.
+  return { ...pool, items: shuffled(pool.items).slice(0, perPage), next: null };
 }
 
 const scalar = (v: unknown): string => {
@@ -102,12 +142,16 @@ const toIds = (v: unknown): number[] => {
 };
 
 /** Maps one merchant-configured tab to the `product.list` source it should load. */
-function resolveTab(section: FeaturedProductsSection): Pick<Tab, 'source' | 'sourceValue'> {
+function resolveTab(
+  section: FeaturedProductsSection
+): Pick<Tab, 'source' | 'sourceValue' | 'random'> {
   if (Array.isArray(section.products)) {
     return { source: 'selected', sourceValue: toIds(section.products.map((p) => p?.id)) };
   }
-  const source = TYPE_TO_SOURCE[scalar(section.type)];
+  const type = scalar(section.type);
+  const source = TYPE_TO_SOURCE[type];
   if (!source) return {};
+  if (type === RANDOM_TYPE) return { source, random: true };
   if (source === 'selected') return { source, sourceValue: toIds(section.chosen_products) };
   if (source === 'categories') return { source, sourceValue: toIds(section.category) };
   if (source === 'tags') return { source, sourceValue: toIds(section.tag) };
@@ -161,17 +205,16 @@ function TabTriggers({
 function TabProductGrid({
   source,
   sourceValue,
+  random,
   limit,
   layout = 'vertical',
-}: {
-  source: ProductsListSource;
-  sourceValue?: number[];
+}: TabSource & {
   limit: number;
   layout?: 'vertical' | 'horizontal';
 }) {
   const loader = useCallback(
-    () => product.list({ source, sourceValue, perPage: limit }),
-    [source, sourceValue, limit]
+    () => loadTab({ source, sourceValue, random }, limit),
+    [source, sourceValue, random, limit]
   );
 
   return (
@@ -180,6 +223,9 @@ function TabProductGrid({
         loader={loader}
         mode="once"
         itemsClassName={`s-products-list-${layout}-cards`}
+        skeleton={<ProductCardSkeleton />}
+        skeletonType="item"
+        skeletonCount={limit}
       >
         {(items: Product[]) =>
           items
@@ -201,7 +247,14 @@ function SpecialProduct({ value }: { value: FeaturedProductsData['main_product']
 
   return (
     <Suspense fallback={<ProductsListSkeleton />}>
-      <SallaProductsList loader={loader} mode="once" itemsClassName="featured-products__special-list">
+      <SallaProductsList
+        loader={loader}
+        mode="once"
+        itemsClassName="featured-products__special-list"
+        skeleton={<ProductCardSkeleton />}
+        skeletonType="item"
+        skeletonCount={1}
+      >
         {(items: Product[]) =>
           items
             .slice(0, 1)
@@ -306,6 +359,7 @@ export function FeaturedProducts({
                 <TabProductGrid
                   source={tab.source as ProductsListSource}
                   sourceValue={tab.sourceValue}
+                  random={tab.random}
                   limit={perTab}
                   layout={hasSpecial ? 'vertical' : cardLayout}
                 />
@@ -352,6 +406,7 @@ function SpecialProductColumns({
                   <TabProductGrid
                     source={tab.source as ProductsListSource}
                     sourceValue={tab.sourceValue}
+                    random={tab.random}
                     limit={3}
                     layout="horizontal"
                   />
@@ -359,6 +414,7 @@ function SpecialProductColumns({
                   <ColumnFromSource
                     source={tab.source as ProductsListSource}
                     sourceValue={tab.sourceValue}
+                    random={tab.random}
                   />
                 ))}
             </div>
@@ -374,16 +430,10 @@ function SpecialProductColumns({
  * featured and the next three are listed beside it, laid out by the list's
  * own grid (`.featured-products__column-grid`).
  */
-function ColumnFromSource({
-  source,
-  sourceValue,
-}: {
-  source: ProductsListSource;
-  sourceValue?: number[];
-}) {
+function ColumnFromSource({ source, sourceValue, random }: TabSource) {
   const loader = useCallback(
-    () => product.list({ source, sourceValue, perPage: 4 }),
-    [source, sourceValue]
+    () => loadTab({ source, sourceValue, random }, 4),
+    [source, sourceValue, random]
   );
 
   return (
@@ -392,6 +442,9 @@ function ColumnFromSource({
         loader={loader}
         mode="once"
         itemsClassName="s-products-list-horizontal-cards featured-products__column-grid"
+        skeleton={<ProductCardSkeleton />}
+        skeletonType="item"
+        skeletonCount={4}
       >
         {(items: Product[]) =>
           items
