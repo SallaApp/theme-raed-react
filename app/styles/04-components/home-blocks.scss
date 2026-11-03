@@ -892,6 +892,11 @@
     @apply mt-5;
   }
 
+  /* The engine renders the reorder block with nothing to reorder; Twig renders nothing. */
+  #reorder-section > &:empty:not([style*='min-height']) {
+    display: none;
+  }
+
   &.skeleton-block-hero {
     min-height: 350px;
   }
