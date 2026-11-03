@@ -707,9 +707,9 @@
     }
   }
 
-  /* 24px tall to tap; the side padding makes the 6px gap between the bars. */
+  /* A 24px target around each bar, like `.carousel-dots`. */
   &__dot {
-    @apply flex h-6 items-center justify-center px-[3px] py-0;
+    @apply flex h-6 min-w-6 items-center justify-center px-[3px] py-0;
 
     &:focus-visible {
       @apply outline outline-2 outline-white;
