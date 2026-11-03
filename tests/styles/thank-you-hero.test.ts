@@ -25,6 +25,6 @@ describe('thank-you page hero', () => {
     (await compile('04-components/user-pages.scss')).walkDecls('isolation', (d) => {
       if (d.value === 'isolate' && d.parent?.type === 'rule') isolated.push((d.parent as { selector: string }).selector);
     });
-    expect(isolated).toEqual(['body.thank-you #main-content']);
+    expect(isolated).toEqual(['body.thank-you #main-content:not(:has(salla-thank-you-page))']);
   });
 });
