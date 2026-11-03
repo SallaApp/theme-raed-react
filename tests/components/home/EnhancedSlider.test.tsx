@@ -384,6 +384,29 @@ describe('EnhancedSlider', () => {
       expect(video.muted).toBe(true);
     });
 
+    it("loads the video's poster resized by the CDN, like the slide image, not the original upload", async () => {
+      setReducedMotion(false);
+      vi.spyOn(HTMLMediaElement.prototype, 'play').mockResolvedValue(undefined);
+      const image = 'https://cdn.files.salla.network/other/1/hero-original.jpg';
+      const { container } = render(
+        <EnhancedSlider
+          data={{ slider_banner: [{ ...mockSlides[0], image, video: 'https://cdn.salla.sa/hero.mp4' }] }}
+        />
+      );
+      const video = await waitFor(() => {
+        const element = container.querySelector<HTMLVideoElement>('video.enhanced-slider__video');
+        expect(element).toBeTruthy();
+        return element!;
+      });
+      // Browsers fetch a poster even with `preload="none"`.
+      expect(video.getAttribute('poster')).toBe(
+        'https://cdn.files.salla.network/cdn-cgi/image/fit=scale-down,onerror=redirect,format=auto,width=1280/other/1/hero-original.jpg'
+      );
+      expect(video.getAttribute('poster')).toBe(
+        container.querySelector('.swiper-slide img')?.getAttribute('src')
+      );
+    });
+
     it('plays a file only while its slide is on screen, copies of the slide included', async () => {
       setReducedMotion(false);
       const io = stubIntersectionObserver();
