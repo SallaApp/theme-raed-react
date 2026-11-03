@@ -174,8 +174,10 @@ body:has(.profile-header) {
 /* The engine's primary-colour hero band (`ThankYouPage.tsx`) is `relative -z-1`.
    With no stacking context above it, it painted under `.app-inner`'s white
    background (`app.css`) and never showed. Isolating `#main-content` keeps
-   the band inside it, above that background and below the page's cards. */
-body.thank-you #main-content {
+   the band inside it, above that background and below the page's cards.
+   Not on the newer page (`salla-thank-you-page`, no band): isolated, its fixed
+   mobile CTA would paint under app snippets placed after `<main>`. */
+body.thank-you #main-content:not(:has(salla-thank-you-page)) {
   isolation: isolate;
 }
 
