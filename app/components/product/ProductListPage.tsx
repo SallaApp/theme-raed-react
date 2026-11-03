@@ -28,6 +28,7 @@ import { BlockHookSlot, BottomSheet } from '../common';
 import { useAppSafeAreaTop } from '../../hooks/useAppSafeAreaTop';
 import { useProductCardLayout } from '../../hooks/useProductCardLayout';
 import { useScrollDirection } from '../../hooks/useScrollDirection';
+import { dispatchProductsFetched } from '../../lib/productsFetched';
 import {
   ChevronDownIcon,
   DashboardSquare01Icon,
@@ -97,8 +98,9 @@ function useCatalogLoader(
       ...(filters && { filterable: true, filters }),
     });
     nextCursorRef.current = result.next;
+    dispatchProductsFetched(result, source);
     return result;
-  }, [source.type, source.value, selectedSort, filters]);
+  }, [source, selectedSort, filters]);
 }
 
 type BrandEntity = { name: string; banner?: string; logo?: string; description?: string };
