@@ -239,8 +239,7 @@ function FooterDescription({ className }: { className: string }) {
 function FooterContacts({ className }: { className: string }) {
   const { store } = useTwilight();
   const { t } = useTranslation();
-  // The web component fills its light DOM once the SDK is ready, which can come before
-  // React hydrates the footer's Suspense boundary: a hydration error (React #418).
+  // The web component fills its light DOM before React hydrates the footer, a hydration error.
   const isClient = useIsClient();
   if (!store.contacts?.phone && !store.contacts?.email) return null;
   return (
