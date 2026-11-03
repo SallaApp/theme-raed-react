@@ -478,6 +478,17 @@ describe('loading with the real SallaProductsList', () => {
     expect(listMock).toHaveBeenCalledTimes(lists);
   });
 
+  it('shows nothing in a tab whose source has no products, not a "no results" placeholder', async () => {
+    listMock.mockResolvedValue({ items: [], next: null });
+    const { container } = render(
+      <FeaturedProducts data={{ items: [tab({ type: ['most_sales'] })] }} />
+    );
+
+    await waitFor(() => expect(container.querySelector('.s-items-list-empty')).toBeTruthy());
+    expect(container.querySelector('salla-placeholder')).toBeNull();
+    expect(container.querySelector('.s-items-list-empty')!.childElementCount).toBe(0);
+  });
+
   // Lists load in the browser, so the server renders each in its loading state. The default
   // loader there is `<salla-loading>`, which the web component fills before React hydrates the
   // block: React #418 on 18 of 20 stores in the migration review.
