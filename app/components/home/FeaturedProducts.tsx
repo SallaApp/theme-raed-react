@@ -226,6 +226,8 @@ function TabProductGrid({
         skeleton={<ProductCardSkeleton />}
         skeletonType="item"
         skeletonCount={limit}
+        // A tab with no products shows nothing, as in Twig, not the default placeholder.
+        empty={<></>}
       >
         {(items: Product[]) =>
           items

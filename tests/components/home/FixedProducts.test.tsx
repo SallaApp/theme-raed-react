@@ -167,13 +167,19 @@ describe('FixedProducts', () => {
     }
   );
 
-  it("lets a block's own vertical choice beat vertical_fixed_products", async () => {
-    themeSettings.vertical_fixed_products = false;
-    listMock.mockResolvedValue({ items: products(2) });
-    const { container } = renderBlock({ isVertical: true });
-    await waitFor(() => expect(cards(container)).toHaveLength(2));
-    expect(cards(container)[0].getAttribute('data-layout')).toBe('vertical');
-  });
+  it.each([
+    [false, true, 'horizontal'],
+    [true, false, 'vertical'],
+  ] as const)(
+    "follows vertical_fixed_products %s over the API's isVertical %s, as Twig Raed does",
+    async (setting, isVertical, layout) => {
+      themeSettings.vertical_fixed_products = setting;
+      listMock.mockResolvedValue({ items: products(2) });
+      const { container } = renderBlock({ isVertical });
+      await waitFor(() => expect(cards(container)).toHaveLength(2));
+      expect(cards(container)[0].getAttribute('data-layout')).toBe(layout);
+    }
+  );
 
   it('lets the store-wide horizontal layout beat vertical_fixed_products', async () => {
     cardLayout.value = 'horizontal';

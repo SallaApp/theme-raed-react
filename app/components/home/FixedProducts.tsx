@@ -43,11 +43,10 @@ export function FixedProducts({ data }: FixedProductsProps) {
   const title = data.title;
   const limit = blockLimit(data.limit);
   const { theme } = useTwilight();
-  // The store-wide horizontal layout wins; otherwise the block's own choice, then
-  // the merchant's `vertical_fixed_products` (default on, as in Twig Raed and the engine).
+  // As Twig Raed, the merchant's switch decides: the API sends `isVertical: true` regardless.
   const isVertical =
     useProductCardLayout() === 'vertical' &&
-    (data.isVertical ?? theme?.settings?.vertical_fixed_products ?? true);
+    (theme?.settings?.vertical_fixed_products ?? data.isVertical ?? true);
 
   const { data: result, isLoading } = useQuery(
     product.queries.list({

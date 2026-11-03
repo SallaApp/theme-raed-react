@@ -846,6 +846,31 @@ salla-gifting {
   }
 }
 
+/* As Twig: the photo keeps its own shape unless the store unifies image heights (`fit_type`). */
+.s-product-card-horizontal:not(.s-product-card-fit-height, .featured-products__column-body *) .s-product-card-image:has(img) {
+  aspect-ratio: auto;
+
+  [style*='aspect-ratio'] {
+    aspect-ratio: auto !important;
+  }
+
+  img {
+    height: auto;
+  }
+}
+
+/* With it, the photo fills Twig's 176-240px box (`.s-product-card-fit-height`). */
+.s-product-card-horizontal.s-product-card-fit-height .s-product-card-image {
+  aspect-ratio: auto;
+
+  > a,
+  [style*='aspect-ratio'] {
+    display: block;
+    height: 100%;
+    aspect-ratio: auto !important;
+  }
+}
+
 .s-rating-stars-reviews {
   @apply text-gray-500;
 }
