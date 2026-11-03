@@ -1,0 +1,24 @@
+/* Lift the sticky order bar above the mobile bottom nav, like the product page's bar. */
+@media (max-width: 767px) {
+  .app-inner .s-thank-you-page-wrapper {
+    .s-order-shipments-cta,
+    .s-order-branch-cta {
+      left: 16px;
+      right: 16px;
+      bottom: calc(70px + env(safe-area-inset-bottom));
+      border-width: 0;
+      border-radius: 1.5rem;
+      box-shadow: -1px -2px 9px 0 rgba(0, 0, 0, 0.05);
+      padding-bottom: 1rem;
+    }
+  }
+
+  /* Page end clears the nav and the bar: 82px + the bar's height. */
+  .app-inner:has(.s-thank-you-page-wrapper .s-order-shipments-cta) {
+    padding-bottom: calc(162px + env(safe-area-inset-bottom));
+  }
+
+  .app-inner:has(.s-thank-you-page-wrapper .s-order-branch-cta) {
+    padding-bottom: calc(194px + env(safe-area-inset-bottom));
+  }
+}
