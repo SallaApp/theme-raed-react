@@ -56,6 +56,7 @@
   "blocks.footer.newsletter_subscribe": "Subscribe now",
   "blocks.footer.newsletter_success": "Subscribed successfully",
   "blocks.footer.newsletter_error": "Something went wrong, please try again",
+  "blocks.product.variant_unavailable": "Unavailable",
   "blocks.product.in_stock": "In stock",
   "pages.products.barcode": "Barcode",
   "pages.products.play_video": "Play video",

@@ -13,6 +13,7 @@ import { SallaInstallment } from '@salla.sa/twilight-components-react/installmen
 import { useHydrated } from '../../hooks/useHydrated';
 import { useMobileViewport } from '../../hooks/useMobileViewport';
 import { youtubeFacades } from '../../lib/descriptionVideos';
+import { visibleTags } from '../../lib/tagVariants';
 import { ProductMetadata } from './ProductMetadata';
 import { WishlistHeartButton } from './WishlistHeartButton';
 
@@ -44,6 +45,7 @@ export function ProductDetails({
   const { t } = useTranslation();
   const hydrated = useHydrated();
   const isMobile = useMobileViewport();
+  const tags = visibleTags(product.tags);
 
   // Context for all product hooks - contains product data
   const productHookContext = { product };
@@ -109,9 +111,10 @@ export function ProductDetails({
         <ProductMetadata className="mb-3 md:hidden" />
       )}
 
-      {!!product.tags?.length && showTags && (
+      {/* `key:value` tags of a tag-variant group are wiring, not something to show */}
+      {!!tags.length && showTags && (
         <div className="mb-3">
-          {product.tags.map((tag, index, tags) => (
+          {tags.map((tag, index) => (
             <Fragment key={tag.name}>
               <Link
                 to={tag.url}
