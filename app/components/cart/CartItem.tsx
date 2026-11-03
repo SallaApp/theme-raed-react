@@ -61,11 +61,18 @@ function CartQuantity({
   const [draft, setDraft] = useState<string | null>(null);
   const pending = useRef(false);
   const timer = useRef<ReturnType<typeof setTimeout>>(undefined);
+  // Updates go out one at a time, in order (see `commit`); `inFlight` counts the
+  // queued and running ones, and `latestValue` is the newest server quantity.
+  const queue = useRef<Promise<void>>(Promise.resolve());
+  const inFlight = useRef(0);
+  const latestValue = useRef(value);
+  latestValue.current = value;
 
   // follow a server-corrected quantity on refetch, but not while the user is
-  // mid-edit (a stale refetch would otherwise snap the number back)
+  // mid-edit or an update is still on its way (a stale refetch would otherwise
+  // snap the number back)
   useEffect(() => {
-    if (!pending.current) setQty(value);
+    if (!pending.current && inFlight.current === 0) setQty(value);
   }, [value]);
 
   // Never let a debounced commit fire after the row is gone (deleted mid-edit)
@@ -87,14 +94,21 @@ function CartQuantity({
       clearTimeout(timer.current);
       timer.current = setTimeout(() => {
         pending.current = false;
-        // Revert to the server-confirmed `value`, not the locally-optimistic
+        // Revert to the server-confirmed quantity, not the locally-optimistic
         // chain — a failed update never changes it, and mid-burst edits (e.g.
         // 3 -> 4 before 2 -> 3 ever committed) would otherwise roll back to
         // an unconfirmed intermediate quantity instead of the real one.
-        onChange(clamped).catch(() => setQty(value));
+        const send = () => onChange(clamped).catch(() => setQty(latestValue.current));
+        // Wait for the previous update, if one is still running: two in flight could
+        // reach the server out of order and leave the cart on the older quantity.
+        const sent = inFlight.current === 0 ? send() : queue.current.then(send);
+        inFlight.current += 1;
+        queue.current = sent.finally(() => {
+          inFlight.current -= 1;
+        });
       }, 350);
     },
-    [max, onChange, value]
+    [max, onChange]
   );
 
   return (
