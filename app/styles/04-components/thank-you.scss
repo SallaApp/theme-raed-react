@@ -1,26 +1,19 @@
-/* Thank-you page: the order components' sticky "track shipment" / "go to pickup
-   location" bar is fixed to the screen bottom on mobile, under the bottom nav
-   (`mobile-bottom-bar.scss`, z-220). Lift it above the nav as a floating pill, like
-   the product page's sticky add-to-cart bar (`product.scss`). `.app-inner` makes
-   these beat the components' own rules, which load after this sheet. */
+/* Lift the sticky order bar above the mobile bottom nav, like the product page's bar. */
 @media (max-width: 767px) {
   .app-inner .s-thank-you-page-wrapper {
     .s-order-shipments-cta,
     .s-order-branch-cta {
       left: 16px;
       right: 16px;
-      /* nav (52 content + 12 own gap) + 6 breathing room above it */
       bottom: calc(70px + env(safe-area-inset-bottom));
       border-width: 0;
       border-radius: 1.5rem;
       box-shadow: -1px -2px 9px 0 rgba(0, 0, 0, 0.05);
-      /* no longer at the screen edge, so no safe-area padding */
       padding-bottom: 1rem;
     }
   }
 
-  /* Keep the page end clear of nav + bar; beats `mobile-bottom-bar.scss`'s `.app-inner`.
-     82px = bar offset (70) + 12 breathing room, plus each bar's own height. */
+  /* Page end clears the nav and the bar: 82px + the bar's height. */
   .app-inner:has(.s-thank-you-page-wrapper .s-order-shipments-cta) {
     padding-bottom: calc(162px + env(safe-area-inset-bottom));
   }
