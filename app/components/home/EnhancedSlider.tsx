@@ -206,7 +206,8 @@ export function SlideVideo({ url, poster }: { url?: string; poster?: string }) {
     <video
       className="enhanced-slider__video"
       src={video.src}
-      poster={poster}
+      // Fetched even with `preload="none"`: the CDN copy, as for the slide image.
+      poster={slideImage(poster).src}
       muted
       loop
       playsInline
