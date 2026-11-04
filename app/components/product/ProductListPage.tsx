@@ -4,6 +4,7 @@ import { useStore } from '@salla.sa/twilight-theme-engine/hooks/useStore';
 import { useTranslation } from '@salla.sa/twilight-theme-engine/i18n';
 import { useNavigate, useLocation, useTwilight } from '@salla.sa/twilight-theme-engine/providers';
 import { sortOptions, onSallaEvent } from '@salla.sa/twilight-theme-engine/utils';
+import { availableSortIds } from '@salla.sa/twilight-theme-engine/utils/sort-options';
 import {
   Breadcrumb,
   NoContent,
@@ -271,10 +272,16 @@ function CatalogToolbar({
         {sortOptionsWithTrans.length > 0 && (
           <label className="s-catalog-toolbar__sort">
             <span className="s-catalog-toolbar__sort-label">
-              {t('pages.categories.sorting', 'Sort By')}: <b>{currentSortLabel}</b>
+              {t('pages.categories.sorting', 'Sort By')}
+              {currentSortLabel && (
+                <>
+                  : <b>{currentSortLabel}</b>
+                </>
+              )}
             </span>
             <ChevronDownIcon aria-hidden="true" />
             <select value={selectedSort} onChange={onSortChange}>
+              {selectedSort === '' && <option value="" disabled hidden />}
               {sortOptionsWithTrans.map((option) => (
                 <option key={option.id} value={option.id}>
                   {option.name}
@@ -489,9 +496,16 @@ export function ProductListPage({
   const isReorder = source.type === 'reorder';
   useReorderButtons(isReorder);
 
-  const sortOptionsWithTrans = useMemo(() => sortOptions(selectedSort, t), [selectedSort, t]);
-  const currentSortLabel =
-    sortOptionsWithTrans.find((o) => o.id === selectedSort)?.name ?? sortOptionsWithTrans[0]?.name;
+  // As the engine's own list page does: the sorts the merchant turned on in the dashboard,
+  // and only on category and search pages (Twig's brand page has no sort either).
+  const sortIds = availableSortIds(source.type, store?.settings?.product?.sort_options);
+  const sortOptionsWithTrans = useMemo(
+    () => sortOptions(selectedSort, t, sortIds),
+    [selectedSort, t, sortIds]
+  );
+  // A sort the merchant has since turned off still orders the list: name none of the others.
+  const shownSort = sortOptionsWithTrans.some((option) => option.is_selected) ? selectedSort : '';
+  const currentSortLabel = sortOptionsWithTrans.find((o) => o.id === shownSort)?.name;
 
   useEffect(() => {
     const handleFiltersChanged = () => setFiltersOpen(false);
@@ -560,7 +574,7 @@ export function ProductListPage({
           onOpenMobileFilters={() => setFiltersOpen(true)}
           view={view}
           onViewChange={setView}
-          selectedSort={selectedSort}
+          selectedSort={shownSort}
           sortOptionsWithTrans={sortOptionsWithTrans}
           currentSortLabel={currentSortLabel}
           onSortChange={handleSortChange}
