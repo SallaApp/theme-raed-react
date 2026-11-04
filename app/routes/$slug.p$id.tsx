@@ -4,9 +4,10 @@ import type { ProductPageProps } from '@salla.sa/twilight-theme-engine/routes/pr
 import { ProductDetailSkeleton } from '@salla.sa/twilight-theme-engine/skeleton';
 import { withHead } from '@salla.sa/twilight-theme-engine/tanstack';
 import { ProductPage } from '../components/product/ProductPage';
+import { redirectHomeIfNotFound } from '../lib/productNotFound';
 
 export const Route = createFileRoute('/{-$locale}/$slug/p{$id}')({
-  loader: ({ params }): Promise<ProductPageProps> => {
+  loader: async ({ params, preload }): Promise<ProductPageProps> => {
     // Keep the product's own category trail instead of the page the visitor came from.
     try {
       if (typeof window !== 'undefined') {
@@ -15,7 +16,12 @@ export const Route = createFileRoute('/{-$locale}/$slug/p{$id}')({
     } catch {
       /* private mode */
     }
-    return Product.loader({ params: { id: params.id }, locale: params.locale });
+    try {
+      return await Product.loader({ params: { id: params.id }, locale: params.locale });
+    } catch (error) {
+      // Hidden or deleted product: home page with a "Page not found" toast, not the 404 page.
+      return redirectHomeIfNotFound(error, { locale: params.locale, preload });
+    }
   },
   head: withHead(Product),
   pendingComponent: () => <ProductDetailSkeleton />,
