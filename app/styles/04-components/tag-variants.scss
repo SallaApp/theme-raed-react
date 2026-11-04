@@ -1,0 +1,71 @@
+/*
+  Tag variants (product/TagVariantSelector.tsx): rows of pill buttons that switch
+  between products linked by `مجموعة:` tags. On phones a row scrolls sideways;
+  from `md` up it wraps.
+*/
+.tag-variants {
+  @apply flex flex-col gap-5 mb-6;
+
+  &__row {
+    @apply flex flex-col gap-2.5 min-w-0;
+  }
+
+  &__title {
+    @apply text-base font-bold text-gray-900;
+  }
+
+  &__options {
+    @apply flex gap-2 overflow-x-auto pb-1;
+    scrollbar-width: none;
+
+    &::-webkit-scrollbar {
+      display: none;
+    }
+
+    @media (min-width: 768px) {
+      @apply flex-wrap overflow-visible pb-0;
+    }
+  }
+
+  &__option {
+    // Selected/disabled pills are <span>s; Glizer's dashboard custom CSS sets `span { width: 100% }`.
+    width: auto;
+    @apply inline-flex flex-none items-center justify-center whitespace-nowrap rounded-full border-2 border-transparent px-4 py-2 text-sm font-medium text-gray-900 transition-colors;
+    background-color: color-mix(in srgb, var(--color-primary) 10%, #fff);
+
+    &:hover {
+      border-color: color-mix(in srgb, var(--color-primary) 40%, transparent);
+    }
+
+    &:focus-visible {
+      @apply outline-none;
+      box-shadow: 0 0 0 2px #fff, 0 0 0 4px var(--color-primary);
+    }
+
+    &.is-selected {
+      // Not `@apply bg-white`: that also copies the theme's `.bg-white` card rules (full width, no padding).
+      background-color: #fff;
+      border-color: var(--color-primary);
+    }
+
+    &.is-sold-out {
+      @apply opacity-60 line-through;
+    }
+
+    &.is-disabled {
+      @apply cursor-not-allowed opacity-40 line-through;
+
+      &:hover {
+        @apply border-transparent;
+      }
+    }
+
+    &.is-placeholder {
+      @apply w-16 animate-pulse;
+
+      &::before {
+        content: '\00a0';
+      }
+    }
+  }
+}

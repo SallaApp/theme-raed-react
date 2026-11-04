@@ -13,6 +13,11 @@ import type { ProductPageProps } from '@salla.sa/twilight-theme-engine/routes/pr
 import { ProductGallery } from './ProductGallery';
 import { ProductDetails } from './ProductDetails';
 import { AddToCartForm } from './AddToCartForm';
+import { TagVariantSelector } from './TagVariantSelector';
+import type { StaticVariantMatch } from '../../lib/staticVariants';
+
+/** The product route's loader data: the engine's page props plus the static option group. */
+export type ProductRouteData = ProductPageProps & { staticVariants?: StaticVariantMatch | null };
 import { BlockHookSlot } from '../common';
 import { ProductsSlider } from '../home';
 
@@ -65,7 +70,7 @@ function RelatedProducts({ productId, title }: { productId: number; title: strin
  *
  * Upgrade notes: `FORKS.md`.
  */
-export function ProductPage({ product: initialProduct, page }: ProductPageProps) {
+export function ProductPage({ product: initialProduct, page, staticVariants }: ProductRouteData) {
   const { theme, store } = useTwilight();
   const { t } = useTranslation();
   const { product } = useProduct(initialProduct);
@@ -132,6 +137,8 @@ export function ProductPage({ product: initialProduct, page }: ProductPageProps)
             <HookSlot name="product:details.end" />
 
             <HookSlot name="product:single.form.start" />
+            {/* Separate products linked by `مجموعة:` tags, shown as option buttons (lib/tagVariants.ts) */}
+            <TagVariantSelector product={initialProduct} staticVariants={staticVariants} />
             <AddToCartForm product={product} stickyAddToCart={theme.settings.sticky_add_to_cart} />
             <HookSlot name="product:single.form.end" />
             {/* Twig renders this hook and its merchant blocks after the form */}

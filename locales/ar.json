@@ -62,6 +62,7 @@
   "blocks.footer.newsletter_subscribe": "اشترك الآن",
   "blocks.footer.newsletter_success": "تم الاشتراك بنجاح",
   "blocks.footer.newsletter_error": "حدث خطأ، يرجى المحاولة مرة أخرى",
+  "blocks.product.variant_unavailable": "غير متاح",
   "blocks.product.in_stock": "متوفر في المخزون",
   "pages.products.barcode": "الباركود",
   "pages.products.play_video": "تشغيل الفيديو",
