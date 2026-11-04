@@ -77,6 +77,15 @@ describe('CustomTestimonials', () => {
     );
   });
 
+  it('leaves the avatar alt empty, so the name printed beside it is read once', () => {
+    const { container } = render(
+      <CustomTestimonials data={{ items: [...items, { avatar: 'a4.jpg', text: 'جميل' }] }} />
+    );
+    const avatars = container.querySelectorAll('img.testimonial-card__avatar');
+    expect(avatars).toHaveLength(4);
+    avatars.forEach((avatar) => expect(avatar.getAttribute('alt')).toBe(''));
+  });
+
   it('renders prev / next controls on the title line', () => {
     const { container, getByLabelText, getByText } = render(<CustomTestimonials data={{ items }} />);
     expect(getByLabelText('Previous')).toBeTruthy();
