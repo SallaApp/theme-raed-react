@@ -1,7 +1,8 @@
 import React from 'react';
 import { describe, it, expect, vi } from 'vitest';
 import { render } from '@testing-library/react';
-import { MainLinks } from '../../../app/components/home/MainLinks';
+import { MainLinks, mainLinksClassName } from '../../../app/components/home/MainLinks';
+import twilight from '../../../twilight.json';
 
 // Mock the sub-path exports
 vi.mock('@salla.sa/twilight-theme-engine/common', () => ({
@@ -115,5 +116,35 @@ describe('MainLinks', () => {
   it('returns null when no links', () => {
     const { container } = render(<MainLinks data={{ links: [] }} />);
     expect(container.firstChild).toBeNull();
+  });
+});
+
+describe('mainLinksClassName', () => {
+  // The switch's id in the block's twilight.json fields: the key the store saves it under.
+  const mergeId = (
+    twilight.components.find((c) => c.path === 'home.main-links')?.fields ?? []
+  ).find((f) => f.label === 'دمج مع العنصر السابق')?.id as string;
+
+  it('merges with the block above when the merchant turns the switch on', () => {
+    expect(mainLinksClassName({ [mergeId]: true, title: 'Shop by category' })).toBe(
+      's-block s-block--main-links merge-with-top-component'
+    );
+  });
+
+  it('pulls a merged block without a title up further', () => {
+    expect(mainLinksClassName({ [mergeId]: true })).toBe(
+      's-block s-block--main-links merge-with-top-component merged-has-no-title'
+    );
+  });
+
+  it('keeps the block in place with the switch off', () => {
+    expect(mainLinksClassName({ [mergeId]: false })).toBe('s-block s-block--main-links');
+    expect(mainLinksClassName({})).toBe('s-block s-block--main-links');
+  });
+
+  it("still reads the engine's name for the switch", () => {
+    expect(mainLinksClassName({ merge_links_with_top_component: true, title: 'Links' })).toBe(
+      's-block s-block--main-links merge-with-top-component'
+    );
   });
 });
