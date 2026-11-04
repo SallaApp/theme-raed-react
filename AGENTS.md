@@ -58,7 +58,7 @@ twilight.json         EDIT: merchant settings, home blocks, features
 
 **Components and registry**
 
-- Only three registry keys are resolved: `product:card`, the `home:*` blocks, `account:layout-pending`. Overriding any other name does nothing. For anything else use a hook slot or fork the route.
+- Only these registry keys are resolved: `product:card`, `product:list-page`, the `home:*` blocks, `account:layout-pending`. Overriding any other name does nothing. For anything else use a hook slot or fork the route.
 - To replace the product card call `registry.register('product:card', X)` and then `registry.override('product:card', X)`. `override()` alone is silently ignored.
 - Home blocks are bound by key in `registerHomeComponents({ ...DefaultHomeComponents, key: MyComponent })`. Keep the spread, or you lose the defaults.
 - A block with a `view_style` is looked up as `key:styleN` before `key`. Register both when you replace it.
