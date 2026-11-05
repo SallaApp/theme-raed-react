@@ -269,8 +269,25 @@ export function AddProductToast() {
     close();
   }, [close]);
 
-  const handleMouseEnter = useCallback(() => setIsPaused(true), []);
-  const handleMouseLeave = useCallback(() => setIsPaused(false), []);
+  // The pointer over the toast, or keyboard focus inside it, holds it open: a keyboard
+  // or screen reader user who moves to its buttons gets the time they need (WCAG 2.2.1).
+  // It goes on once neither holds it.
+  const hoveredRef = useRef(false);
+  const handleMouseEnter = useCallback(() => {
+    hoveredRef.current = true;
+    setIsPaused(true);
+  }, []);
+  const handleMouseLeave = useCallback((event: React.MouseEvent<HTMLDivElement>) => {
+    hoveredRef.current = false;
+    if (!event.currentTarget.contains(document.activeElement)) setIsPaused(false);
+  }, []);
+  const handleFocus = useCallback(() => setIsPaused(true), []);
+  const handleBlur = useCallback((event: React.FocusEvent<HTMLDivElement>) => {
+    if (hoveredRef.current || event.currentTarget.contains(event.relatedTarget as Node | null)) {
+      return;
+    }
+    setIsPaused(false);
+  }, []);
 
   // Read out from a region that is always mounted: screen readers often skip
   // a live region that appears with its text already in it, as the toast does.
@@ -311,6 +328,8 @@ export function AddProductToast() {
         className={`s-add-product-toast ${isVisible ? 's-add-product-toast--visible' : ''}`}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
+        onFocus={handleFocus}
+        onBlur={handleBlur}
         dir={isRTL ? 'rtl' : 'ltr'}
       >
         <div className="s-add-product-toast__progress">
