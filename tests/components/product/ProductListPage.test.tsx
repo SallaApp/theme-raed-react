@@ -18,7 +18,8 @@ vi.mock('@salla.sa/twilight-theme-engine/providers', () => ({
 }));
 vi.mock('@salla.sa/twilight-theme-engine/utils', async () => {
   const sort = await import('@salla.sa/twilight-theme-engine/utils/sort-options');
-  return { sortOptions: sort.sortOptions, onSallaEvent: () => () => {} };
+  // `whenSallaReady` sends the page's analytics event (`lib/productsFetched`).
+  return { sortOptions: sort.sortOptions, onSallaEvent: () => () => {}, whenSallaReady: () => {} };
 });
 vi.mock('@salla.sa/twilight-theme-engine/common', () => ({
   Breadcrumb: () => null,
