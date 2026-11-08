@@ -31,8 +31,17 @@ const addButton = (form: HTMLFormElement | null): LoadableButton | null =>
 
 type ProductOptionsElement = HTMLElement & { validateAndScroll?: () => Promise<boolean> };
 
+export interface ProductBundle {
+  sections?: unknown[];
+  [key: string]: unknown;
+}
+
+export interface AddToCartProduct extends Product {
+  bundle?: ProductBundle | null;
+}
+
 interface AddToCartFormProps {
-  product: Product;
+  product: AddToCartProduct;
   stickyAddToCart?: boolean;
   giftingIntro?: string;
   formStartSlot?: ReactNode;
@@ -462,6 +471,8 @@ export function AddToCartForm({
   }, []);
 
   const hasPreorder = Boolean(product.has_preorder_campaign && product.preorder);
+  const hasBundleSections =
+    product.type === 'group_products' && (product.bundle?.sections?.length ?? 0) > 0;
 
   return (
     <form
@@ -489,7 +500,7 @@ export function AddToCartForm({
         </ProductOptionsPanel>
       )}
 
-      {product.has_bundle_products && (
+      {hasBundleSections && (
         <SallaMultipleBundleProduct bundleSections={JSON.stringify(product)} />
       )}
 
