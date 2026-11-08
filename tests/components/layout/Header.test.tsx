@@ -46,6 +46,11 @@ vi.mock('@salla.sa/twilight-theme-engine/common', () => ({
   Image: (props: Record<string, unknown>) => (
     <img alt={String(props.alt ?? '')} src={String(props.src ?? '')} />
   ),
+  Link: ({ to, children, className }: Record<string, unknown>) => (
+    <a href={String(to)} className={className as string}>
+      {children as React.ReactNode}
+    </a>
+  ),
 }));
 
 vi.mock('../../../app/components/layout/HeaderMainMenu', () => ({
@@ -117,6 +122,12 @@ describe('Header', () => {
     // The sr-only name is the link's name; the logo adds nothing (no "Acme logo").
     expect(brand.querySelector('img')?.getAttribute('alt')).toBe('');
     expect(brand.querySelector('.sr-only')?.textContent).toBe('Acme');
+  });
+
+  it('links the logo home through the engine Link, not a full page load', () => {
+    const { container } = render(<Header />);
+    // The engine Link localizes `/` and navigates in-app; `store.url` (absolute) reloaded the page.
+    expect(container.querySelector('.site-header__brand')?.getAttribute('href')).toBe('/');
   });
 
   it('drops the menu button when the menu would open empty', () => {

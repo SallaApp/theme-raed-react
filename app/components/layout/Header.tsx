@@ -7,7 +7,7 @@ import { SallaCartSummary } from '@salla.sa/twilight-components-react/cart-summa
 import { useTwilight } from '@salla.sa/twilight-theme-engine/providers';
 import { useTranslation } from '@salla.sa/twilight-theme-engine/i18n';
 import { HookSlot } from '@salla.sa/twilight-theme-engine/hooks';
-import { Image } from '@salla.sa/twilight-theme-engine/common';
+import { Image, Link } from '@salla.sa/twilight-theme-engine/common';
 import { MapPinIcon, SearchIcon, ShoppingBagIcon } from '../icons';
 import { useAppSafeAreaTop } from '../../hooks/useAppSafeAreaTop';
 import { useNavHasContent } from '../../hooks/useNavHasContent';
@@ -251,7 +251,7 @@ export function Header({ navOpen: navOpenProp, onNavOpenChange }: HeaderProps = 
               )}
             </div>
 
-            <a className="site-header__brand" href={store?.url || '/'}>
+            <Link className="site-header__brand" to="/">
               <Image
                 src={store?.logo}
                 alt=""
@@ -262,7 +262,7 @@ export function Header({ navOpen: navOpenProp, onNavOpenChange }: HeaderProps = 
               {/* With no intro row, the home page's only `<h1>` is the store name here,
                   as in the engine Header. */}
               <BrandName className="sr-only">{store?.name || 'Store'}</BrandName>
-            </a>
+            </Link>
 
             {isDefaultLayout && (
               <nav
