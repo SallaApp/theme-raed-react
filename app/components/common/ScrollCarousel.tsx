@@ -119,20 +119,38 @@ export function ScrollCarousel({
     el.scrollBy({ left: dir * forwardSign(el) * distance, behavior: 'smooth' });
   };
 
-  // Autoplay waits while the visitor hovers, focuses or has just touched the row.
+  // Autoplay waits while the visitor hovers, focuses or has just touched the row,
+  // and while the row is off screen (as `PhotosSlider` does): it doesn't move on
+  // where nobody sees it, and is where the visitor left it when they scroll back.
   const hovered = useRef(false);
   const focused = useRef(false);
   const touchedAt = useRef(0);
+  const offscreen = useRef(false);
 
   // Follows the setting live: switching reduced motion on mid-visit stops the timer.
   const motionAllowed = useMotionAllowed();
   const playing = autoPlay && motionAllowed;
 
   useEffect(() => {
+    const el = track.current;
+    if (!playing || !el || typeof IntersectionObserver === 'undefined') return;
+    const observer = new IntersectionObserver(([entry]) => {
+      offscreen.current = !entry.isIntersecting;
+    });
+    observer.observe(el);
+    return () => {
+      observer.disconnect();
+      offscreen.current = false;
+    };
+  }, [playing]);
+
+  useEffect(() => {
     if (!playing) return;
     const timer = window.setInterval(() => {
       const el = track.current;
-      if (!el || document.hidden || hovered.current || focused.current) return;
+      if (!el || document.hidden || offscreen.current || hovered.current || focused.current) {
+        return;
+      }
       if (Date.now() - touchedAt.current < AUTO_PLAY_INTERVAL_MS * 2) return;
       const max = el.scrollWidth - el.clientWidth;
       if (max <= 0) return;
