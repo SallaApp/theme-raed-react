@@ -203,11 +203,28 @@ const FIELD = `salla-color-picker, salla-map, salla-datetime-picker, salla-file-
 const SCROLL_SLACK = 4;
 
 /**
- * Scrolls the page smoothly so the option's field lands under the pointer (at
- * `pointerY`, where the shopper pressed the chip), then runs `then`, so a popup
- * opens where the field has settled, not where it was mid-scroll.
+ * True when the option's field opens the browser's own picker: a dropdown's list
+ * or a file chooser. The browser opens those only while handling the press itself,
+ * so they can't wait for a smooth scroll: by its end a phone has dropped the press
+ * and opens nothing, and a desktop draws the list where the field was mid-scroll.
  */
-function scrollUnderThen(container: HTMLElement, pointerY: number, then: () => void) {
+function opensNativePicker(container: HTMLElement): boolean {
+  if (container.querySelector('input[type="file"]')) return true;
+  return container.querySelector(FIELD) instanceof HTMLSelectElement;
+}
+
+/**
+ * Scrolls the page so the option's field lands under the pointer (at `pointerY`,
+ * where the shopper pressed the chip), then runs `then`, so a popup opens where
+ * the field has settled, not where it was mid-scroll. A smooth scroll runs `then`
+ * when it ends; an instant one runs it at once, while the press is still handled.
+ */
+function scrollUnderThen(
+  container: HTMLElement,
+  pointerY: number,
+  smooth: boolean,
+  then: () => void
+) {
   const field = container.querySelector<HTMLElement>(FIELD);
   const box = field?.getBoundingClientRect();
   // A visually hidden control (a swatch's radio) has no box: aim at the option.
@@ -217,7 +234,6 @@ function scrollUnderThen(container: HTMLElement, pointerY: number, then: () => v
     then();
     return;
   }
-  const smooth = !prefersReducedMotion();
   window.scrollBy({ top: by, behavior: smooth ? 'smooth' : 'auto' });
   if (!smooth) {
     then();
@@ -313,7 +329,9 @@ export function CollapsibleOptions({
     const container = fields.current?.querySelector<HTMLElement>(
       `[data-option-id="${CSS.escape(String(id))}"]`
     );
-    if (container) scrollUnderThen(container, anchorY, () => activateField(container));
+    if (!container) return;
+    const smooth = !prefersReducedMotion() && !opensNativePicker(container);
+    scrollUnderThen(container, anchorY, smooth, () => activateField(container));
   };
 
   const added = t('blocks.product_options.added', 'Added');

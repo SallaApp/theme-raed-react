@@ -294,6 +294,47 @@ describe('ProductOptionsPanel', () => {
     expect(document.activeElement).toBe(field);
   });
 
+  it("jumps a dropdown or file field under the pointer and opens it within the press", () => {
+    // The browser opens its own list or file chooser only while handling the press:
+    // waiting for a smooth scroll to end, a phone opens nothing.
+    vi.spyOn(window, 'matchMedia').mockReturnValue({ matches: false } as MediaQueryList);
+    const scrollBy = vi.fn();
+    window.scrollBy = scrollBy as typeof window.scrollBy;
+    const showPicker = vi.fn();
+    HTMLSelectElement.prototype.showPicker = showPicker;
+    const file: PanelOption = { id: 7, name: 'File', type: 'file' };
+    const { container } = render(
+      <CollapsibleOptions options={[size, file]}>
+        <div data-option-id="1">
+          <select aria-label="size" name="options[1]">
+            <option value="11">S</option>
+          </select>
+        </div>
+        <div data-option-id="7">
+          <input type="file" aria-label="file" name="options[7]" />
+        </div>
+      </CollapsibleOptions>
+    );
+    const select = screen.getByLabelText('size');
+    select.getBoundingClientRect = () => ({ top: 400, height: 40 }) as DOMRect;
+
+    fireEvent.click(screen.getByText('Size').closest('button')!, { detail: 1, clientY: 100 });
+
+    expect(scrollBy).toHaveBeenCalledWith({ top: 320, behavior: 'auto' });
+    // No `scrollend` yet: it opened during the click.
+    expect(showPicker).toHaveBeenCalledOnce();
+    expect(document.activeElement).toBe(select);
+
+    const fileInput = container.querySelector<HTMLInputElement>('input[type="file"]')!;
+    fileInput.getBoundingClientRect = () => ({ top: 600, height: 40 }) as DOMRect;
+    const choose = vi.spyOn(fileInput, 'click');
+    fireEvent.click(screen.getByLabelText('blocks.product_options.title'));
+    fireEvent.click(screen.getByText('File').closest('button')!, { detail: 1, clientY: 100 });
+
+    expect(scrollBy).toHaveBeenLastCalledWith({ top: 520, behavior: 'auto' });
+    expect(choose).toHaveBeenCalledOnce();
+  });
+
   it('aims at the chip itself when it is pressed from the keyboard', () => {
     vi.spyOn(window, 'matchMedia').mockReturnValue({ matches: false } as MediaQueryList);
     const scrollBy = vi.fn();
