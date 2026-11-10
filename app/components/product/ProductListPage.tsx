@@ -123,8 +123,11 @@ function BrandHeader({ source }: { source: ProductListLoaderData['source'] }) {
         priority
       />
       <header className="flex flex-col md:flex-row items-center md:items-start text-center rtl:md:text-right ltr:md:text-left mt-2 mb-8">
+        {/* Through `objectFit`: `Image` adds `object-cover` by default, which beats an
+            `object-contain` class in the stylesheet and crops the logo. */}
         <Image
-          className="rounded w-40 h-24 object-contain shadow-md p-4 bg-white shrink-0"
+          className="rounded w-40 h-24 shadow-md p-4 bg-white shrink-0"
+          objectFit="contain"
           src={brand.logo || undefined}
           alt={brand.name}
           aspectRatio="5/3"
