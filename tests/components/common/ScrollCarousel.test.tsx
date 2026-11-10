@@ -1,6 +1,6 @@
 import React from 'react';
 import { describe, it, expect, vi, afterEach } from 'vitest';
-import { render, fireEvent, cleanup } from '@testing-library/react';
+import { render, fireEvent, cleanup, act } from '@testing-library/react';
 import { ScrollCarousel, slidesPerPage } from '../../../app/components/common/ScrollCarousel';
 
 vi.mock('@salla.sa/twilight-theme-engine/i18n', () => ({
@@ -156,5 +156,70 @@ describe('ScrollCarousel layout', () => {
       true
     );
     vi.unstubAllGlobals();
+  });
+});
+
+describe('ScrollCarousel autoplay', () => {
+  /** An IntersectionObserver the test drives: `show(visible)` reports the row on or off screen. */
+  function stubIntersectionObserver() {
+    let callback: IntersectionObserverCallback = () => undefined;
+    vi.stubGlobal(
+      'IntersectionObserver',
+      class {
+        constructor(next: IntersectionObserverCallback) {
+          callback = next;
+        }
+        observe() {}
+        disconnect() {}
+      }
+    );
+    return (isIntersecting: boolean) =>
+      callback([{ isIntersecting } as IntersectionObserverEntry], {} as IntersectionObserver);
+  }
+
+  function autoplaying() {
+    // Motion allowed: setup's default `matchMedia` matches every query, reduced motion included.
+    vi.stubGlobal('matchMedia', (query: string) => ({
+      matches: false,
+      media: query,
+      addEventListener: () => {},
+      removeEventListener: () => {},
+    }));
+    layout({ scrollWidth: 800, clientWidth: 400 });
+    const scrollBy = vi.fn();
+    Element.prototype.scrollBy = scrollBy as unknown as typeof Element.prototype.scrollBy;
+    render(
+      <ScrollCarousel prevLabel="Previous" nextLabel="Next" autoPlay>
+        {slides(8)}
+      </ScrollCarousel>
+    );
+    return scrollBy;
+  }
+
+  afterEach(() => {
+    vi.useRealTimers();
+    vi.unstubAllGlobals();
+  });
+
+  it('moves on every five seconds while the row is on screen', () => {
+    vi.useFakeTimers();
+    const show = stubIntersectionObserver();
+    const scrollBy = autoplaying();
+    act(() => show(true));
+    act(() => void vi.advanceTimersByTime(15000));
+    expect(scrollBy).toHaveBeenCalledTimes(3);
+  });
+
+  it('waits while the row is off screen, and goes on when it is back', () => {
+    vi.useFakeTimers();
+    const show = stubIntersectionObserver();
+    const scrollBy = autoplaying();
+    act(() => show(false));
+    act(() => void vi.advanceTimersByTime(15000));
+    expect(scrollBy).not.toHaveBeenCalled();
+
+    act(() => show(true));
+    act(() => void vi.advanceTimersByTime(5000));
+    expect(scrollBy).toHaveBeenCalledTimes(1);
   });
 });
