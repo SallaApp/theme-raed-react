@@ -6,7 +6,13 @@ import { useTranslation } from '@salla.sa/twilight-theme-engine/i18n';
 import { useBottomInset } from '@salla.sa/twilight-theme-engine/hooks/useBottomInset';
 import { useMobileViewport } from '../../hooks/useMobileViewport';
 import { useNavHasContent } from '../../hooks/useNavHasContent';
-import { DashboardSquare01Icon, HomeIcon, SearchIcon, ShoppingBagIcon, UserIcon } from '../icons';
+import {
+  DashboardSquare01Icon,
+  HomeIcon,
+  SearchIcon,
+  ShoppingBagIcon,
+  UserIcon,
+} from '../icons';
 
 interface MobileBottomBarProps {
   /** Whether the shared nav drawer (opened from the header) is currently open. */
