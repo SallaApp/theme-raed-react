@@ -3,15 +3,10 @@ import type { ReactNode } from 'react';
 import { useRouterState } from '@tanstack/react-router';
 import { Link } from '@salla.sa/twilight-theme-engine/common';
 import { useTranslation } from '@salla.sa/twilight-theme-engine/i18n';
+import { useBottomInset } from '@salla.sa/twilight-theme-engine/hooks/useBottomInset';
 import { useMobileViewport } from '../../hooks/useMobileViewport';
 import { useNavHasContent } from '../../hooks/useNavHasContent';
-import {
-  DashboardSquare01Icon,
-  HomeIcon,
-  SearchIcon,
-  ShoppingBagIcon,
-  UserIcon,
-} from '../icons';
+import { DashboardSquare01Icon, HomeIcon, SearchIcon, ShoppingBagIcon, UserIcon } from '../icons';
 
 interface MobileBottomBarProps {
   /** Whether the shared nav drawer (opened from the header) is currently open. */
@@ -337,6 +332,8 @@ export function MobileBottomBar({
   const menuOpen = moreOpen || headerMenuOpen;
   const path = normalizePath(useRouterState({ select: (s) => s.location.pathname }));
   const active = activeTab({ searchOpen, menuOpen, navOpen }, path);
+  // Lifts app widgets (chat bubbles, WhatsApp buttons) that would sit on the bar.
+  const barRef = useBottomInset<HTMLElement>();
 
   const openTab = (tab: Tab) =>
     closeOverlays(tab, onCloseNav, () => onAccountOpenChange?.(false), onCloseSecondSheet);
@@ -378,7 +375,11 @@ export function MobileBottomBar({
           bar. Styling: `04-components/mobile-bottom-bar.scss`. */}
       <div className="mobile-bottom-bar-scrim" aria-hidden="true" />
 
-      <nav className="mobile-bottom-bar" aria-label={t('blocks.header.main_menu', 'Menu')}>
+      <nav
+        ref={barRef}
+        className="mobile-bottom-bar"
+        aria-label={t('blocks.header.main_menu', 'Menu')}
+      >
         <div className="mobile-bottom-bar__inner">
           <BarLink
             to="/"
