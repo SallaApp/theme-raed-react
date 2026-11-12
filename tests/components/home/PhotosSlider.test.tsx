@@ -102,6 +102,15 @@ describe('PhotosSlider', () => {
     });
   });
 
+  it('names each banner link by its slide number, as its dot is named', () => {
+    // The picture is the link's only content, so its alt is the link's name.
+    const { container } = render(<PhotosSlider data={{ items }} />);
+    const names = Array.from(realSlides(container), (slide) =>
+      slide.querySelector('img')?.getAttribute('alt')
+    );
+    expect(names).toEqual(['Slide 1', 'Slide 2', 'Slide 3']);
+  });
+
   it('asks for the first banner eagerly, and only that one', () => {
     const { container } = render(<PhotosSlider data={{ items }} />);
     const eager = container.querySelectorAll('img[data-priority="yes"]');
