@@ -686,6 +686,12 @@
   right: auto;
 }
 
+/* No dot on an empty cart. `<salla-cart-summary>` always renders the count, so
+   Header.tsx adds this class from the live cart count. */
+.header-action--cart-empty .s-cart-summary-count {
+  @apply hidden;
+}
+
 /* =========================================================================
    "Default" header layout (`header_layout: default`) — desktop (`lg+`) only.
    Adds a top bar (footer menu + language / branch / currency switchers) and a
