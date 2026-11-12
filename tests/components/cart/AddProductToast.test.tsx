@@ -1,6 +1,6 @@
 import React from 'react';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, screen, waitFor, act } from '@testing-library/react';
+import { render, screen, waitFor, act, fireEvent } from '@testing-library/react';
 import { AddProductToast } from '../../../app/components/cart/AddProductToast';
 
 // Translations a test sets; other keys fall back. `vi.hoisted` shares them with
@@ -221,6 +221,67 @@ describe('AddProductToast', () => {
 
     await waitFor(() => expect(details).toHaveBeenCalledTimes(1));
     expect(container.querySelector('.s-add-product-toast')).toBeNull();
+  });
+
+  describe('auto-hide', () => {
+    // Fake timers for the countdown only; the cart lookup's promise still resolves.
+    beforeEach(() => {
+      vi.useFakeTimers({ toFake: ['setInterval', 'clearInterval', 'setTimeout', 'clearTimeout'] });
+    });
+    afterEach(() => {
+      vi.useRealTimers();
+    });
+
+    const toast = () => document.querySelector<HTMLElement>('.s-add-product-toast');
+    const wait = (ms: number) => act(() => void vi.advanceTimersByTime(ms));
+    const showToast = async () => {
+      render(
+        <>
+          <button type="button">Outside</button>
+          <AddProductToast />
+        </>
+      );
+      emitAdd(addResponse(ALL_LINES), String(ADDED.product_id));
+      await act(async () => {
+        await Promise.resolve();
+        await Promise.resolve();
+      });
+      expect(toast()).toBeTruthy();
+    };
+    const checkout = () =>
+      document.querySelector<HTMLButtonElement>('.s-add-product-toast__button--primary')!;
+
+    it('hides itself after five seconds', async () => {
+      await showToast();
+      await wait(5400);
+      expect(toast()).toBeNull();
+    });
+
+    it('stays up while keyboard focus is inside it', async () => {
+      await showToast();
+      act(() => checkout().focus());
+      await wait(8000);
+      expect(toast()).toBeTruthy();
+      expect(document.activeElement).toBe(checkout());
+    });
+
+    it('goes on once focus leaves it', async () => {
+      await showToast();
+      act(() => checkout().focus());
+      await wait(8000);
+      act(() => screen.getByText('Outside').focus());
+      await wait(5400);
+      expect(toast()).toBeNull();
+    });
+
+    it('stays up when the pointer leaves while focus is still inside it', async () => {
+      await showToast();
+      fireEvent.mouseEnter(toast()!);
+      act(() => checkout().focus());
+      fireEvent.mouseLeave(toast()!);
+      await wait(8000);
+      expect(toast()).toBeTruthy();
+    });
   });
 
   it('keeps a single listener and removes it on unmount', () => {
