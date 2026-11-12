@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useRouterState } from '@tanstack/react-router';
 import { useTranslation } from '@salla.sa/twilight-theme-engine/i18n';
 import { ArrowRightIcon } from '../icons';
+import { useGoBack } from '../../hooks/useGoBack';
 import { HOME_ROUTE_ID, PRODUCT_ROUTE_ID } from '../../lib/routeIds';
 
 type MaybePage = { page?: { title?: string } };
@@ -53,6 +54,7 @@ function cleanDocumentTitle(): string {
  */
 export function MobilePageTitleBar() {
   const { t } = useTranslation();
+  const goBack = useGoBack();
   const {
     title: routeTitle,
     isProductPage,
@@ -74,10 +76,7 @@ export function MobilePageTitleBar() {
       <button
         type="button"
         className="mobile-page-title__back"
-        onClick={() => {
-          if (window.history.length > 1) window.history.back();
-          else window.location.assign('/');
-        }}
+        onClick={goBack}
         aria-label={t('blocks.header.back', 'Back')}
       >
         <ArrowRightIcon aria-hidden="true" />

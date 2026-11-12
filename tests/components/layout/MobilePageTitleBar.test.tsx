@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render } from '@testing-library/react';
+import { fireEvent, render } from '@testing-library/react';
 import { MobilePageTitleBar } from '../../../app/components/layout/MobilePageTitleBar';
 
 const state = {
@@ -25,9 +25,16 @@ vi.mock('@salla.sa/twilight-theme-engine/i18n', () => ({
   useTranslation: () => ({ t: (_k: string, fb?: string) => fb ?? _k }),
 }));
 
+const navigate = vi.hoisted(() => vi.fn());
+
+vi.mock('@salla.sa/twilight-theme-engine/providers', () => ({
+  useNavigate: () => navigate,
+}));
+
 beforeEach(() => {
   state.routeIds = [];
   state.title = 'Cart';
+  navigate.mockClear();
 });
 
 describe('MobilePageTitleBar', () => {
@@ -48,5 +55,14 @@ describe('MobilePageTitleBar', () => {
     state.routeIds = ['/{-$locale}/$slug/p{$id}'];
     const { container } = render(<MobilePageTitleBar />);
     expect(container.querySelector('.mobile-page-title')).toBeNull();
+  });
+
+  it("goes to the store's home through the router from a tab with no history", () => {
+    state.routeIds = ['/{-$locale}/cart'];
+    const length = vi.spyOn(History.prototype, 'length', 'get').mockReturnValue(1);
+    const { getByLabelText } = render(<MobilePageTitleBar />);
+    fireEvent.click(getByLabelText('Back'));
+    expect(navigate).toHaveBeenCalledWith('/');
+    length.mockRestore();
   });
 });
