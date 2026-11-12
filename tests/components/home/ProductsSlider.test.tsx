@@ -47,11 +47,17 @@ vi.mock('../../../app/components/product', () => ({
   ProductCard: ({
     product,
     layout,
+    imagePriority,
   }: {
     product: { id?: number; name?: string };
     layout?: string;
+    imagePriority?: boolean;
   }) => (
-    <div data-testid="product-card" data-layout={layout}>
+    <div
+      data-testid="product-card"
+      data-layout={layout}
+      data-priority={imagePriority ? 'yes' : undefined}
+    >
       {product.name}
     </div>
   ),
@@ -117,6 +123,26 @@ describe('ProductsSlider', () => {
     );
     await waitFor(() => expect(getAllByTestId('product-card')).toHaveLength(8));
     expect(listMock).toHaveBeenCalledWith(expect.objectContaining({ perPage: 8 }));
+  });
+
+  it("loads the first two cards' images eagerly in one of the page's first blocks", async () => {
+    // The engine passes `priority` to the first home blocks, as its own slider does.
+    const { getAllByTestId } = renderWithClient(
+      <ProductsSlider data={{ products: { source: 'latest' }, priority: true }} />
+    );
+    await waitFor(() => expect(getAllByTestId('product-card')).toHaveLength(3));
+    const eager = getAllByTestId('product-card').map((card) => card.dataset.priority);
+    expect(eager).toEqual(['yes', 'yes', undefined]);
+  });
+
+  it('leaves every card image lazy further down the page', async () => {
+    const { getAllByTestId } = renderWithClient(
+      <ProductsSlider data={{ products: { source: 'related', source_value: 1 } }} />
+    );
+    await waitFor(() => expect(getAllByTestId('product-card')).toHaveLength(3));
+    for (const card of getAllByTestId('product-card')) {
+      expect(card.dataset.priority).toBeUndefined();
+    }
   });
 
   it('shows the skeleton until the products resolve', () => {
