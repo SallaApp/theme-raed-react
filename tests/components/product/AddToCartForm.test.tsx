@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeAll, afterEach } from 'vitest';
 import { render, waitFor, fireEvent } from '@testing-library/react';
 import type { Product } from '@salla.sa/twilight-theme-engine/types';
-import { AddToCartForm } from '../../../app/components/product/AddToCartForm';
+import { AddToCartForm, type AddToCartProduct } from '../../../app/components/product/AddToCartForm';
 
 vi.mock('@salla.sa/twilight-theme-engine/i18n', () => ({
   useTranslation: () => ({
@@ -38,7 +38,7 @@ afterEach(() => {
   delete (window as unknown as { salla?: unknown }).salla;
 });
 
-const makeProduct = (overrides: Partial<Product> = {}): Product =>
+const makeProduct = (overrides: Partial<AddToCartProduct> = {}): AddToCartProduct =>
   ({
     id: 266863684,
     name: 'Product',
@@ -50,7 +50,7 @@ const makeProduct = (overrides: Partial<Product> = {}): Product =>
     type: 'product',
     max_quantity: 163,
     ...overrides,
-  }) as Product;
+  }) as AddToCartProduct;
 
 const quantityHost = (container: HTMLElement) =>
   container.querySelector('salla-quantity-input') as HTMLElement | null;
@@ -276,5 +276,71 @@ describe('AddToCartForm note and file tabs', () => {
 
     const form = container.querySelector<HTMLFormElement>('form')!;
     expect(new FormData(form).get('notes')).toBe('Gift wrap');
+  });
+});
+
+describe('AddToCartForm bundle product rendering', () => {
+  const bundleHost = (container: HTMLElement) =>
+    container.querySelector('salla-multiple-bundle-product');
+
+  it('renders bundle selector for customizable grouped product with non-empty sections', () => {
+    const product = makeProduct({
+      type: 'group_products',
+      bundle: {
+        sections: [{ id: 1, name: 'Section 1' }],
+      },
+    });
+    const { container } = render(<AddToCartForm product={product} />);
+    expect(bundleHost(container)).toBeTruthy();
+  });
+
+  it('does not render bundle selector for fixed grouped product with bundle: null', () => {
+    const product = makeProduct({
+      type: 'group_products',
+      bundle: null,
+    });
+    const { container } = render(<AddToCartForm product={product} />);
+    expect(bundleHost(container)).toBeNull();
+  });
+
+  it('does not render bundle selector for grouped product with empty sections', () => {
+    const product = makeProduct({
+      type: 'group_products',
+      bundle: {
+        sections: [],
+      },
+    });
+    const { container } = render(<AddToCartForm product={product} />);
+    expect(bundleHost(container)).toBeNull();
+  });
+
+  it('does not render bundle selector for grouped product with missing bundle', () => {
+    const product = makeProduct({
+      type: 'group_products',
+      bundle: undefined,
+    });
+    const { container } = render(<AddToCartForm product={product} />);
+    expect(bundleHost(container)).toBeNull();
+  });
+
+  it('does not render bundle selector for regular product', () => {
+    const product = makeProduct({
+      type: 'product',
+      bundle: {
+        sections: [{ id: 1, name: 'Section 1' }],
+      },
+    });
+    const { container } = render(<AddToCartForm product={product} />);
+    expect(bundleHost(container)).toBeNull();
+  });
+
+  it('does not render bundle selector for fixed grouped product even if has_bundle_products is true', () => {
+    const product = makeProduct({
+      type: 'group_products',
+      has_bundle_products: true,
+      bundle: null,
+    });
+    const { container } = render(<AddToCartForm product={product} />);
+    expect(bundleHost(container)).toBeNull();
   });
 });
