@@ -75,17 +75,21 @@ function usePref<T extends string>(
 /** `ItemsList`'s `loader` for infinite scroll - the route already loaded the
  * first page, so this fetches subsequent ones from `pagination.next`, which
  * `parseNextPageToken` reads as either a bare cursor token or (sources
- * without true cursor pagination, e.g. `offers`) a full next-page URL. */
+ * without true cursor pagination, e.g. `offers`) a full next-page URL.
+ * `listKey` is the key of the `ItemsList` it feeds: a new list (grid/list
+ * switch, new sort) starts again from the route's first page, so the cursor
+ * does too, even when `next` is the same string as before. */
 function useCatalogLoader(
   source: ProductListLoaderData['source'],
   selectedSort: string,
   next: string | null | undefined,
-  filters: ProductListFilters | null
+  filters: ProductListFilters | null,
+  listKey: string
 ): ItemsLoaderFn<Product> {
   const nextCursorRef = useRef<string | null>(next ?? null);
   useEffect(() => {
     nextCursorRef.current = next ?? null;
-  }, [next]);
+  }, [next, listKey]);
 
   return useCallback(async () => {
     const { cursor, page } = parseNextPageToken(nextCursorRef.current);
@@ -525,7 +529,14 @@ export function ProductListPage({
       source.type === 'categories' && source.value ? { category_id: source.value } : undefined,
     [source.type, source.value]
   );
-  const loader = useCatalogLoader(source, selectedSort, shownNext, appliedFilters);
+  // The same key `CatalogGrid` gives its `ItemsList`.
+  const loader = useCatalogLoader(
+    source,
+    selectedSort,
+    shownNext,
+    appliedFilters,
+    `${listKey}${filteredKey}-${selectedSort}-${view}`
+  );
 
   const listLayoutClass =
     view === 'list' ? 's-products-list-horizontal-cards' : 's-products-list-vertical-cards';
