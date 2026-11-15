@@ -227,3 +227,13 @@
     bottom: calc(76px + var(--safe-bottom)) #{!important};
   }
 }
+
+/* Salla's "get the app" banner (`<salla-app-install-alert position="bottom">`) is
+   fixed to the viewport bottom at z-index 999, on top of this bar. Sit it on the
+   space the bar publishes (`useBottomInset` sets `--twilight-bottom-inset` on
+   <html> while the bar shows), so it clears the bar on phones and drops back to
+   the bottom on desktop, where the variable is unset. The element selector beats
+   the component's own `[position=bottom] { bottom: 0 }`, injected after ours. */
+salla-app-install-alert.s-app-install-alert-wrapper[position='bottom'] {
+  bottom: var(--twilight-bottom-inset, 0px);
+}
