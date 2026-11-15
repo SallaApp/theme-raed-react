@@ -82,7 +82,7 @@ salla-button {
   }
 
   &--rounded-gray {
-    @apply inline-flex grow-0 justify-center w-full rounded-full px-3.5 py-2 items-center transition-colors bg-gray-200/50 hover:bg-gray-200/70 text-sm font-medium whitespace-nowrap;
+    @apply inline-flex grow-0 justify-center w-full rounded px-3.5 py-2 items-center transition-colors bg-gray-200/50 hover:bg-gray-200/70 text-sm font-medium whitespace-nowrap;
   }
 
   &--circle-gray {
@@ -147,10 +147,6 @@ salla-button {
     &.light {
       @apply bg-transparent text-white border-white;
     }
-  }
-
-  &--rounded-full {
-    @apply rounded-full;
   }
 }
 

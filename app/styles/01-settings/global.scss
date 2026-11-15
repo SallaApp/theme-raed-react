@@ -11,9 +11,10 @@ $main-text-color: var(--main-text-color);
 
 // Default CSS custom properties (can be overridden by consuming theme)
 :root {
-  // Twilight web components ship their own CSS and read only this token for the
-  // default corner radius; keep it equal to Tailwind's `rounded` for this theme.
-  --s-radius: 16px;
+  // The theme's one corner radius, read from `borderRadius.DEFAULT` in
+  // tailwind.config.cjs (Tailwind's `rounded`). Twilight web components read only
+  // this token, and buttons the theme can't class (Apple Pay, buy now) use it too.
+  --s-radius: theme('borderRadius.DEFAULT');
   --infinte-color: #c9c9c9;
   --main-text-color: #231f1e;
   --main-text-color-dark: #2b2d34;

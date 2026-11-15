@@ -30,7 +30,7 @@ body:has(.profile-header) {
   /* Matches the shared Tailwind preset's own .s-button-small sizing
      (text-xs px-4 pb-1.5 pt-1) so this lines up height-for-height with the
      neighboring Print button (SallaButton size="small") — not a guessed size. */
-  @apply inline-flex items-center rounded-full border px-4 pb-1.5 pt-1 text-xs font-medium transition-colors;
+  @apply inline-flex items-center rounded border px-4 pb-1.5 pt-1 text-xs font-medium transition-colors;
   border-color: var(--color-primary);
   color: var(--color-primary);
 
@@ -46,8 +46,8 @@ body:has(.profile-header) {
 
 /* Bump both the Print button (.s-button-small, from the shared preset) and
    the digital-content/tracking buttons up from the preset's default xs size,
-   and force Print to the same rounded-full pill as the digital-content
-   button (the preset's .s-button-small is rounded) — scoped to this row
+   and give Print the same theme radius as the digital-content button
+   (the preset's .s-button-small has its own) — scoped to this row
    only, not a global .s-button-small override, so it doesn't affect other
    "small" SallaButton usages elsewhere in the theme. The larger size is
    desktop-only: an order can carry digital content, a receipt and several
@@ -56,7 +56,7 @@ body:has(.profile-header) {
 .single-order-header-item {
   .s-button-small,
   .salla-button.salla-button--small {
-    @apply rounded-full;
+    @apply rounded;
 
     @media (min-width: 769px) {
       @apply px-5 py-2.5 text-sm;

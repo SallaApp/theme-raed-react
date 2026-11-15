@@ -109,11 +109,11 @@
     @apply py-3 rtl:pl-4 ltr:pr-4;
   }
 
-  /* solid, pill add-to-cart (engine renders it fill="outline") */
+  /* solid add-to-cart with the theme radius (engine renders it fill="outline") */
   salla-add-product-button {
     .s-button-btn,
     .s-button-element {
-      @apply rounded-full border-primary bg-primary text-primary-reverse;
+      @apply rounded border-primary bg-primary text-primary-reverse;
     }
 
     .s-button-btn:hover,
