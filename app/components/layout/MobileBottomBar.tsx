@@ -338,7 +338,7 @@ export function MobileBottomBar({
   const menuOpen = moreOpen || headerMenuOpen;
   const path = normalizePath(useRouterState({ select: (s) => s.location.pathname }));
   const active = activeTab({ searchOpen, menuOpen, navOpen }, path);
-  // Lifts app widgets (chat bubbles, WhatsApp buttons) that would sit on the bar.
+  // Publishes the bar height as --twilight-bottom-inset so app widgets can sit above it.
   const barRef = useBottomInset<HTMLElement>();
 
   const openTab = (tab: Tab) =>
