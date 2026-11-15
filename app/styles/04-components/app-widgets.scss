@@ -5,7 +5,7 @@
    chat launchers, loyalty and social-proof badges) are fixed near the bottom of
    the screen with z-indexes far above the bar (220), so on phones they sit on
    its tabs and take their taps. Found in the 2026-11-15 crawl of Raed React
-   stores (93 of 506 home pages).
+   stores (673 of 1,251 home pages checked).
 
    While the bar shows, `useBottomInset` sets `--twilight-bottom-inset` on
    <html> to its height (see MobileBottomBar.tsx). Each widget below is lifted
@@ -25,15 +25,27 @@
 $app-widget-lift: 0 calc(-1 * var(--twilight-bottom-inset, 0px));
 
 body {
-  > a.wa-s-n, // "WhatsApp button" app (whatsapp-chat-button, 14348): 75 stores
+  > a.wa-s-n, // "WhatsApp button" app (whatsapp-chat-button, 14348): 649 stores
   > [id^='gb-widget-'], // GetButton (get_button, 40, or loaded by the store's own code)
   > a.whatsapp-container, // LinkAraby WhatsApp button (linkaraby, 1470)
-  > #chat-widget-wa, // a store's own WhatsApp link
   > [data-zud-rb-container], // zud "recent buyers" toast (zud, 15136)
   .chaport-container.chaport-collapsed, // Chaport launcher; the opened chat stays full height
   #loyalty-widget-root > .loyalty-widget-button, // Pointat loyalty button (pointat-loyalty-system, 13656)
-  [class^='VisitorsCounter'] // Tooliify visitors counter (tooliify-plus, 7397)
-  {
+  [class^='VisitorsCounter'], // Tooliify visitors counter (tooliify-plus, 7397)
+  // tawk.to: `body > div#<random> > div#min-widget > iframe`. Only the iframes are fixed; the
+  // opened chat lives in other containers and keeps its place.
+  #min-widget > iframe,
+  #chat-bubble > iframe,
+  #message-preview > iframe,
+  #branding-widget > iframe,
+  salla-cookies-bar .s-cookies-bar, // Salla's cookie-consent bar, until the visitor answers it
+  // WhatsApp links stores add with their own code or GTM
+  > #chat-widget-wa,
+  > #whatsapp-button,
+  > [class^='wa-button_'],
+  > a[href*='wa.me/'],
+  > a[href*='api.whatsapp.com/'],
+  #whatswidget-widget-wrapper [class^='whatswidget-button-wrapper'] {
     translate: $app-widget-lift #{!important};
   }
 }
