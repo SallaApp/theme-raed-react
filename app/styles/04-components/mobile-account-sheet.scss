@@ -28,7 +28,7 @@
 }
 
 .account-sheet__login {
-  @apply flex w-full items-center justify-center rounded-full bg-primary px-4 py-3 text-sm font-bold text-primary-reverse transition-opacity hover:opacity-90;
+  @apply flex w-full items-center justify-center rounded bg-primary px-4 py-3 text-sm font-bold text-primary-reverse transition-opacity hover:opacity-90;
 }
 
 /* Settings card: profile / language / currency / branch / important links.

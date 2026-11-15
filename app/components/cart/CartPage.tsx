@@ -89,7 +89,7 @@ function CartPageContent({ page }: CartPageProps) {
           <p>{t('common.errors.error_occurred', 'Something went wrong')}</p>
           <button
             type="button"
-            className="btn btn--outline-primary btn--rounded-full"
+            className="btn btn--outline-primary"
             onClick={() => {
               if (cartIdQuery.isError) cartIdQuery.refetch();
               else cartQuery.refetch();

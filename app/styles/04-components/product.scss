@@ -199,10 +199,10 @@
       }
     }
 
-    /* solid, pill-rounded add-to-cart, matched to the wishlist button height
-       (the engine renders it as fill="outline") */
+    /* solid add-to-cart with the theme radius, matched to the wishlist button
+       height (the engine renders it as fill="outline") */
     .s-button-btn {
-      @apply h-9 bg-primary text-primary-reverse border-primary rounded-full;
+      @apply h-9 bg-primary text-primary-reverse border-primary rounded;
 
       &:hover {
         @apply bg-primary-d text-primary-reverse border-primary-d opacity-100;
@@ -981,20 +981,28 @@ salla-gifting {
   @apply w-full max-w-[120px];
 }
 
-/* Product-page add-to-cart — pill-rounded, matching the product-card button */
+/* Product-page add-to-cart — the theme radius, matching the product-card button */
 .sticky-product-bar__btn {
   .s-button-btn,
   .s-button-element {
-    @apply rounded-full;
+    @apply rounded;
   }
 }
 
 /* Buy-now button (`<salla-mini-checkout-widget>`, a shadow-DOM widget from the
-   CDN) — same pill as add-to-cart. The widget reads its radius from this custom
+   CDN) — same radius as add-to-cart. The widget reads its radius from this custom
    property (its own `:host` default is 0.375rem); a value set on the host element
    from out here wins. */
 .s-add-product-button-main .s-add-product-button-mini-checkout {
-  --salla-fast-checkout-button-border-radius: 9999px;
+  --salla-fast-checkout-button-border-radius: var(--s-radius);
+}
+
+/* Apple Pay button (Apple's `<apple-pay-button>`, rendered by `salla-quick-buy`) —
+   same radius. Apple's element reads its radius from this custom property, and
+   `salla-quick-buy` sets it to 0.75rem with a bare `apple-pay-button` selector;
+   this one is more specific, so it wins. */
+salla-quick-buy apple-pay-button {
+  --apple-pay-button-border-radius: var(--s-radius);
 }
 
 /* The deferred loader wraps `salla-add-product-button` in a bare <div> that
