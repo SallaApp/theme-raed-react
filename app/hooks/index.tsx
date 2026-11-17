@@ -1,6 +1,6 @@
 import { hookRegistry, HookName, type HookContext } from '@salla.sa/twilight-theme-engine/hooks';
 import type { Product } from '@salla.sa/twilight-theme-engine/types';
-import { AddProductToast } from '../components/cart';
+import { AddProductToast, ThankYouCartReset } from '../components/cart';
 import { DigitalFilesSettings } from '../components/product';
 
 export function registerThemeHooks() {
@@ -15,6 +15,10 @@ export function registerThemeHooks() {
     },
     50
   );
+
+  // The order's cart is spent: drop it from the SDK so the cart badges clear and
+  // the cart page doesn't fetch the purchased cart (Twig did this on its cart page).
+  hookRegistry.register(HookName.THANK_YOU_START, () => <ThankYouCartReset />, 50);
 
   // Register DigitalFilesSettings at product:single.description hook slot
   // Receives product from ProductDetails via context prop

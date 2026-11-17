@@ -1,4 +1,4 @@
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { SallaConditionalOffer } from '@salla.sa/twilight-components-react/conditional-offer';
 import { SallaOffer } from '@salla.sa/twilight-components-react/offer';
@@ -11,11 +11,18 @@ import { CartSkeleton } from '@salla.sa/twilight-theme-engine/skeleton';
 import { loyalty } from '@salla.sa/twilight-theme-engine/api/loyalty';
 import { cart } from '@salla.sa/twilight-theme-engine/api/cart';
 import type { CartPageProps } from '@salla.sa/twilight-theme-engine/routes/cart';
+import { resyncSallaCart } from '../../lib/cartResync';
 import { CartItem } from './CartItem';
 
-/** Whether a failed request was answered 404 (the engine's API client throws ky's `HTTPError`). */
-function isNotFound(error: unknown): boolean {
-  return (error as { response?: { status?: number } } | null)?.response?.status === 404;
+/**
+ * Whether `cart/<id>` refused the SDK's cart id itself: any 4xx but 401 (auth)
+ * and 429 (rate limit). A purchased cart doesn't answer 404, so 404 alone missed
+ * the "ordered, then opened the cart" case. The engine's API client throws ky's
+ * `HTTPError`, and the SDK's own 403 / "Cart not available" reset never sees it.
+ */
+function isStaleCart(error: unknown): boolean {
+  const status = (error as { response?: { status?: number } } | null)?.response?.status;
+  return status != null && status >= 400 && status < 500 && status !== 401 && status !== 429;
 }
 
 /**
@@ -24,8 +31,9 @@ function isNotFound(error: unknown): boolean {
  * Same data flow as upstream, plus a column-heading row above the items
  * (Products (N) · Quantity · Total) so the flat {@link CartItem} rows read as a
  * table, and an error state with a retry when the cart can't be loaded
- * (upstream keeps its skeleton up for good). A cart the API no longer knows
- * (404) is dropped from the SDK and shown empty. Upgrade notes: `FORKS.md`.
+ * (upstream keeps its skeleton up for good). A cart the API refuses (4xx, e.g.
+ * already ordered) is dropped from the SDK, re-synced and shown empty until the
+ * current cart loads. Upgrade notes: `FORKS.md`.
  */
 function CartPageContent({ page }: CartPageProps) {
   const { store } = useTwilight();
@@ -63,16 +71,19 @@ function CartPageContent({ page }: CartPageProps) {
     };
   }, [refetchCart]);
 
-  // The SDK's cart id names a cart the API no longer has (`cart/<id>` answered 404).
-  const cartGone = isNotFound(cartQuery.error);
+  // The SDK's cart id names a cart the API won't serve (purchased or deleted).
+  const cartGone = isStaleCart(cartQuery.error);
 
-  // Drop that cart from the SDK (its stored id and cookies), so the next add to
-  // cart starts a new one instead of failing against the old id.
+  // Drop that cart from the SDK and load the visitor's current one, which also
+  // updates the badges. Once per visit, so a second refusal can't loop.
+  const resynced = useRef(false);
   useEffect(() => {
-    if (!cartGone) return;
-    // `reset` is on the SDK's cart, but not in the engine's `SallaCart` type.
-    (window.salla?.cart as { reset?: () => void } | undefined)?.reset?.();
-  }, [cartGone]);
+    if (!cartGone || resynced.current) return;
+    resynced.current = true;
+    void resyncSallaCart('theme::cartPage').then(() =>
+      queryClient.invalidateQueries({ queryKey: cart.queries.currentId().queryKey })
+    );
+  }, [cartGone, queryClient]);
 
   // A failed request leaves its data undefined, so without this the skeleton
   // stayed up for good (e.g. `cart/<id>` answering an error).
