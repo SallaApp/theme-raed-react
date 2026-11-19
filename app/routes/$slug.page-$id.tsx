@@ -3,6 +3,7 @@ import { page as pageApi } from '@salla.sa/twilight-theme-engine/api/page';
 import { PageSingle as EnginePageSingle } from '@salla.sa/twilight-theme-engine/routes/page';
 import { withHead } from '@salla.sa/twilight-theme-engine/tanstack';
 import { PageSingle, type PageSingleProps } from '../components/page/PageSingle';
+import { withPageSeo } from '../lib/pageSeo';
 
 export const Route = createFileRoute('/{-$locale}/$slug/page-{$id}')({
   loader: async ({ params }): Promise<PageSingleProps> => {
@@ -21,7 +22,7 @@ export const Route = createFileRoute('/{-$locale}/$slug/page-{$id}')({
       },
     };
   },
-  head: withHead(EnginePageSingle),
+  head: withHead(EnginePageSingle, (head, _ctx, data) => withPageSeo(head, data)),
   component: PageSingleComponent,
 });
 
