@@ -4,6 +4,7 @@ import type { ProductPageProps } from '@salla.sa/twilight-theme-engine/routes/pr
 import { ProductDetailSkeleton } from '@salla.sa/twilight-theme-engine/skeleton';
 import { withHead } from '@salla.sa/twilight-theme-engine/tanstack';
 import { ProductPage } from '../components/product/ProductPage';
+import { withProductJsonLd } from '../lib/productJsonLd';
 import { redirectHomeIfNotFound } from '../lib/productNotFound';
 
 export const Route = createFileRoute('/{-$locale}/$slug/p{$id}')({
@@ -23,7 +24,8 @@ export const Route = createFileRoute('/{-$locale}/$slug/p{$id}')({
       return redirectHomeIfNotFound(error, { locale: params.locale, preload });
     }
   },
-  head: withHead(Product),
+  // The engine writes sale_price (0 when not on sale) as the offer price, and only 8-digit GTINs.
+  head: withHead(Product, (result, _ctx, data) => withProductJsonLd(result, data?.product)),
   pendingComponent: () => <ProductDetailSkeleton />,
   component: ProductComponent,
 });
