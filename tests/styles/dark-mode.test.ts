@@ -65,36 +65,16 @@ describe('topnav_is_dark (body.topnav-is-dark)', () => {
     expect(topnav.color).toContain('rgb(209 213 219'); // gray-300
   });
 
-  it('darkens the lite header bar, the only bar that layout has', async () => {
+  it('leaves the header bar alone when there is no top bar (lite layout)', async () => {
     const root = await compile('header.scss');
 
-    const bar = declarations(root, 'body.topnav-is-dark .site-header--lite .site-header__bar');
-    expect(bar['background-color']).toContain('rgb(29 31 31'); // dark #1D1F1F
-
-    const action = declarations(
-      root,
-      'body.topnav-is-dark .site-header--lite .site-header__bar .header-action'
-    );
-    expect(action.color).toContain('rgb(209 213 219'); // gray-300
-  });
-
-  it('paints the lite bar cart hover once, on the circle around the icon', async () => {
-    const root = await compile('header.scss');
-    const bar = 'body.topnav-is-dark .site-header--lite .site-header__bar';
-
-    expect(declarations(root, `${bar} .header-action:hover`)).toHaveProperty('background-color');
-    expect(declarations(root, `${bar} .s-cart-summary-wrapper`).color).toContain(
-      'rgb(209 213 219' // gray-300
-    );
-    expect(declarations(root, `${bar} .s-cart-summary-wrapper:hover`)).toEqual({});
-  });
-
-  it('shows the lite bar login icon in gray like the cart and search, with no hover background of its own', async () => {
-    const root = await compile('header.scss');
-    const login = 'body.topnav-is-dark .site-header--lite .site-header__bar .s-user-menu-login-btn';
-
-    expect(declarations(root, `${login} svg`).fill).toBe('#d1d5db'); // gray-300
-    expect(declarations(root, login).color).toContain('rgb(209 213 219'); // gray-300
-    expect(declarations(root, `${login}:hover`)['background-color']).toBe('transparent');
+    // The setting is for the top bar only; the lite layout has none, so nothing goes dark.
+    let darkensBar = false;
+    root.walkRules((rule) => {
+      if (rule.selectors.some((s) => s.includes('topnav-is-dark') && s.includes('site-header__bar'))) {
+        darkensBar = true;
+      }
+    });
+    expect(darkensBar).toBe(false);
   });
 });
