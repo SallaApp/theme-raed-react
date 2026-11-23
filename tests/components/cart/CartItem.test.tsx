@@ -330,3 +330,189 @@ describe('CartItem move to wishlist (logged in)', () => {
     expect(deleteItem).not.toHaveBeenCalled();
   });
 });
+
+describe('CartItem move to wishlist — events, guests and edge cases', () => {
+  const deleteItem = vi.fn(() => Promise.resolve());
+  const updateItem = vi.fn(() => Promise.resolve());
+  const success = vi.fn();
+  const dispatch = vi.fn();
+  let originalSalla: unknown;
+
+  const setSalla = (salla: unknown) => {
+    (window as { salla?: unknown }).salla = salla;
+  };
+  const clickRemove = () => fireEvent.click(screen.getByLabelText('common.elements.remove'));
+  const clickMove = () =>
+    act(async () => {
+      fireEvent.click(screen.getByText('pages.cart.move_to_wishlist'));
+    });
+  const eventNames = () => dispatch.mock.calls.map(([name]) => name);
+
+  beforeEach(() => {
+    userState.isLoggedIn = true;
+    wishlistState.ids = [];
+    wishlistState.add.mockReset();
+    wishlistState.add.mockResolvedValue(true);
+    originalSalla = (window as { salla?: unknown }).salla;
+    setSalla({ cart: { deleteItem, updateItem }, notify: { success }, event: { dispatch } });
+  });
+
+  afterEach(() => {
+    userState.isLoggedIn = false;
+    setSalla(originalSalla);
+    [deleteItem, updateItem, success, dispatch].forEach((m) => m.mockReset());
+    deleteItem.mockResolvedValue(undefined);
+    updateItem.mockResolvedValue(undefined);
+  });
+
+  it('guests: remove deletes straight away with no popup and no analytics', async () => {
+    userState.isLoggedIn = false;
+    render(<CartItem item={item} />);
+    await act(async () => {
+      clickRemove();
+    });
+    expect(screen.queryByRole('dialog')).toBeNull();
+    expect(deleteItem).toHaveBeenCalledWith(1);
+    expect(dispatch).not.toHaveBeenCalled();
+  });
+
+  it('guests: "-" at quantity 1 stays disabled and opens nothing', () => {
+    userState.isLoggedIn = false;
+    render(<CartItem item={item} />);
+    const minus = screen.getByLabelText<HTMLButtonElement>('pages.products.quantity -');
+    expect(minus.disabled).toBe(true);
+    fireEvent.click(minus);
+    expect(screen.queryByRole('dialog')).toBeNull();
+    expect(dispatch).not.toHaveBeenCalled();
+  });
+
+  it('logged in: "-" at quantity 1 is enabled', () => {
+    render(<CartItem item={item} />);
+    expect(screen.getByLabelText<HTMLButtonElement>('pages.products.quantity -').disabled).toBe(false);
+  });
+
+  it('shows the title, the body and both actions', () => {
+    render(<CartItem item={item} />);
+    expect(screen.queryByText('pages.cart.move_to_wishlist')).toBeNull();
+    clickRemove();
+    expect(screen.getByText('pages.cart.move_to_wishlist')).toBeTruthy();
+    expect(screen.getByText('pages.cart.remove_item')).toBeTruthy();
+    expect(screen.getByText('pages.cart.remove_item_body')).toBeTruthy();
+  });
+
+  it('emits the impression once per open, on the "-" path too', () => {
+    render(<CartItem item={item} />);
+    fireEvent.click(screen.getByLabelText('pages.products.quantity -'));
+    expect(eventNames()).toEqual(['cart::move_to_wishlist.popup.impression']);
+    expect(dispatch).toHaveBeenCalledWith('cart::move_to_wishlist.popup.impression', {
+      product_id: 2,
+      cart_item_id: 1,
+      source: 'cart_page',
+    });
+  });
+
+  it('Move to Wishlist emits only the clicked event and closes the popup', async () => {
+    render(<CartItem item={item} />);
+    clickRemove();
+    dispatch.mockClear();
+    await clickMove();
+    expect(eventNames()).toEqual(['cart::move_to_wishlist.clicked']);
+    expect(screen.queryByRole('dialog')).toBeNull();
+  });
+
+  it('Remove emits only cart::remove.clicked, shows no toast and closes the popup', async () => {
+    render(<CartItem item={item} />);
+    clickRemove();
+    dispatch.mockClear();
+    await act(async () => {
+      fireEvent.click(screen.getByText('pages.cart.remove_item'));
+    });
+    expect(eventNames()).toEqual(['cart::remove.clicked']);
+    expect(success).not.toHaveBeenCalled();
+    expect(screen.queryByRole('dialog')).toBeNull();
+    expect(deleteItem).toHaveBeenCalledTimes(1);
+  });
+
+  it('adds to the wishlist before it removes from the cart', async () => {
+    const order: string[] = [];
+    wishlistState.add.mockImplementation(async () => (order.push('add'), true));
+    deleteItem.mockImplementation(async () => void order.push('delete'));
+    render(<CartItem item={item} />);
+    clickRemove();
+    await clickMove();
+    expect(order).toEqual(['add', 'delete']);
+  });
+
+  it('toasts after the add and before the cart removal', async () => {
+    const order: string[] = [];
+    success.mockImplementation(() => void order.push('toast'));
+    deleteItem.mockImplementation(async () => void order.push('delete'));
+    render(<CartItem item={item} />);
+    clickRemove();
+    await clickMove();
+    expect(order).toEqual(['toast', 'delete']);
+  });
+
+  it('a failed add closes the popup, keeps the row and emits no remove event', async () => {
+    wishlistState.add.mockResolvedValue(false);
+    const { container } = render(<CartItem item={item} />);
+    clickRemove();
+    await clickMove();
+    expect(screen.queryByRole('dialog')).toBeNull();
+    expect(container.querySelector('#item-1')).toBeTruthy();
+    expect(eventNames()).not.toContain('cart::remove.clicked');
+  });
+
+  it('keeps the row when the cart removal fails after a successful add', async () => {
+    deleteItem.mockRejectedValue(new Error('boom'));
+    const { container } = render(<CartItem item={item} />);
+    clickRemove();
+    await clickMove();
+    expect(wishlistState.add).toHaveBeenCalledWith(2);
+    expect(container.querySelector('#item-1')).toBeTruthy();
+  });
+
+  it('refetches through onMutated after a move', async () => {
+    const onMutated = vi.fn();
+    render(<CartItem item={item} onMutated={onMutated} />);
+    clickRemove();
+    await clickMove();
+    expect(onMutated).toHaveBeenCalledOnce();
+  });
+
+  it('does not throw when the analytics bus is missing', async () => {
+    setSalla({ cart: { deleteItem, updateItem }, notify: { success } });
+    render(<CartItem item={item} />);
+    clickRemove();
+    expect(screen.getByRole('dialog')).toBeTruthy();
+    await clickMove();
+    expect(deleteItem).toHaveBeenCalledWith(1);
+  });
+
+  it('does not throw when the notifier is missing', async () => {
+    setSalla({ cart: { deleteItem, updateItem }, event: { dispatch } });
+    render(<CartItem item={item} />);
+    clickRemove();
+    await clickMove();
+    expect(deleteItem).toHaveBeenCalledWith(1);
+  });
+
+  it('closing the popup emits no click event and leaves the wishlist alone', () => {
+    render(<CartItem item={item} />);
+    clickRemove();
+    dispatch.mockClear();
+    fireEvent.click(screen.getByText('close'));
+    expect(dispatch).not.toHaveBeenCalled();
+    expect(wishlistState.add).not.toHaveBeenCalled();
+    expect(updateItem).not.toHaveBeenCalled();
+  });
+
+  it('can be reopened after being closed', () => {
+    render(<CartItem item={item} />);
+    clickRemove();
+    fireEvent.click(screen.getByText('close'));
+    clickRemove();
+    expect(screen.getByRole('dialog')).toBeTruthy();
+    expect(eventNames().filter((n) => n === 'cart::move_to_wishlist.popup.impression')).toHaveLength(2);
+  });
+});
