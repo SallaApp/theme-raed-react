@@ -2,9 +2,12 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import type { Money, CartItem as CartItemType } from '@salla.sa/twilight-theme-engine/types';
 import { useTranslation } from '@salla.sa/twilight-theme-engine/i18n';
 import { useMoney } from '@salla.sa/twilight-theme-engine/hooks/useMoney';
+import { useUser } from '@salla.sa/twilight-theme-engine/hooks/useUser';
+import { useWishlist } from '@salla.sa/twilight-theme-engine/hooks/useWishlist';
 import { Link, Image } from '@salla.sa/twilight-theme-engine/common';
 import { SallaCartItemOffers } from '@salla.sa/twilight-components-react/cart-item-offers';
 import { Delete01Icon, MinusIcon, PlusIcon } from '../icons';
+import { BottomSheet } from '../common/BottomSheet';
 import { ProductOptionsPanel, type PanelOption } from '../common/ProductOptionsPanel';
 
 interface CartItemProps {
@@ -47,6 +50,7 @@ function CartQuantity({
   label,
   disabled = false,
   onChange,
+  onRemoveRequest,
 }: {
   value: number;
   max?: number;
@@ -54,6 +58,8 @@ function CartQuantity({
   /** Row is being removed — freeze the stepper and drop any pending commit. */
   disabled?: boolean;
   onChange: (quantity: number) => Promise<void>;
+  /** When set, "-" at 1 asks to remove the item instead of being disabled. */
+  onRemoveRequest?: () => void;
 }) {
   const [qty, setQty] = useState(value);
   // What the box shows while it holds no quantity yet (cleared, or a lone 0) —
@@ -136,8 +142,8 @@ function CartQuantity({
           type="button"
           className="s-quantity-input-decrease-button s-quantity-input-button"
           aria-label={`${label} -`}
-          disabled={disabled || qty <= 1}
-          onClick={() => commit(qty - 1)}
+          disabled={disabled || (qty <= 1 && !onRemoveRequest)}
+          onClick={() => (qty <= 1 ? onRemoveRequest?.() : commit(qty - 1))}
         >
           <MinusIcon aria-hidden="true" />
         </button>
@@ -214,10 +220,12 @@ function CartItemQuantity({
   item,
   disabled,
   onChange,
+  onRemoveRequest,
 }: {
   item: CartItemType;
   disabled: boolean;
   onChange: (quantity: number) => Promise<void>;
+  onRemoveRequest?: () => void;
 }) {
   const { t } = useTranslation();
 
@@ -244,6 +252,7 @@ function CartItemQuantity({
       label={t('pages.products.quantity', 'Quantity')}
       disabled={disabled}
       onChange={onChange}
+      onRemoveRequest={onRemoveRequest}
     />
   );
 }
@@ -266,6 +275,9 @@ export function CartItem({ item, isFirst = false, onMutated }: CartItemProps) {
   const { t } = useTranslation();
   const { format } = useMoney();
   const [deleting, setDeleting] = useState(false);
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const { isLoggedIn } = useUser();
+  const wishlist = useWishlist();
   // Set once the item is deleted with no `onMutated` to refetch the cart.
   const [removed, setRemoved] = useState(false);
   // Belt-and-suspenders against `CartQuantity`'s debounced commit: it cancels
@@ -315,6 +327,37 @@ export function CartItem({ item, isFirst = false, onMutated }: CartItemProps) {
     }
   };
 
+  const emit = (name: string) =>
+    window.salla?.event?.dispatch?.(name, {
+      product_id: item.product_id,
+      cart_item_id: item.id,
+      source: 'cart_page',
+    });
+
+  const askToMove = () => {
+    setConfirmOpen(true);
+    emit('cart::move_to_wishlist.popup.impression');
+  };
+
+  // Wishlist first, cart removal only once it succeeded.
+  const moveToWishlist = async () => {
+    emit('cart::move_to_wishlist.clicked');
+    setConfirmOpen(false);
+    try {
+      if (!wishlist.has(item.product_id) && !(await wishlist.add(item.product_id))) return;
+    } catch {
+      return;
+    }
+    window.salla?.notify?.success(t('pages.cart.moved_to_wishlist', 'Moved to wishlist'));
+    await handleDelete();
+  };
+
+  const removeOnly = () => {
+    emit('cart::remove.clicked');
+    setConfirmOpen(false);
+    void handleDelete();
+  };
+
   if (removed) return null;
 
   const isFreeProduct = toNumber(item.price) === 0 && item.has_discount;
@@ -346,7 +389,12 @@ export function CartItem({ item, isFirst = false, onMutated }: CartItemProps) {
           </div>
 
           <div className="cart-item__controls mt-5 md:mt-0 flex gap-6 md:gap-8 justify-between items-center md:items-start">
-            <CartItemQuantity item={item} disabled={deleting} onChange={changeQuantity} />
+            <CartItemQuantity
+              item={item}
+              disabled={deleting}
+              onChange={changeQuantity}
+              onRemoveRequest={isLoggedIn ? askToMove : undefined}
+            />
 
             <p className="flex-none font-bold">
               {/* label shows on mobile only — desktop has the column heading */}
@@ -360,7 +408,7 @@ export function CartItem({ item, isFirst = false, onMutated }: CartItemProps) {
               aria-label={t('common.elements.remove', 'Remove from the cart')}
               aria-busy={deleting}
               disabled={deleting}
-              onClick={handleDelete}
+              onClick={isLoggedIn ? askToMove : handleDelete}
             >
               {deleting ? (
                 <span className="cart-item__delete-spinner" aria-hidden="true" />
@@ -387,6 +435,24 @@ export function CartItem({ item, isFirst = false, onMutated }: CartItemProps) {
           </ProductOptionsPanel>
         )}
       </section>
+
+      <BottomSheet
+        open={confirmOpen}
+        onClose={() => setConfirmOpen(false)}
+        title={t('pages.cart.remove_item_title', 'Remove from cart?')}
+      >
+        <p className="mb-4">
+          {t('pages.cart.remove_item_body', 'Do you really want to remove this item from cart?')}
+        </p>
+        <div className="flex flex-col gap-2">
+          <button type="button" className="btn btn--primary" onClick={moveToWishlist}>
+            {t('pages.cart.move_to_wishlist', 'Move to Wishlist')}
+          </button>
+          <button type="button" className="btn btn--outline" onClick={removeOnly}>
+            {t('pages.cart.remove_item', 'Remove')}
+          </button>
+        </div>
+      </BottomSheet>
     </form>
   );
 }

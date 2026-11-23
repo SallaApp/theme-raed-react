@@ -1,4 +1,9 @@
 {
+  "pages.cart.remove_item_title": "حذف المنتج من سلة التسوق",
+  "pages.cart.remove_item_body": "هل تريد حذف المنتج من سلة التسوق؟",
+  "pages.cart.move_to_wishlist": "اضافة للأمنيات",
+  "pages.cart.remove_item": "حذف من السلة",
+  "pages.cart.moved_to_wishlist": "تم اضافة المنتج للمفضله",
   "pages.cart.total": "الإجمالي",
   "pages.cart.empty": "السلة فارغة",
   "pages.cart.continue_shopping": "متابعة التسوق",
