@@ -59,6 +59,17 @@ describe('EnhancedSquareBanners', () => {
     expect(untitled.className).not.toContain('has-overlay');
   });
 
+  // TD-18336: a fixed-page link comes with its kind and no url.
+  it('links a banner set to the offers page, which has no url', () => {
+    const { container } = render(
+      <EnhancedSquareBanners
+        data={{ banners: [{ image: 'b.jpg', title: 'Offers', url__type: 'offers_link' }] }}
+      />
+    );
+    // One banner: the plain grid, not the five-banner mosaic.
+    expect(container.querySelector('.banner-entry')?.getAttribute('href')).toBe('/offers');
+  });
+
   it('removes the overlay from a banner with a title, description and url', () => {
     const { container } = render(<EnhancedSquareBanners data={{ banners: mockBanners }} />);
     const banner = container.querySelector('.banner-entry');

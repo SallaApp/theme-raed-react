@@ -17,6 +17,8 @@ export interface ScrollCarouselProps {
   nextLabel: string;
   /** Scroll forward one slide on a timer, back to the start at the end. Off by default. */
   autoPlay?: boolean;
+  /** The arrows and the "1–4 of 8" count. On by default; the phone dots stay either way. */
+  controls?: boolean;
 }
 
 /** One slide and the gap after it. */
@@ -83,6 +85,7 @@ export function ScrollCarousel({
   prevLabel,
   nextLabel,
   autoPlay = false,
+  controls = true,
 }: ScrollCarouselProps) {
   const { t } = useTranslation();
   const track = useRef<HTMLDivElement>(null);
@@ -145,7 +148,7 @@ export function ScrollCarousel({
     return () => window.clearInterval(timer);
   }, [playing]);
 
-  const nav = !rail?.fits && (
+  const nav = controls && !rail?.fits && (
     <div className={`scroll-carousel__nav${rail ? '' : ' invisible'}`}>
       {rail && (
         <span className="scroll-carousel__count">

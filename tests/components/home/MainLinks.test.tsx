@@ -1,7 +1,21 @@
 import React from 'react';
 import { describe, it, expect, vi } from 'vitest';
 import { render } from '@testing-library/react';
+import { renderToString } from 'react-dom/server';
 import { MainLinks } from '../../../app/components/home/MainLinks';
+
+// The common barrel loads every module in the folder; load only the carousel.
+vi.mock('../../../app/components/common', async () => ({
+  ScrollCarousel: (
+    await vi.importActual<typeof import('../../../app/components/common/ScrollCarousel')>(
+      '../../../app/components/common/ScrollCarousel'
+    )
+  ).ScrollCarousel,
+}));
+
+vi.mock('@salla.sa/twilight-theme-engine/i18n', () => ({
+  useTranslation: () => ({ t: (_k: string, fb?: string) => fb ?? _k }),
+}));
 
 // Mock the sub-path exports
 vi.mock('@salla.sa/twilight-theme-engine/common', () => ({
@@ -33,21 +47,63 @@ describe('MainLinks', () => {
     { url: '/cat2', name: 'Category 2', image: 'cat2.jpg' },
   ];
 
-  it('renders SallaSlider with carousel type', () => {
-    const { container } = render(<MainLinks data={{ links: mockLinks, position: 1 }} />);
-    const slider = container.querySelector('salla-slider');
-    expect(slider?.getAttribute('type')).toBe('carousel');
-    expect(slider?.getAttribute('id')).toBe('main-links-1');
-    expect(slider?.getAttribute('controls-outer')).toBe('true');
-    expect(slider?.getAttribute('show-controls')).toBe('false');
+  // TD-18336: `<salla-slider>` (deferred to the browser) sent only a skeleton from the
+  // server, so the links showed up late; the row is now plain markup in the server HTML.
+  it('renders its links in the server HTML, not a deferred <salla-slider>', () => {
+    const html = renderToString(<MainLinks data={{ links: mockLinks, position: 1 }} />);
+    expect(html).not.toContain('salla-slider');
+    expect(html).toContain('id="main-links-1"');
+    expect(html).toContain('href="/cat1"');
+    expect(html).toContain('href="/cat2"');
+    expect(html).toContain('s-main-links__track');
   });
 
-  it('centers links that fit without scrolling instead of leaving them at the start edge', () => {
-    const { container } = render(<MainLinks data={{ links: mockLinks }} />);
-    const config = JSON.parse(
-      container.querySelector('salla-slider')?.getAttribute('slider-config') ?? '{}'
+  // TD-18336: Raed's default links are `offers_link` items, which the API sends with no
+  // `url`; they rendered as <a> with no href.
+  it('links an item set to a fixed page (offers) to that page', () => {
+    const { container } = render(
+      <MainLinks
+        data={{
+          links: [
+            { icon: 'sicon-packed-box', title: 'Ready products', url__type: 'offers_link' },
+            { icon: 'sicon-cake', title: 'Food', url__type: 'offers_link' },
+          ],
+        }}
+      />
     );
-    expect(config.centerInsufficientSlides).toBe(true);
+    const hrefs = Array.from(container.querySelectorAll('a.slide--cat-entry')).map((a) =>
+      a.getAttribute('href')
+    );
+    expect(hrefs).toEqual(['/offers', '/offers']);
+  });
+
+  it('shows the arrows only when show_controls is on', () => {
+    // A row wider than its box (jsdom measures every element 0 wide, a row that fits).
+    const sizes = { scrollWidth: 800, clientWidth: 400 };
+    for (const [key, value] of Object.entries(sizes)) {
+      Object.defineProperty(HTMLElement.prototype, key, { configurable: true, get: () => value });
+    }
+    try {
+      const { container: off } = render(<MainLinks data={{ links: mockLinks }} />);
+      expect(off.querySelector('.scroll-carousel__nav')).toBeNull();
+
+      const { container: on } = render(
+        <MainLinks data={{ links: mockLinks, show_controls: true }} />
+      );
+      expect(on.querySelector('.scroll-carousel__nav')).not.toBeNull();
+    } finally {
+      for (const key of Object.keys(sizes)) {
+        delete (HTMLElement.prototype as unknown as Record<string, unknown>)[key];
+      }
+    }
+  });
+
+  it('shows the title in the row heading', () => {
+    const { container } = render(<MainLinks data={{ links: mockLinks, title: 'Shop by type' }} />);
+    const title = container.querySelector('.scroll-carousel__heading h2');
+    expect(title?.textContent).toBe('Shop by type');
+    // The merged-with-the-block-above styles target this class.
+    expect(title?.classList.contains('s-slider-block__title')).toBe(true);
   });
 
   it('renders links with icon', () => {

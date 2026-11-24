@@ -65,6 +65,17 @@ describe('slidesPerPage', () => {
 });
 
 describe('ScrollCarousel arrows', () => {
+  it('leaves out the arrows and count with controls={false}, on a row that scrolls', () => {
+    layout({ scrollWidth: 800, clientWidth: 400 });
+    const { container } = render(
+      <ScrollCarousel prevLabel="Previous" nextLabel="Next" heading="Row" controls={false}>
+        {slides(8)}
+      </ScrollCarousel>
+    );
+    expect(container.querySelector('.scroll-carousel__nav')).toBeNull();
+    expect(container.querySelector('.scroll-carousel__count')).toBeNull();
+  });
+
   it('page back then forward in LTR (towards smaller, then larger scrollLeft)', () => {
     expect(arrowScroll('ltr')).toEqual([-400, 400]);
   });

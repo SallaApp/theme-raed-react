@@ -107,6 +107,18 @@ describe('EnhancedSlider', () => {
     expect(cta?.getAttribute('href')).toBe('/offers');
   });
 
+  // TD-18336: a fixed-page link comes with its kind and no url.
+  it("links the CTA of a slide set to the offers page, which has no url", () => {
+    const { container } = render(
+      <EnhancedSlider
+        data={{
+          slider_banner: [{ ...mockSlides[0], btnname: 'Shop now', url__type: 'offers_link' }],
+        }}
+      />
+    );
+    expect(container.querySelector('.home-slider__cta')?.getAttribute('href')).toBe('/offers');
+  });
+
   it('omits the CTA button when the slide has no button text', () => {
     const { container } = render(<EnhancedSlider data={{ slider_banner: mockSlides }} />);
     expect(container.querySelector('.home-slider__cta')).toBeNull();
