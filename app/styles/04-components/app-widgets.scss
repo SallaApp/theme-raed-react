@@ -45,7 +45,10 @@ body {
   > [class^='wa-button_'],
   > a[href*='wa.me/'],
   > a[href*='api.whatsapp.com/'],
-  #whatswidget-widget-wrapper [class^='whatswidget-button-wrapper'] {
+  #whatswidget-widget-wrapper [class^='whatswidget-button-wrapper'],
+  // SBC "verified store" seal (salla-trust-badges injects it for KSA stores). seal.js adds this
+  // iframe with inline `bottom: 18px`; only the bottom-left/bottom-right positions (`pos=bottom`).
+  > iframe.sbc-seal-frame[src*='pos=bottom'] {
     translate: $app-widget-lift #{!important};
   }
 }
