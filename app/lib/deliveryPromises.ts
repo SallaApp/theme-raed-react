@@ -4,7 +4,7 @@
  * The products list sends, per product, at most one promise per type, fastest
  * first: `[{ type: 'express', label: 'ساعتين' }, …]`. `label` is only the
  * duration; the sentence around it comes from the theme's locales. The field is
- * absent unless the store turns on `products::listing-delivery-promise`.
+ * absent unless the store enables listing delivery promises.
  */
 export const DELIVERY_PROMISE_TYPES = ['express', 'same_day', 'next_day', 'standard'] as const;
 
@@ -27,7 +27,7 @@ export const DELIVERY_PROMISE_ICONS: Record<DeliveryPromiseType, string> = {
 export const DELIVERY_PROMISE_FALLBACKS: Record<DeliveryPromiseType, string> = {
   express: 'Express delivery in {{label}}',
   same_day: 'Same-day delivery in {{label}}',
-  // As the approved classic-Raed snippet: next-day shows no duration.
+  // Next-day shows no duration.
   next_day: 'Next-day delivery',
   standard: 'Delivery in {{label}}',
 };

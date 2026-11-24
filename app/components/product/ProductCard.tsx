@@ -34,7 +34,7 @@ type ProductCardProps = ComponentProps<typeof EngineProductCard>;
  * Inside the Salla app, a booking product's "Book now" fires `mobile::booking.open`
  * instead of opening the booking page (`lib/nativeBooking.ts`).
  * Delivery promises (`product.delivery_promise`, sent by the products list when
- * the store turns on `products::listing-delivery-promise`) are portaled into
+ * the store enables them) are portaled into
  * `.s-product-card-content-main`, under the title, in every layout. With the
  * field missing or empty nothing is portaled, so the card is unchanged.
  * Styling: `04-components/product.scss`.
