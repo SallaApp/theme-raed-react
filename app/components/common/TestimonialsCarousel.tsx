@@ -12,7 +12,7 @@ export interface TestimonialItem {
 const MAX_STARS = 5;
 const STAR_POSITIONS = Array.from({ length: MAX_STARS }, (_, position) => position + 1);
 
-function TestimonialCard({ item, index }: { item: TestimonialItem; index: number }) {
+function TestimonialCard({ item }: { item: TestimonialItem }) {
   const { t } = useTranslation();
   const name = item.name?.trim();
   const stars = Math.max(0, Math.min(MAX_STARS, Math.round(Number(item.stars ?? 0))));
@@ -45,7 +45,8 @@ function TestimonialCard({ item, index }: { item: TestimonialItem; index: number
           <img
             className="testimonial-card__avatar"
             src={item.avatar}
-            alt={name ?? `testimonial-${index}`}
+            // The name is printed right after it: an alt would read it twice.
+            alt=""
             width={44}
             height={44}
             loading="lazy"
@@ -99,7 +100,7 @@ export function TestimonialsCarousel({ items, title, description }: Testimonials
           // A static settings list whose items have no id: see
           // .react-doctor/false-positives.md.
           // react-doctor-disable-next-line react-doctor/no-array-index-as-key
-          <TestimonialCard key={`${index}-${item.name ?? ''}`} item={item} index={index} />
+          <TestimonialCard key={`${index}-${item.name ?? ''}`} item={item} />
         ))}
       </ScrollCarousel>
     </div>

@@ -80,15 +80,18 @@ function StageSlide({
   current: boolean;
   copy?: boolean;
 }) {
+  const { t } = useTranslation();
+
   return (
     <Link
       to={item.url || '#'}
       className={`s-photos-slider__slide${current ? ' is-current' : ''}`}
       {...(copy && COPY_PROPS)}
     >
+      {/* The picture is all the link has, so it names the link, the way its dot is named. */}
       <Image
         src={item.image}
-        alt={copy ? '' : `photos-slider-${index}`}
+        alt={copy ? '' : `${t('blocks.home.slider_page', 'Slide')} ${index + 1}`}
         width={1280}
         height={753}
         sizes={SIZES}

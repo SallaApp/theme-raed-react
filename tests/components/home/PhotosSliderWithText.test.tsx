@@ -83,6 +83,30 @@ describe('PhotosSliderWithText', () => {
     expect(container.querySelector('.s-text-photos-slider__overlay')).toBeNull();
   });
 
+  it("leaves the picture's alt empty when the card's text names it, or the card is no link", () => {
+    const { container } = render(
+      <PhotosSliderWithText
+        data={{
+          slides: [
+            ...slides,
+            { image: 'three.jpg', description: 'شحن مجاني', url: '/shipping' },
+            { image: 'four.jpg' },
+          ],
+        }}
+      />
+    );
+    const alts = Array.from(container.querySelectorAll('img'), (img) => img.getAttribute('alt'));
+    expect(alts).toEqual(['', '', '', '']);
+  });
+
+  it('names a card that is only a linked picture by its slide number', () => {
+    const { container } = render(
+      <PhotosSliderWithText data={{ slides: [slides[0], { image: 'two.jpg', url: '/sale' }] }} />
+    );
+    const card = container.querySelector('a.s-text-photos-slider__slide[href="/sale"]');
+    expect(card?.querySelector('img')?.getAttribute('alt')).toBe('Slide 2');
+  });
+
   it('scrolls on the arrows, which sit under a row with no title', () => {
     Object.defineProperty(HTMLElement.prototype, 'scrollWidth', { configurable: true, value: 800 });
     Object.defineProperty(HTMLElement.prototype, 'clientWidth', { configurable: true, value: 400 });

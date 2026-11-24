@@ -26,13 +26,17 @@ function SlideCard({
   index: number;
   motionAllowed: boolean;
 }) {
+  const { t } = useTranslation();
   const button = slide.btnname?.trim();
+  // The title and text say what the card is. Only a card that is just a linked
+  // picture needs the picture to name the link.
+  const namesLink = !button && slide.url && !slide.title && !slide.description;
   const content = (
     <>
       <Image
         src={slide.image}
         className="absolute inset-0 w-full h-full object-cover"
-        alt={slide.title || `photos-slider-${index}`}
+        alt={namesLink ? `${t('blocks.home.slider_page', 'Slide')} ${index + 1}` : ''}
         width={1200}
         height={800}
         priority={index === 0}
