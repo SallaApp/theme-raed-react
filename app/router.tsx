@@ -17,6 +17,7 @@ import {
   FixedProducts,
   LatestProducts,
   MainLinks,
+  mainLinksClassName,
   PhotosSlider,
   ProductsSlider,
   SliderProductsWithHeader,
@@ -109,17 +110,7 @@ registerHomeComponentConfig({
     height: '112px',
     placeholder: <SliderSkeleton />,
     // Keeps the engine entry's merge classes; theme config replaces, not merges.
-    className: (data) => {
-      const mergeWithTop = data.merge_links_with_top_component;
-      return [
-        's-block',
-        's-block--main-links',
-        mergeWithTop && data.position ? 'merge-with-top-component' : '',
-        !data.title && mergeWithTop ? 'merged-has-no-title' : '',
-      ]
-        .filter(Boolean)
-        .join(' ');
-    },
+    className: mainLinksClassName,
   },
   'square-links': {
     height: '144px', // .slide--cat-entry h-36 cards (square-links keeps the card look)

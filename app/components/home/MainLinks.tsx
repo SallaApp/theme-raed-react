@@ -33,12 +33,36 @@ export interface MainLinksProps {
     vertical_links?: boolean;
     grayscale_links?: boolean;
     simplified_links?: boolean;
+    /** The "merge with the previous block" switch, under its twilight.json id (Twig reads it too). */
+    merge_with_top_component?: boolean;
+    /** The name the engine's own config reads; kept for blocks that still carry it. */
     merge_links_with_top_component?: boolean;
     title?: string;
     description?: string;
     position?: number;
     [key: string]: unknown;
   };
+}
+
+function mergesWithTop(data: MainLinksProps['data']) {
+  return !!(data.merge_with_top_component ?? data.merge_links_with_top_component);
+}
+
+/**
+ * The block's wrapper classes. The engine computes them from the block before it
+ * adds `position`, so there is no first-block check here: `home-blocks.scss`
+ * only pulls `.merge-with-top-component` up when it follows a full-width block.
+ */
+export function mainLinksClassName(data: MainLinksProps['data']) {
+  const mergeWithTop = mergesWithTop(data);
+  return [
+    's-block',
+    's-block--main-links',
+    mergeWithTop ? 'merge-with-top-component' : '',
+    !data.title && mergeWithTop ? 'merged-has-no-title' : '',
+  ]
+    .filter(Boolean)
+    .join(' ');
 }
 
 export const MainLinks = memo(function MainLinks({ data }: MainLinksProps) {
@@ -50,8 +74,8 @@ export const MainLinks = memo(function MainLinks({ data }: MainLinksProps) {
     show_cats: showCats = false,
     show_controls: showControls = false,
     title,
-    merge_links_with_top_component: mergeWithTop = false,
   } = data;
+  const mergeWithTop = mergesWithTop(data);
 
   const items = showCats ? categories : links;
   if (!items.length) return null;
