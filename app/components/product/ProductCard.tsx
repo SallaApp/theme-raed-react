@@ -5,6 +5,8 @@ import { useWishlist } from '@salla.sa/twilight-theme-engine/hooks/useWishlist';
 import { useTranslation } from '@salla.sa/twilight-theme-engine/i18n';
 import { registerNativeBookingHook } from '../../lib/nativeBooking';
 import { withImageFallback } from '../../lib/productImage';
+import { deliveryPromisesOf } from '../../lib/deliveryPromises';
+import { DeliveryPromises } from './DeliveryPromises';
 import { WishlistHeartButton } from './WishlistHeartButton';
 
 type ProductCardProps = ComponentProps<typeof EngineProductCard>;
@@ -31,11 +33,17 @@ type ProductCardProps = ComponentProps<typeof EngineProductCard>;
  * (the engine `Image` renders nothing without a `src`).
  * Inside the Salla app, a booking product's "Book now" fires `mobile::booking.open`
  * instead of opening the booking page (`lib/nativeBooking.ts`).
+ * Delivery promises (`product.delivery_promise`, sent by the products list when
+ * the store turns on `products::listing-delivery-promise`) are portaled into
+ * `.s-product-card-content-main`, under the title, in every layout. With the
+ * field missing or empty nothing is portaled, so the card is unchanged.
  * Styling: `04-components/product.scss`.
  */
 export function ProductCard(props: ProductCardProps) {
   const ref = useRef<HTMLDivElement>(null);
   const [footerEl, setFooterEl] = useState<HTMLElement | null>(null);
+  const [mainEl, setMainEl] = useState<HTMLElement | null>(null);
+  const promises = useMemo(() => deliveryPromisesOf(props.product), [props.product]);
   const { product, isPlaceholder } = useMemo(
     () => withImageFallback(props.product),
     [props.product]
@@ -52,6 +60,8 @@ export function ProductCard(props: ProductCardProps) {
         el.setAttribute('fill', 'solid');
         el.setAttribute('loader-position', 'center');
       });
+
+      setMainEl(root.querySelector<HTMLElement>('.s-product-card-content-main'));
 
       const vertical = root.querySelector<HTMLElement>('.s-product-card-vertical');
       if (!vertical) return;
@@ -83,6 +93,7 @@ export function ProductCard(props: ProductCardProps) {
           <FooterWishlistButton productId={Number(props.product.id)} />,
           footerEl
         )}
+      {mainEl && promises.length > 0 && createPortal(<DeliveryPromises promises={promises} />, mainEl)}
     </div>
   );
 }

@@ -33,6 +33,9 @@ vi.mock('@salla.sa/twilight-theme-engine/product', () => ({
           </button>
         )}
       </div>
+      <div className="s-product-card-content-main" data-testid="main">
+        <h3 className="s-product-card-content-title">{product.name}</h3>
+      </div>
       <div className="s-product-card-content-footer" data-testid="footer">
         <salla-add-product-button fill="outline" />
       </div>
@@ -52,7 +55,12 @@ vi.mock('@salla.sa/twilight-theme-engine/hooks/useWishlist', () => ({
 }));
 
 vi.mock('@salla.sa/twilight-theme-engine/i18n', () => ({
-  useTranslation: () => ({ t: (_k: string, fallback?: string) => fallback ?? _k }),
+  useTranslation: () => ({
+    t: (k: string, opts?: string | { defaultValue?: string; [key: string]: unknown }) => {
+      if (typeof opts === 'string') return opts;
+      return (opts?.defaultValue ?? k).replace(/\{\{(\w+)\}\}/g, (_, name) => String(opts?.[name]));
+    },
+  }),
 }));
 
 const product = { id: 42, name: 'Test product' } as never;
@@ -158,5 +166,45 @@ describe('ProductCard', () => {
     await waitFor(() => expect(getByTestId('footer').querySelector('button')).toBeTruthy());
 
     expect(() => rerender(<ProductCard product={product} layout="horizontal" />)).not.toThrow();
+  });
+
+  describe('delivery promises', () => {
+    it('renders nothing when the product has no delivery_promise field', async () => {
+      const { getByTestId, container } = render(<ProductCard product={product} />);
+      await waitFor(() => expect(getByTestId('footer').querySelector('button')).toBeTruthy());
+      expect(container.querySelector('.s-product-card-delivery-promises')).toBeNull();
+      expect(getByTestId('main').children).toHaveLength(1);
+    });
+
+    it('renders nothing for an empty list', async () => {
+      const { getByTestId, container } = render(
+        <ProductCard product={{ id: 7, name: 'Empty', delivery_promise: [] } as never} />
+      );
+      await waitFor(() => expect(getByTestId('footer').querySelector('button')).toBeTruthy());
+      expect(container.querySelector('.s-product-card-delivery-promises')).toBeNull();
+    });
+
+    it('renders one pill per promise under the title, in the order given', async () => {
+      const withPromises = {
+        id: 8,
+        name: 'Fast',
+        delivery_promise: [
+          { type: 'express', label: 'ساعتين' },
+          { type: 'same_day', label: '6 ساعات' },
+        ],
+      } as never;
+      const { getByTestId } = render(<ProductCard product={withPromises} />);
+
+      await waitFor(() =>
+        expect(getByTestId('main').querySelector('.s-product-card-delivery-promises')).toBeTruthy()
+      );
+      const pills = getByTestId('main').querySelectorAll('.s-product-card-delivery-promise');
+      expect([...pills].map((p) => p.getAttribute('data-type'))).toEqual(['express', 'same_day']);
+      expect(pills[0].textContent).toBe('Fast delivery in ساعتين');
+      expect(pills[0].querySelector('i')?.className).toBe('sicon-flash');
+      expect(pills[1].textContent).toBe('Same-day delivery in 6 ساعات');
+      // Placed after the title, inside the engine's content-main column.
+      expect(getByTestId('main').firstElementChild?.className).toBe('s-product-card-content-title');
+    });
   });
 });

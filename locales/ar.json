@@ -94,5 +94,9 @@
   "blocks.order_options.subtitle": "اختر من الخيارات المتاحة.",
   "blocks.order_options.continue": "متابعة",
   "blocks.order_options.total": "الإجمالي",
-  "blocks.order_options.required_message": "يرجى تعبئة الحقول المطلوبة"
+  "blocks.order_options.required_message": "يرجى تعبئة الحقول المطلوبة",
+  "blocks.product.delivery_promise.express": "توصيل سريع خلال {{label}}",
+  "blocks.product.delivery_promise.same_day": "توصيل اليوم خلال {{label}}",
+  "blocks.product.delivery_promise.next_day": "توصيل غداً خلال {{label}}",
+  "blocks.product.delivery_promise.standard": "توصيل خلال {{label}}"
 }

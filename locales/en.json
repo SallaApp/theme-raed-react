@@ -94,5 +94,9 @@
   "blocks.order_options.subtitle": "Choose from the available options.",
   "blocks.order_options.continue": "Continue",
   "blocks.order_options.total": "Total",
-  "blocks.order_options.required_message": "Please fill in the required fields"
+  "blocks.order_options.required_message": "Please fill in the required fields",
+  "blocks.product.delivery_promise.express": "Fast delivery in {{label}}",
+  "blocks.product.delivery_promise.same_day": "Same-day delivery in {{label}}",
+  "blocks.product.delivery_promise.next_day": "Next-day delivery in {{label}}",
+  "blocks.product.delivery_promise.standard": "Delivery in {{label}}"
 }
