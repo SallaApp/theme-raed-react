@@ -200,7 +200,7 @@ describe('ProductCard', () => {
       );
       const pills = getByTestId('main').querySelectorAll('.s-product-card-delivery-promise');
       expect([...pills].map((p) => p.getAttribute('data-type'))).toEqual(['express', 'same_day']);
-      expect(pills[0].textContent).toBe('Fast delivery in ساعتين');
+      expect(pills[0].textContent).toBe('Express delivery in ساعتين');
       expect(pills[0].querySelector('i')?.className).toBe('sicon-flash');
       expect(pills[1].textContent).toBe('Same-day delivery in 6 ساعات');
       // Placed after the title, inside the engine's content-main column.

@@ -25,9 +25,10 @@ export const DELIVERY_PROMISE_ICONS: Record<DeliveryPromiseType, string> = {
 
 /** English fallbacks for the locale keys `blocks.product.delivery_promise.<type>`. */
 export const DELIVERY_PROMISE_FALLBACKS: Record<DeliveryPromiseType, string> = {
-  express: 'Fast delivery in {{label}}',
+  express: 'Express delivery in {{label}}',
   same_day: 'Same-day delivery in {{label}}',
-  next_day: 'Next-day delivery in {{label}}',
+  // As the approved classic-Raed snippet: next-day shows no duration.
+  next_day: 'Next-day delivery',
   standard: 'Delivery in {{label}}',
 };
 

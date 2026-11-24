@@ -34,10 +34,13 @@ describe('deliveryPromisesOf', () => {
 });
 
 describe('delivery promise locale keys', () => {
-  it.each(DELIVERY_PROMISE_TYPES)('has an ar and en text with {{label}} for %s', (type) => {
+  it.each(DELIVERY_PROMISE_TYPES)('has an ar and en text for %s', (type) => {
     const key = `blocks.product.delivery_promise.${type}`;
     for (const locale of [ar, en] as Record<string, string>[]) {
-      expect(locale[key]).toContain('{{label}}');
+      expect(locale[key]).toBeTruthy();
+      // Next-day reads «توصيل غداً» / "Next-day delivery", without the duration.
+      if (type === 'next_day') expect(locale[key]).not.toContain('{{label}}');
+      else expect(locale[key]).toContain('{{label}}');
     }
   });
 });
