@@ -32,6 +32,17 @@ describe('BrandHeader', () => {
     expect(Array.from(wrapper.parentElement!.children, (el) => el.tagName)).toEqual(['H1', 'DIV']);
   });
 
+  it('strips scripts and event handlers from the merchant HTML', () => {
+    const html = renderToString(
+      <BrandHeader
+        source={brandSource('<p>Lindt<img src="x" onerror="alert(1)"></p><script>alert(2)</script>')}
+      />
+    );
+    expect(html).toContain('<p>Lindt<img src="x"></p>');
+    expect(html).not.toContain('onerror');
+    expect(html).not.toContain('<script');
+  });
+
   it('renders no description element without a description', () => {
     const html = renderToString(<BrandHeader source={brandSource()} />);
     expect(html).not.toContain('text-gray-500');

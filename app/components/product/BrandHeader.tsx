@@ -1,4 +1,5 @@
 import { Image } from '@salla.sa/twilight-theme-engine/common';
+import { stripUnsafeHtml } from '@salla.sa/twilight-theme-engine/utils';
 import type { ProductListLoaderData } from '@salla.sa/twilight-theme-engine/routes/product-listing';
 
 type BrandEntity = { name: string; banner?: string; logo?: string; description?: string };
@@ -30,11 +31,12 @@ export function BrandHeader({ source }: { source: ProductListLoaderData['source'
         <div className="px-5 pt-3 rtl:text-right">
           <h1 className="text-2xl font-bold mb-1">{brand.name}</h1>
           {/* A <div>, not a <p>: the description is rich text (`<p>…</p>`), and a <p> cannot hold
-              a <p>, so the browser split the server's HTML and hydration failed (#418, TD-17818). */}
+              a <p>, so the browser split the server's HTML and hydration failed (#418, TD-17818).
+              `stripUnsafeHtml` is pure, so server and client still render the same markup. */}
           {brand.description && (
             <div
               className="text-base text-gray-500 font-medium"
-              dangerouslySetInnerHTML={{ __html: brand.description }}
+              dangerouslySetInnerHTML={{ __html: stripUnsafeHtml(brand.description) }}
             />
           )}
         </div>
