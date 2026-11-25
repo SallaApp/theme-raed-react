@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
-import { openStoreSwitcher } from '../../app/lib/storeSwitchers';
+import { canSwitchScope, openStoreSwitcher } from '../../app/lib/storeSwitchers';
 
 function installSalla(inApp: boolean, { withSheetMethods = true } = {}) {
   const dispatch = vi.fn();
@@ -47,5 +47,19 @@ describe('openStoreSwitcher', () => {
     const { dispatch } = installSalla(true);
     openStoreSwitcher('branch');
     expect(dispatch).toHaveBeenCalledWith('scopes::open');
+  });
+});
+
+describe('canSwitchScope', () => {
+  it('lets shoppers switch markets when the store has a scope that is not IP-restricted', () => {
+    expect(canSwitchScope({ display_as: 'popup' })).toBe(true);
+    expect(canSwitchScope({ display_as: 'default' })).toBe(true);
+    expect(canSwitchScope({})).toBe(true);
+  });
+
+  it('blocks switching when the store has no scope or locks the market to the IP', () => {
+    expect(canSwitchScope(null)).toBe(false);
+    expect(canSwitchScope(undefined)).toBe(false);
+    expect(canSwitchScope({ display_as: 'ip_address' })).toBe(false);
   });
 });

@@ -12,6 +12,7 @@ import { MapPinIcon, SearchIcon, ShoppingBagIcon } from '../icons';
 import { useAppSafeAreaTop } from '../../hooks/useAppSafeAreaTop';
 import { useNavHasContent } from '../../hooks/useNavHasContent';
 import { HOME_ROUTE_ID, PRODUCT_ROUTE_ID } from '../../lib/routeIds';
+import { canSwitchScope } from '../../lib/storeSwitchers';
 import { HeaderMainMenu } from './HeaderMainMenu';
 import { HeaderNav } from './HeaderNav';
 import { HeaderTopnav } from './HeaderTopnav';
@@ -275,7 +276,7 @@ export function Header({ navOpen: navOpenProp, onNavOpenChange }: HeaderProps = 
 
             <div className="site-header__actions">
               <SallaUserMenu avatarOnly showHeader relativeDropdown className="header-action" />
-              {store?.scope && (
+              {store?.scope && canSwitchScope(store.scope) && (
                 <ScopeButton label={store.scope.name || t('blocks.header.branches', 'Branches')} />
               )}
               <SallaCartSummary className="header-action">

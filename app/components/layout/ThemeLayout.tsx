@@ -12,6 +12,7 @@ import { MobileAccountSheet } from './MobileAccountSheet';
 import { MobileBottomBar } from './MobileBottomBar';
 import { MobilePageTitleBar } from './MobilePageTitleBar';
 import { fillComponentTranslations, type ComponentLang } from '../../lib/componentTranslations';
+import { canSwitchScope } from '../../lib/storeSwitchers';
 
 /**
  * Theme layout — passed to `<TwilightProvider layout={ThemeLayout}>` in
@@ -114,7 +115,7 @@ function GlobalModals() {
         </Suspense>
       )}
 
-      {store?.scope && (
+      {canSwitchScope(store?.scope) && (
         <Suspense>
           <SallaScopes
             selection={store?.scope?.display_as === 'popup' ? 'mandatory' : 'optional'}

@@ -23,7 +23,7 @@ const user = { isLoggedIn: true };
 
 const twilight: {
   store: {
-    scope?: { name: string } | null;
+    scope?: { name: string; display_as?: string } | null;
     contacts?: Record<string, string>;
     settings?: Record<string, unknown>;
   };
@@ -270,6 +270,19 @@ describe('MobileAccountSheet', () => {
     fireEvent.click(screen.getByText('Branch'));
     expect(dispatch).toHaveBeenCalledWith('scopes::open');
     expect(onClose).toHaveBeenCalledTimes(2);
+  });
+
+  it('hides the branch row when the store locks the market to the visitor IP', async () => {
+    twilight.store = {
+      scope: { name: 'Riyadh', display_as: 'ip_address' },
+      contacts: {},
+      settings: {},
+    };
+    renderSheet();
+    await settle();
+
+    expect(screen.queryByText('Branch')).toBeNull();
+    expect(screen.queryByText('Riyadh')).toBeNull();
   });
 
   it('opens the important-links sheet from its own row, closing itself first', async () => {

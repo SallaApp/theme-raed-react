@@ -2,6 +2,7 @@ import { Fragment, useRef, useState, type MouseEvent } from 'react';
 import { HookSlot } from '@salla.sa/twilight-theme-engine/hooks';
 import { HookName } from '@salla.sa/twilight-theme-engine/types/hooks';
 import { useTranslation } from '@salla.sa/twilight-theme-engine/i18n';
+import { useTwilight } from '@salla.sa/twilight-theme-engine/providers';
 import { getActiveCurrency } from '@salla.sa/twilight-theme-engine/api/client';
 import { useWishlist } from '@salla.sa/twilight-theme-engine/hooks/useWishlist';
 import { CurrencySymbol, Link, Image } from '@salla.sa/twilight-theme-engine/common';
@@ -13,6 +14,7 @@ import { SallaInstallment } from '@salla.sa/twilight-components-react/installmen
 import { useHydrated } from '../../hooks/useHydrated';
 import { useMobileViewport } from '../../hooks/useMobileViewport';
 import { youtubeFacades } from '../../lib/descriptionVideos';
+import { canSwitchScope } from '../../lib/storeSwitchers';
 import { ProductMetadata } from './ProductMetadata';
 import { WishlistHeartButton } from './WishlistHeartButton';
 
@@ -42,6 +44,7 @@ export function ProductDetails({
   showTags = true,
 }: ProductDetailsProps) {
   const { t } = useTranslation();
+  const { store } = useTwilight();
   const hydrated = useHydrated();
   const isMobile = useMobileViewport();
 
@@ -147,7 +150,7 @@ export function ProductDetails({
         </div>
       )}
 
-      {product.show_availability && (
+      {product.show_availability && canSwitchScope(store?.scope) && (
         <section className="mb-5 last:mb-0">
           <div className="center-between">
             <span className="flex items-center text-base">

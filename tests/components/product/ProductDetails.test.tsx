@@ -12,6 +12,15 @@ vi.mock('@salla.sa/twilight-theme-engine/i18n', () => ({
   }),
 }));
 
+// A multi-market store whose shoppers may switch markets; tests override `scope`.
+const twilight: { store: { scope: { name: string; display_as?: string } | null } } = {
+  store: { scope: { name: 'Riyadh' } },
+};
+
+vi.mock('@salla.sa/twilight-theme-engine/providers', () => ({
+  useTwilight: () => twilight,
+}));
+
 vi.mock('@salla.sa/twilight-theme-engine/hooks', () => ({
   HookSlot: ({ name }: { name: string }) => <div data-hook-slot={name} />,
 }));
@@ -124,6 +133,7 @@ describe('ProductDetails select branch', () => {
 
   beforeEach(() => {
     dispatch.mockClear();
+    twilight.store = { scope: { name: 'Riyadh' } };
     (window as unknown as { salla: unknown }).salla = {
       event: { on: vi.fn(), off: vi.fn(), dispatch },
     };
@@ -157,6 +167,19 @@ describe('ProductDetails select branch', () => {
       mode: 'availability',
       product_id: '42',
     });
+  });
+
+  it('is hidden when the store locks the market to the visitor IP', async () => {
+    twilight.store = { scope: { name: 'Riyadh', display_as: 'ip_address' } };
+    const { container } = render(
+      <ProductDetails product={makeProduct({ show_availability: true })} />
+    );
+    await act(async () => {});
+
+    const label = [...container.querySelectorAll('span')].find(
+      (span) => span.textContent === 'pages.products.select_branch'
+    );
+    expect(label).toBeUndefined();
   });
 
   it('points its arrow forward in both directions, after the text', async () => {
