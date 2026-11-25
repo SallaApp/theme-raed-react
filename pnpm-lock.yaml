@@ -16,7 +16,7 @@ importers:
         specifier: ^3.0.2
         version: 3.0.2(@salla.sa/twilight-components@3.0.2(@jitsu/protocols@1.11.0)(@types/dlv@1.1.5)(lit@3.3.3)(webpack@5.111.1(esbuild@0.28.2)(postcss@8.5.26)))(@stencil/core@4.45.2)(@types/react@19.3.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       '@salla.sa/twilight-theme-engine':
-        specifier: 1.0.193
+        specifier: ^1.0.193
         version: 1.0.193(fd7bed1e983fb9be19ff82e418d77efd)
       '@tanstack/react-query':
         specifier: ~5.102.8
