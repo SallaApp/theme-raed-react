@@ -2,6 +2,7 @@ import { memo, useRef } from 'react';
 import { Link, Image } from '@salla.sa/twilight-theme-engine/common';
 import { useTranslation } from '@salla.sa/twilight-theme-engine/i18n';
 import { ScrollCarousel } from '../common';
+import { blockLinkUrl } from '../../lib/blockLink';
 import { parseSlideVideo } from '../../lib/slideVideo';
 import { useMotionAllowed } from '../../hooks/useMotionAllowed';
 import { SlideVideo, useSlideVideos, type SliderBanner } from './EnhancedSlider';
@@ -27,6 +28,7 @@ function SlideCard({
   motionAllowed: boolean;
 }) {
   const button = slide.btnname?.trim();
+  const url = blockLinkUrl(slide);
   const content = (
     <>
       <Image
@@ -45,7 +47,7 @@ function SlideCard({
           <p className="s-text-photos-slider__description">{slide.description}</p>
         )}
         {button && (
-          <Link to={slide.url || '#'} className="home-slider__cta">
+          <Link to={url || '#'} className="home-slider__cta">
             {button}
           </Link>
         )}
@@ -54,9 +56,9 @@ function SlideCard({
   );
 
   // Without a button, a link makes the whole card clickable (no link inside a link).
-  if (!button && slide.url) {
+  if (!button && url) {
     return (
-      <Link to={slide.url} className="s-text-photos-slider__slide">
+      <Link to={url} className="s-text-photos-slider__slide">
         {content}
       </Link>
     );

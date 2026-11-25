@@ -2,6 +2,7 @@ import { memo, useCallback, useEffect, useRef, useState, type RefObject } from '
 import { SallaSlider } from '@salla.sa/twilight-components-react/slider';
 import { Link } from '@salla.sa/twilight-theme-engine/common';
 import { getCdnImageSrcSet, getCdnImageUrl } from '@salla.sa/twilight-theme-engine/utils/cdn-image';
+import { blockLinkUrl } from '../../lib/blockLink';
 import { parseSlideVideo, youtubeEmbedUrl } from '../../lib/slideVideo';
 import { useMotionAllowed } from '../../hooks/useMotionAllowed';
 import { useFirstInteraction } from '../../hooks/useFirstInteraction';
@@ -26,6 +27,8 @@ export interface SliderBanner {
   link?: string;
   /** twilight.json `slides.url`: where the slide's button goes. */
   url?: string;
+  /** The link kind; a fixed page (`offers_link`) comes with no `url` (`blockLinkUrl`). */
+  url__type?: string;
   image?: string;
   mobile_image?: string;
   video?: string;
@@ -238,7 +241,7 @@ function SlideText({ slide, poster }: { slide: SliderBanner; poster?: boolean })
         {/* A button text shows the button; legacy `slider_banner` data can still switch it off. */}
         {slide.btnname?.trim() && slide.show_button !== false && (
           <Link
-            to={slide.url || slide.link || '#'}
+            to={blockLinkUrl(slide) || slide.link || '#'}
             data-swiper-parallax="-100"
             className="home-slider__cta"
             // The poster is aria-hidden, so its copy stays out of the tab order. Both link

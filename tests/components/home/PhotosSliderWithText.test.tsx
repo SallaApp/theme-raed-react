@@ -76,6 +76,18 @@ describe('PhotosSliderWithText', () => {
     );
   });
 
+  // TD-18336: a fixed-page link comes with its kind and no url.
+  it('links a card set to the offers page, which has no url', () => {
+    const { container } = render(
+      <PhotosSliderWithText
+        data={{ slides: [{ ...slides[1], btnname: '', url: undefined, url__type: 'offers_link' }] }}
+      />
+    );
+    expect(container.querySelector('.s-text-photos-slider__slide')?.getAttribute('href')).toBe(
+      '/offers'
+    );
+  });
+
   it('drops the overlay when the slide switches it off', () => {
     const { container } = render(
       <PhotosSliderWithText data={{ slides: [{ ...slides[0], without_overlay: true }] }} />

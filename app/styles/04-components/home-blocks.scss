@@ -1461,11 +1461,6 @@ salla-reviews:not(:has(.s-reviews-swiper-slide)) {
 .s-block--main-links {
   @extend .s-block--categories;
 
-    /* Three links a row on phones, not the shared slider's two (slider.scss). */
-  .slide--one-eighth {
-    @apply w-1/3 md:w-1/4 lg:w-[12.5%];
-  }
-
   /* Circular avatar-style items: a rounded, tinted "bubble" holding the image
      or icon, with the title sitting below it rather than inside a card. */
   .slide--cat-entry {
@@ -1504,33 +1499,58 @@ salla-reviews:not(:has(.s-reviews-swiper-slide)) {
   @extend .s-block--categories;
 }
 
-/* Quick links before `<salla-slider>` loads. Rendered in the browser (lazy
-   blocks, client navigation), the React wrapper sets `type` as a property, so
-   the element has no `type="carousel"` attribute yet and the components
-   library's styles treat it as a plain slider: every slide but the first
-   hidden (`:not([type='carousel']) … div:nth-child(n+2)`), and no row layout.
-   Show one clipped row instead: the slide widths above fit as many as Swiper
-   will (3 on phones, 4 on tablets, 8 on desktop). `!important` beats the
-   library rule's specificity. */
+/* The links row (MainLinks.tsx): a ScrollCarousel track, server-rendered.
+   Whole slides per row, less the track's gaps (gap-3, md:gap-4, lg:gap-6):
+   main links 3 on phones, 4 on tablets, 8 on desktop; square links keep the
+   old slider's 2 / 3 / 4 / 8. */
 .s-block--main-links,
 .s-block--square-links {
-  salla-slider:not(.hydrated) > [slot='items'] {
-    @apply flex flex-nowrap overflow-hidden;
+  .s-main-links__title {
+    @apply m-0 font-bold text-base sm:text-lg;
+  }
 
-    > div {
-      @apply shrink-0;
-      display: block !important;
+  .s-main-links__track {
+    > .slide--one-eighth {
+      scroll-snap-align: start;
     }
 
-    /* Centred while they fit (`centerInsufficientSlides`); start-aligned once
-       they overflow, as auto margins don't go below zero. */
-    > div:first-child {
+    /* Centred while they fit (as Swiper's `centerInsufficientSlides` was);
+       start-aligned once they overflow, as auto margins don't go below zero. */
+    > .slide--one-eighth:first-child {
       margin-inline-start: auto;
     }
 
-    > div:last-child {
+    > .slide--one-eighth:last-child {
       margin-inline-end: auto;
     }
+  }
+}
+
+.s-block--main-links .s-main-links__track > .slide--one-eighth {
+  flex: 0 0 calc((100% - 2 * 0.75rem) / 3);
+
+  @media (min-width: 768px) {
+    flex-basis: calc((100% - 3 * 1rem) / 4);
+  }
+
+  @media (min-width: 1024px) {
+    flex-basis: calc((100% - 7 * 1.5rem) / 8);
+  }
+}
+
+.s-block--square-links .s-main-links__track > .slide--one-eighth {
+  flex: 0 0 calc((100% - 0.75rem) / 2);
+
+  @media (min-width: 640px) {
+    flex-basis: calc((100% - 2 * 0.75rem) / 3);
+  }
+
+  @media (min-width: 768px) {
+    flex-basis: calc((100% - 3 * 1rem) / 4);
+  }
+
+  @media (min-width: 1024px) {
+    flex-basis: calc((100% - 7 * 1.5rem) / 8);
   }
 }
 

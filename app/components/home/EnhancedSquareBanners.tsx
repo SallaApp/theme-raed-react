@@ -1,10 +1,13 @@
 import { memo } from 'react';
 import { Link } from '@salla.sa/twilight-theme-engine/common';
 import { useTranslation } from '@salla.sa/twilight-theme-engine/i18n';
+import { blockLinkUrl } from '../../lib/blockLink';
 
 interface BannerItem {
   image?: string;
   url?: string;
+  /** The link kind; a fixed page (`offers_link`) comes with no `url` (`blockLinkUrl`). */
+  url__type?: string;
   title?: string;
   description?: string;
 }
@@ -27,12 +30,12 @@ const bannerLabel = (banner: BannerItem, ctaLabel: string) =>
 
 /** A banner with its title, description and link shows its photo without the dark overlay. */
 const isComplete = (banner: BannerItem) =>
-  Boolean(banner.title && banner.description && banner.url);
+  Boolean(banner.title && banner.description && blockLinkUrl(banner));
 
 function MosaicBanner({ banner, ctaLabel }: { banner: BannerItem; ctaLabel: string }) {
   return (
     <Link
-      to={banner.url || '#'}
+      to={blockLinkUrl(banner) || '#'}
       aria-label={bannerLabel(banner, ctaLabel)}
       className={`enhanced-square-banner bg-no-repeat bg-cover bg-center ${isComplete(banner) ? '' : 'enhanced-square-banner--overlay'}`}
       style={{ backgroundImage: `url(${banner.image})` }}
@@ -42,7 +45,7 @@ function MosaicBanner({ banner, ctaLabel }: { banner: BannerItem; ctaLabel: stri
         {banner.description && (
           <p className="enhanced-square-banner__description">{banner.description}</p>
         )}
-        {banner.url && <span className="enhanced-square-banner__cta">{ctaLabel}</span>}
+        {blockLinkUrl(banner) && <span className="enhanced-square-banner__cta">{ctaLabel}</span>}
       </span>
     </Link>
   );
@@ -82,7 +85,7 @@ export const EnhancedSquareBanners = memo(function EnhancedSquareBanners({
       {banners.map((banner, index) => (
         <Link
           key={index}
-          to={banner.url || '#'}
+          to={blockLinkUrl(banner) || '#'}
           aria-label={bannerLabel(banner, ctaLabel)}
           className={`banner-entry bg-no-repeat bg-cover bg-center ${banner.title && !isComplete(banner) ? 'has-overlay' : ''} ${hasTwoRows ? 'h-banner' : 'h-lg-banner'}`}
           style={{ backgroundImage: `url(${banner.image})` }}
