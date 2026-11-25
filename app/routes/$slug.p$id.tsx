@@ -1,7 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router';
 import { Product } from '@salla.sa/twilight-theme-engine/routes/product';
 import type { ProductPageProps } from '@salla.sa/twilight-theme-engine/routes/product';
-import { ProductDetailSkeleton } from '@salla.sa/twilight-theme-engine/skeleton';
+import { ProductPendingPreview } from '@salla.sa/twilight-theme-engine/skeleton';
 import { withHead } from '@salla.sa/twilight-theme-engine/tanstack';
 import { ProductPage } from '../components/product/ProductPage';
 import { redirectHomeIfNotFound } from '../lib/productNotFound';
@@ -24,7 +24,7 @@ export const Route = createFileRoute('/{-$locale}/$slug/p{$id}')({
     }
   },
   head: withHead(Product),
-  pendingComponent: () => <ProductDetailSkeleton />,
+  pendingComponent: () => <ProductPendingPreview />,
   component: ProductComponent,
 });
 
