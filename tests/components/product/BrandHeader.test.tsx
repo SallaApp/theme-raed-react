@@ -43,6 +43,16 @@ describe('BrandHeader', () => {
     expect(html).not.toContain('<script');
   });
 
+  it('keeps the formatting merchants publish: classes, alignment, links, images and line breaks', () => {
+    const rich =
+      '<p class="ql-direction-rtl ql-align-right"><strong>Swiss</strong> <em>since 1845</em>' +
+      '<br><a href="https://lindt.com" target="_blank" rel="noopener">lindt.com</a></p>' +
+      '<ul><li>Truffles</li></ul><p><img src="https://cdn.salla.sa/lindt.png" alt="Lindt"></p>';
+    const html = renderToString(<BrandHeader source={brandSource(rich)} />);
+    const parsed = new DOMParser().parseFromString(html, 'text/html').body;
+    expect(parsed.querySelector('h1')!.nextElementSibling!.innerHTML).toBe(rich);
+  });
+
   it('renders no description element without a description', () => {
     const html = renderToString(<BrandHeader source={brandSource()} />);
     expect(html).not.toContain('text-gray-500');
