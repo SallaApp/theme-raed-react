@@ -174,16 +174,18 @@
 
   h3,
   p {
-    @apply lg:opacity-0 transition-all duration-300 relative z-1 lg:translate-y-6;
+    @apply transition-all duration-300 relative z-1;
   }
 
-  &:hover {
-    h3 {
-      @apply opacity-100 translate-y-0;
-    }
-
-    p {
-      @apply opacity-80 translate-y-0;
+  /* From lg up the text waits for the mouse, only where there is one: a touch
+     screen (an iPad in landscape is lg too) has no hover, so the text stays shown
+     there, and so it does for a keyboard user on the banner. */
+  @media (hover: hover) and (min-width: 1024px) {
+    &:not(:hover):not(:focus-visible) {
+      h3,
+      p {
+        @apply opacity-0 translate-y-6;
+      }
     }
   }
 
@@ -213,7 +215,8 @@
       opacity: 0;
     }
 
-    &:hover {
+    &:hover,
+    &:focus-visible {
       &:after {
         opacity: 1;
       }
