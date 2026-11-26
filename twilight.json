@@ -133,21 +133,21 @@
             "required": true,
             "selected": [
                 {
-                    "label": "المبسّط (Lite)",
-                    "value": "lite",
-                    "key": "header-layout-lite"
+                    "label": "الافتراضي (Default)",
+                    "value": "default",
+                    "key": "header-layout-default"
                 }
             ],
             "options": [
                 {
-                    "label": "المبسّط (Lite)",
-                    "value": "lite",
-                    "key": "header-layout-lite"
-                },
-                {
                     "label": "الافتراضي (Default)",
                     "value": "default",
                     "key": "header-layout-default"
+                },
+                {
+                    "label": "المبسّط (Lite)",
+                    "value": "lite",
+                    "key": "header-layout-lite"
                 }
             ],
             "groups": [

@@ -86,7 +86,7 @@ beforeEach(() => {
     description: '<p>Handmade goods</p>',
     social: { twitter: 'https://x.com/acme' },
   };
-  state.theme = { settings: { header_show_store_info: true } };
+  state.theme = { settings: { header_layout: 'lite', header_show_store_info: true } };
   state.isHome = true;
   state.routeIds = [];
   nav.hasContent = true;
@@ -140,7 +140,7 @@ describe('Header', () => {
 
   it('hides the store info row when header_show_store_info is off', () => {
     state.routeIds = [HOME_ROUTE_ID];
-    state.theme = { settings: { header_show_store_info: false } };
+    state.theme = { settings: { header_layout: 'lite', header_show_store_info: false } };
     const { container } = render(<Header />);
     expect(container.querySelector('.site-header__intro')).toBeNull();
     expect(container.querySelector('header.site-header')).toBeTruthy();
@@ -148,7 +148,7 @@ describe('Header', () => {
 
   it('hides the store info row when header_show_store_info is unset', () => {
     state.routeIds = [HOME_ROUTE_ID];
-    state.theme = { settings: {} };
+    state.theme = { settings: { header_layout: 'lite' } };
     const { container } = render(<Header />);
     expect(container.querySelector('.site-header__intro')).toBeNull();
   });
@@ -219,7 +219,7 @@ describe('Header', () => {
   });
 
   it('server-renders one <h1> on the homepage: the store name in the logo link when the intro row is off', () => {
-    state.theme = { settings: {} };
+    state.theme = { settings: { header_layout: 'lite' } };
     state.routeIds = [HOME_ROUTE_ID];
     const html = renderToString(<Header />);
 
@@ -228,7 +228,7 @@ describe('Header', () => {
   });
 
   it('leaves the <h1> to the page everywhere but the homepage', () => {
-    state.theme = { settings: { header_show_store_info: true, header_store_info_home_only: false } };
+    state.theme = { settings: { header_layout: 'lite', header_show_store_info: true, header_store_info_home_only: false } };
     state.routeIds = ['/{-$locale}/cart'];
     state.isHome = false;
     const html = renderToString(<Header />);
@@ -249,7 +249,7 @@ describe('Header', () => {
   });
 
   it('shows the store info row on every page when home-only is off', () => {
-    state.theme = { settings: { header_show_store_info: true, header_store_info_home_only: false } };
+    state.theme = { settings: { header_layout: 'lite', header_show_store_info: true, header_store_info_home_only: false } };
     state.routeIds = ['/{-$locale}/$slug/p{$id}'];
     state.isHome = false;
     const { container } = render(<Header />);
@@ -269,6 +269,27 @@ describe('Header', () => {
     state.routeIds = [HOME_ROUTE_ID];
     const { container } = render(<Header />);
     expect(container.querySelector('.site-header__intro')).toBeNull();
+  });
+
+  it('renders the default layout when header_layout is unset', () => {
+    vi.stubGlobal(
+      'IntersectionObserver',
+      class {
+        observe() {}
+        unobserve() {}
+        disconnect() {}
+      }
+    );
+    state.theme = { settings: {} };
+    const { container } = render(<Header />);
+    expect(container.querySelector('header.site-header--default')).toBeTruthy();
+    expect(container.querySelector('.site-header__topnav')).toBeTruthy();
+  });
+
+  it('renders the lite layout when header_layout is lite', () => {
+    const { container } = render(<Header />);
+    expect(container.querySelector('header.site-header--lite')).toBeTruthy();
+    expect(container.querySelector('.site-header__topnav')).toBeNull();
   });
 
   it('opens the nav drawer when the menu button is clicked', () => {
@@ -330,7 +351,7 @@ describe('Header', () => {
   });
 
   it('never pins the bar when header_is_sticky is disabled', () => {
-    state.theme = { settings: { header_is_sticky: false } };
+    state.theme = { settings: { header_layout: 'lite', header_is_sticky: false } };
     const { container } = render(<Header />);
     Object.defineProperty(window, 'scrollY', { value: 10, configurable: true });
     fireEvent.scroll(window);
