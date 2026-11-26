@@ -235,7 +235,7 @@ describe('AddToCartForm sticky bar when sold out', () => {
 });
 
 // On phones the bar is fixed off-screen until it has `is-visible`. It used to wait for
-// `<html class="hydrated">`, which the SDK's component runtime never sets, so it never showed.
+// `<html class="hydrated">`, which only `<salla-quick-buy>` (inside the hidden bar) sets.
 describe('AddToCartForm sticky bar reveal', () => {
   it('renders the bar hidden on the server, so it can slide in', () => {
     const html = renderToString(<AddToCartForm product={makeProduct()} />);

@@ -342,7 +342,7 @@ function StickyProductBar({
   const soldOut = product.is_out_of_stock && product.status !== 'out-and-notify';
   // On phones the bar is fixed and starts off-screen; it slides in once the page is live
   // (`product.scss`). Not on `<html class="hydrated">`, which the Twig starter waited for:
-  // the SDK's component runtime never sets it, so the bar stayed hidden.
+  // only `<salla-quick-buy>` sets it, from inside this hidden bar, so the bar showed late or never.
   const visible = useHydrated();
   return (
     <section
