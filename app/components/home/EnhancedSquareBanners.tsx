@@ -15,6 +15,8 @@ interface BannerItem {
 export interface EnhancedSquareBannersProps {
   data: {
     banners: BannerItem[];
+    /** twilight.json `show_button`: mosaic "Discover now" CTA. Off unless switched on. */
+    show_button?: boolean;
     position?: number;
     [key: string]: unknown;
   };
@@ -28,16 +30,28 @@ export interface EnhancedSquareBannersProps {
 const bannerLabel = (banner: BannerItem, ctaLabel: string) =>
   banner.title || (banner.description ? undefined : ctaLabel);
 
-/** A banner with its title, description and link shows its photo without the dark overlay. */
+/** A banner with its title, description and link is "complete" (no mosaic overlay). */
 const isComplete = (banner: BannerItem) =>
   Boolean(banner.title && banner.description && blockLinkUrl(banner));
 
-function MosaicBanner({ banner, ctaLabel }: { banner: BannerItem; ctaLabel: string }) {
+/** Mosaic dark overlay: only when the banner has text and is not complete. */
+const hasMosaicOverlay = (banner: BannerItem) =>
+  Boolean((banner.title || banner.description) && !isComplete(banner));
+
+function MosaicBanner({
+  banner,
+  ctaLabel,
+  showButton,
+}: {
+  banner: BannerItem;
+  ctaLabel: string;
+  showButton: boolean;
+}) {
   return (
     <Link
       to={blockLinkUrl(banner) || '#'}
       aria-label={bannerLabel(banner, ctaLabel)}
-      className={`enhanced-square-banner bg-no-repeat bg-cover bg-center ${isComplete(banner) ? '' : 'enhanced-square-banner--overlay'}`}
+      className={`enhanced-square-banner bg-no-repeat bg-cover bg-center ${hasMosaicOverlay(banner) ? 'enhanced-square-banner--overlay' : ''}`}
       style={{ backgroundImage: `url(${banner.image})` }}
     >
       <span className="enhanced-square-banner__content">
@@ -45,7 +59,9 @@ function MosaicBanner({ banner, ctaLabel }: { banner: BannerItem; ctaLabel: stri
         {banner.description && (
           <p className="enhanced-square-banner__description">{banner.description}</p>
         )}
-        {blockLinkUrl(banner) && <span className="enhanced-square-banner__cta">{ctaLabel}</span>}
+        {showButton && blockLinkUrl(banner) && (
+          <span className="enhanced-square-banner__cta">{ctaLabel}</span>
+        )}
       </span>
     </Link>
   );
@@ -56,6 +72,8 @@ export const EnhancedSquareBanners = memo(function EnhancedSquareBanners({
 }: EnhancedSquareBannersProps) {
   const { t } = useTranslation();
   const { banners } = data;
+  // Default-off switch (same pattern as `in_container` on EnhancedSlider).
+  const showButton = Boolean(data.show_button);
 
   if (!banners.length) return null;
 
@@ -70,7 +88,12 @@ export const EnhancedSquareBanners = memo(function EnhancedSquareBanners({
           // A static settings list whose items have no id: see
           // .react-doctor/false-positives.md.
           // react-doctor-disable-next-line react-doctor/no-array-index-as-key
-          <MosaicBanner key={index} banner={banner} ctaLabel={ctaLabel} />
+          <MosaicBanner
+            key={index}
+            banner={banner}
+            ctaLabel={ctaLabel}
+            showButton={showButton}
+          />
         ))}
       </div>
     );
