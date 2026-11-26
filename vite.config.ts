@@ -3,6 +3,29 @@ import { twilightReact } from '@salla.sa/twilight-theme-engine/vite';
 import { visualizer } from 'rollup-plugin-visualizer';
 import path from 'path';
 
+type ModuleInfo = { isEntry: boolean; importers: string[] } | null;
+
+// Group name callback that names a matching module only when it is statically
+// reachable from an entry or from app/hydrate.tsx (which bootClient always loads),
+// i.e. code that every page runs anyway.
+function everyPage(test: RegExp, name: string) {
+  return (id: string, ctx: { getModuleInfo(id: string): ModuleInfo }): string | null => {
+    if (!test.test(id)) return null;
+    const seen = new Set<string>();
+    const queue = [id];
+    while (queue.length) {
+      const cur = queue.pop()!;
+      if (seen.has(cur)) continue;
+      seen.add(cur);
+      const info = ctx.getModuleInfo(cur);
+      if (!info) continue;
+      if (info.isEntry || cur.endsWith('/app/hydrate.tsx')) return name;
+      queue.push(...info.importers);
+    }
+    return null;
+  };
+}
+
 export default defineConfig(async () => ({
   plugins: [
     // twilightReact() registers and configures the SSR runtime, so a theme
@@ -84,44 +107,49 @@ export default defineConfig(async () => ({
       external: ['@salla.sa/twilight-components', '@salla.sa/twilight-components/dist/*'],
       output: {
         chunkFileNames: 'assets/[name]-[hash].js',
-        manualChunks(id: string): string | undefined {
-          // Kept apart so the entry, which only waits for the LCP image, imports nothing heavy.
-          if (id.includes('vite/preload-helper')) {
-            return 'preload-helper';
-          }
-          if (id.includes('node_modules/react/') || id.includes('node_modules/react-dom/')) {
-            return 'vendor-react';
-          }
-          if (id.includes('node_modules/@tanstack/react-router/')) {
-            return 'vendor-router';
-          }
-          if (id.includes('node_modules/@uidotdev/usehooks/')) {
-            return 'vendor-hooks';
-          }
-          if (
-            id.includes('/components/common/Breadcrumb') ||
-            id.includes('/components/common/NoContent') ||
-            id.includes('/components/common/Image') ||
-            id.includes('/components/common/Link') ||
-            id.includes('/components/common/CurrencySymbol')
-          ) {
-            return 'shared-common';
-          }
-          if (
-            id.includes('/components/product/ProductCard') ||
-            id.includes('/components/product/ProductDetails') ||
-            id.includes('/components/product/ProductGallery') ||
-            id.includes('/components/product/AddToCartForm')
-          ) {
-            return 'shared-product';
-          }
-          if (
-            id.includes('/components/home/ProductsSlider') ||
-            id.includes('/components/home/Testimonials') ||
-            id.includes('/components/home/HomeComponentRenderer')
-          ) {
-            return 'shared-home';
-          }
+        // Rolldown turns `manualChunks` into a single group that also captures every
+        // dependency of a matched module, whatever name the function returns for it.
+        // Matching the home components therefore dragged i18next, ky, sonner,
+        // query-core, swiper, the engine, etc. into one 530 kB `shared-home`.
+        // Prioritised groups claim the libraries first, so each chunk keeps its own code.
+        codeSplitting: {
+          groups: [
+            // Kept apart so the entry, which only waits for the LCP image, imports nothing heavy.
+            { name: 'preload-helper', test: /vite\/preload-helper/, priority: 100 },
+            { name: 'vendor-react', test: /node_modules\/(react|react-dom)\//, priority: 90 },
+            {
+              name: 'vendor-router',
+              test: /node_modules\/@tanstack\/react-router\//,
+              priority: 80,
+            },
+            {
+              name: 'vendor-core',
+              test: /node_modules\/(i18next|react-i18next|ky|sonner|use-sync-external-store|@tanstack\/(query-core|react-query|virtual-core|react-virtual))\//,
+              priority: 70,
+            },
+            { name: 'vendor-swiper', test: /node_modules\/swiper\//, priority: 60 },
+            { name: 'vendor-hooks', test: /node_modules\/@uidotdev\/usehooks\//, priority: 50 },
+            // The engine ships prebuilt flat files (dist/Breadcrumb-*.js, dist/chunk-*.js),
+            // so match by package and keep only what every page loads; screens the engine
+            // imports lazily stay in their own route chunks.
+            {
+              name: everyPage(
+                /node_modules\/(@salla\.sa\/twilight-(theme-engine|components-react)|@lit\/react|@stencil\/react-output-target|react-intersection-observer)\//,
+                'vendor-salla'
+              ),
+              priority: 40,
+            },
+            {
+              name: everyPage(/\/app\/(components\/common\/|components\/icons|hooks\/use|lib\/)/, 'shared-common'),
+              priority: 30,
+            },
+            // The product barrel and ProductPage import ../home, so they are left to shared-home.
+            {
+              name: everyPage(/\/app\/components\/product\/(?!index|ProductPage)/, 'shared-product'),
+              priority: 20,
+            },
+            { name: 'shared-home', test: /\/app\/components\/home\//, priority: 10 },
+          ],
         },
       },
     },
