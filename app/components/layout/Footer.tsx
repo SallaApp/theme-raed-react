@@ -23,8 +23,12 @@ const TAX_ICON_URL =
  * The store's value-added-tax registration: the tax number, plus the certificate as
  * the tax icon that opens the certificate image full size in a modal. Nothing shows
  * when the store has no tax number.
+ *
+ * In the account sheet (`inSheet`, where phones show the footer) the icon opens the
+ * certificate in a new tab instead: the engine modal is portalled to the body at
+ * `z-50`, under the sheet's `z-[210]`, so it would open hidden behind the sheet.
  */
-function FooterTax({ dark }: { dark: boolean }) {
+function FooterTax({ dark, inSheet }: { dark: boolean; inSheet: boolean }) {
   const { store } = useTwilight();
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
@@ -32,12 +36,36 @@ function FooterTax({ dark }: { dark: boolean }) {
   const certificate = store.settings?.tax?.certificate;
   if (!number) return null;
 
+  const icon = (
+    <img
+      src={TAX_ICON_URL}
+      alt={t('common.elements.tax_certificate', 'Tax Certificate')}
+      width={40}
+      height={50}
+      loading="lazy"
+      decoding="async"
+      className="w-10 rounded-sm transition-opacity hover:opacity-80"
+    />
+  );
+
   return (
     <div
       data-testid="store-footer-tax"
       className="store-footer__tax flex items-end gap-2 rtl:space-x-reverse"
     >
-      {certificate && (
+      {certificate && inSheet && (
+        <a
+          href={certificate}
+          target="_blank"
+          rel="noopener noreferrer"
+          data-testid="store-footer-tax-certificate"
+          className="store-footer__tax-cert shrink-0"
+          aria-label={t('common.elements.tax_certificate', 'Tax Certificate')}
+        >
+          {icon}
+        </a>
+      )}
+      {certificate && !inSheet && (
         <>
           <button
             type="button"
@@ -47,15 +75,7 @@ function FooterTax({ dark }: { dark: boolean }) {
             aria-haspopup="dialog"
             onClick={() => setOpen(true)}
           >
-            <img
-              src={TAX_ICON_URL}
-              alt={t('common.elements.tax_certificate', 'Tax Certificate')}
-              width={40}
-              height={50}
-              loading="lazy"
-              decoding="async"
-              className="w-10 rounded-sm transition-opacity hover:opacity-80"
-            />
+            {icon}
           </button>
           {/* Its own boundary: the modal's code loads lazily, and the footer must not wait for it
               to hydrate (see `ThemeLayout`). */}
@@ -123,13 +143,21 @@ function FooterSbc({ dark }: { dark: boolean }) {
 }
 
 /** Trust badges, the tax registration and the SBC badge, side by side (wrapping on narrow columns). */
-function FooterTrust({ dark, centered }: { dark: boolean; centered: boolean }) {
+function FooterTrust({
+  dark,
+  centered,
+  inSheet,
+}: {
+  dark: boolean;
+  centered: boolean;
+  inSheet: boolean;
+}) {
   return (
     <div
       data-testid="store-footer-trust"
       className={`store-footer__trust flex flex-wrap items-end gap-x-6 gap-y-3${centered ? ' justify-center' : ''}`}
     >
-      <FooterTax dark={dark} />
+      <FooterTax dark={dark} inSheet={inSheet} />
       <FooterSbc dark={dark} />
       <SallaTrustBadges {...(dark ? { dark: true } : {})} />
     </div>
@@ -293,7 +321,7 @@ function FooterCenteredBody({ inSheet, isDark }: { inSheet: boolean; isDark: boo
         dark={isDark}
       />
 
-      <FooterTrust dark={isDark} centered />
+      <FooterTrust dark={isDark} centered inSheet={inSheet} />
 
       <FooterApps className="flex flex-col items-center gap-3" />
     </div>
@@ -312,7 +340,7 @@ function FooterColumnsBody({ inSheet, isDark }: { inSheet: boolean; isDark: bool
         <FooterLogo className="mb-5" />
         <FooterDescription className="max-w-sm leading-6 my-5" />
         <SallaSocial className="block mb-6" />
-        <FooterTrust dark={isDark} centered={false} />
+        <FooterTrust dark={isDark} centered={false} inSheet={inSheet} />
       </div>
 
       <FooterLinksMenu

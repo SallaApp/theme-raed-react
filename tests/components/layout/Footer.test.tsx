@@ -88,6 +88,37 @@ describe('Footer', () => {
     expect(html).toContain('300000000000003');
   });
 
+  describe('tax certificate', () => {
+    const withCertificate = () => {
+      state.store = {
+        ...state.store,
+        settings: { tax: { number: '300000000000003', certificate: 'https://cdn.test/c.png' } },
+      };
+    };
+
+    it('opens the certificate in a modal from the page footer', () => {
+      withCertificate();
+      renderFooter();
+      const certificate = screen.getByTestId('store-footer-tax-certificate');
+      expect(certificate.tagName).toBe('BUTTON');
+      expect(certificate.getAttribute('aria-haspopup')).toBe('dialog');
+    });
+
+    // The engine modal is portalled to the body at z-50, under the sheet's z-[210]:
+    // from the sheet it would open out of sight.
+    it('links to the certificate from the account sheet, which phones show over the page', () => {
+      withCertificate();
+      renderFooter(true);
+      const certificate = screen.getByTestId('store-footer-tax-certificate');
+      expect(certificate.tagName).toBe('A');
+      expect(certificate.getAttribute('href')).toBe('https://cdn.test/c.png');
+      expect(certificate.getAttribute('target')).toBe('_blank');
+      expect(certificate.getAttribute('rel')).toBe('noopener noreferrer');
+      expect(certificate.getAttribute('aria-label')).toBe('Tax Certificate');
+      expect(screen.getByText('300000000000003')).toBeTruthy();
+    });
+  });
+
   it('lists the store contacts in their own column, not under the description', () => {
     renderFooter();
     expect(screen.getByText('Contact us')).toBeTruthy();
