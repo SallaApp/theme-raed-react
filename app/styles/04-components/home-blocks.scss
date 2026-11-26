@@ -340,12 +340,25 @@
 */
 .s-block--featured-products {
   .tabs {
-    @apply flex items-center justify-center gap-2 mb-6 lg:mb-12 px-4 h-[76px] overflow-x-auto whitespace-nowrap;
+    @apply flex items-center gap-2 mb-6 lg:mb-12 px-4 h-[76px] overflow-x-auto whitespace-nowrap;
     /* break out of the centered `.container` to span the whole viewport
        (`.app-inner` clips the ~scrollbar overhang from `100vw`) */
     width: 100vw;
     margin-inline: calc(50% - 50vw);
     background-color: color-mix(in srgb, var(--color-primary) 10%, transparent);
+
+    /* Centred while they fit; start-aligned once they overflow, as auto margins
+       don't go below zero. `justify-content: center` would push the first tabs
+       past the start edge, where the strip can't scroll to them. As specific as
+       `.s-block--tabs-produtcs .tabs`' `space-x` margins and after them, so
+       these win on the tabbed style too. */
+    > .tab-trigger:first-child {
+      margin-inline-start: auto;
+    }
+
+    > .tab-trigger:last-child {
+      margin-inline-end: auto;
+    }
   }
 
   .tab-trigger {
@@ -377,8 +390,13 @@
   }
 
   .tabs.tabs--inline {
-    @apply m-0 h-auto w-auto justify-end px-0;
+    @apply m-0 h-auto w-auto px-0;
     background-color: transparent;
+
+    /* At the end while they fit, from the start once they overflow (see `.tabs`). */
+    > .tab-trigger:last-child {
+      margin-inline-end: 0;
+    }
 
     .tab-trigger {
       @apply h-9 border border-gray-200 px-4;
