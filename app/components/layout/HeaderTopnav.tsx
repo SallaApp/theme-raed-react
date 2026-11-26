@@ -10,7 +10,7 @@ import {
   MapPinIcon,
   Money01Icon,
 } from '../icons';
-import { openStoreSwitcher, type StoreSwitcher } from '../../lib/storeSwitchers';
+import { canSwitchScope, openStoreSwitcher, type StoreSwitcher } from '../../lib/storeSwitchers';
 
 /** One topnav trigger: leading icon, current-selection label, caret. */
 function TopnavAction({
@@ -92,7 +92,7 @@ export function HeaderTopnav() {
     },
     {
       key: 'branch',
-      show: !!store?.scope,
+      show: canSwitchScope(store?.scope),
       icon: <MapPinIcon className="site-header__topnav-icon" aria-hidden="true" />,
       label: scopeLabel,
     },

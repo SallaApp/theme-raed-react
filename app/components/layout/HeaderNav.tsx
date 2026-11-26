@@ -34,7 +34,7 @@ import { useDialogFocus } from '../../hooks/useDialogFocus';
 import { useScrollLock } from '../../hooks/useScrollLock';
 import { afterNextPaint } from '../../lib/afterNextPaint';
 import { builtInMenuKind, type BuiltInMenuKind } from '../../lib/menuItemKind';
-import { openStoreSwitcher, type StoreSwitcher } from '../../lib/storeSwitchers';
+import { canSwitchScope, openStoreSwitcher, type StoreSwitcher } from '../../lib/storeSwitchers';
 import { pruneUntitled } from '../../lib/menuOverflow';
 
 interface HeaderNavProps {
@@ -340,7 +340,7 @@ function NavFooter({ onClose, entered }: { onClose: () => void; entered: boolean
     },
     {
       key: 'branch',
-      show: !!store?.scope,
+      show: canSwitchScope(store?.scope),
       icon: <MapPinIcon className="site-nav-drawer__loc-icon" aria-hidden="true" />,
       label: store?.scope?.name || t('blocks.header.branches', 'Branches'),
     },

@@ -10,7 +10,7 @@ import { BottomSheet } from '../common';
 import { useCloseOnDesktop } from '../../hooks/useCloseOnDesktop';
 import { ROWS_IN_DELAY_MS, useStaggeredRows } from '../../hooks/useStaggeredRows';
 import { ArrowLeftIcon, LanguagesIcon, MapPinIcon, Money01Icon } from '../icons';
-import { openStoreSwitcher, type StoreSwitcher } from '../../lib/storeSwitchers';
+import { canSwitchScope, openStoreSwitcher, type StoreSwitcher } from '../../lib/storeSwitchers';
 
 interface MobileAccountSheetProps {
   open: boolean;
@@ -202,7 +202,7 @@ function SettingsList({
     },
     {
       key: 'branch',
-      show: !!store?.scope,
+      show: canSwitchScope(store?.scope),
       icon: <MapPinIcon aria-hidden="true" />,
       label: t('blocks.header.branches', 'Branch'),
       value: store?.scope?.name,

@@ -26,6 +26,16 @@ function openNativeSheet(sheet: 'language' | 'currency'): boolean {
 }
 
 /**
+ * Whether shoppers may pick the market (scope) themselves. A store can restrict
+ * switching so the market follows the visitor's IP (`display_as: 'ip_address'`);
+ * then the theme shows no scope trigger and does not mount `<SallaScopes>`,
+ * matching the Twig themes, which get no `store.scope` in that case.
+ */
+export function canSwitchScope(scope: { display_as?: string | null } | null | undefined): boolean {
+  return !!scope && scope.display_as !== 'ip_address';
+}
+
+/**
  * Opens a switcher. Inside the Salla app, language and currency open the app's
  * own sheets instead of the web modal; everywhere else they open the shared
  * `<SallaLocalizationModal>` (`localization::open`). The branch opens
