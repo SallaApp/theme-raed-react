@@ -1,4 +1,9 @@
 {
+  "pages.cart.remove_item_title": "Remove from cart?",
+  "pages.cart.remove_item_body": "Do you really want to remove this item from cart?",
+  "pages.cart.move_to_wishlist": "Move to Wishlist",
+  "pages.cart.remove_item": "Remove",
+  "pages.cart.moved_to_wishlist": "Moved to wishlist",
   "pages.cart.total": "Total",
   "pages.cart.empty": "Your cart is empty",
   "pages.cart.continue_shopping": "Continue Shopping",
