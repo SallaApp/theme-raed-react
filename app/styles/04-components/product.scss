@@ -1097,3 +1097,48 @@ salla-quick-buy apple-pay-button {
   top: 0;
   z-index: 2;
 }
+
+/*
+  Delivery promises on the card («توصيل سريع خلال ساعتين»), from the products
+  list's `delivery_promise` (`DeliveryPromises.tsx`). One pill per line under the
+  title; each row inherits the card's text alignment, so pills sit at the start
+  edge in RTL and LTR and stay centred on centred cards.
+*/
+.s-product-card-delivery-promises {
+  @apply flex flex-col gap-1 my-1.5;
+
+  > div {
+    text-align: inherit;
+  }
+}
+
+.s-product-card-delivery-promise {
+  @apply inline-flex items-center gap-1 rounded-full whitespace-nowrap;
+  padding: 2px 8px;
+  font-size: 11px;
+  line-height: 1.5;
+  font-weight: 600;
+  /* standard (and any other type): blue */
+  background: #eef6ff;
+  color: #0b5cad;
+
+  i {
+    font-size: 12px;
+    line-height: 1;
+  }
+
+  &--express {
+    background: #fff4e5;
+    color: #b25e00;
+  }
+
+  &--same_day {
+    background: #e9f8ef;
+    color: #137a3f;
+  }
+
+  &--next_day {
+    background: #f1edff;
+    color: #5b3cc4;
+  }
+}
