@@ -10,8 +10,11 @@ import { ProductGallery } from '../../../app/components/product/ProductGallery';
 // `vi.mock` factory; `beforeEach` empties them.
 const settings = vi.hoisted<Record<string, unknown>>(() => ({}));
 
+const navigate = vi.hoisted(() => vi.fn());
+
 vi.mock('@salla.sa/twilight-theme-engine/providers', () => ({
   useTwilight: () => ({ theme: { settings } }),
+  useNavigate: () => navigate,
 }));
 
 vi.mock('@salla.sa/twilight-theme-engine/i18n', () => ({
@@ -272,5 +275,19 @@ describe('ProductGallery wishlist button', () => {
     ];
     const saved = render(<ProductGallery product={product} />);
     await waitFor(() => expect(heart(saved.container)?.getAttribute('aria-pressed')).toBe('true'));
+  });
+});
+
+describe('ProductGallery back button', () => {
+  it("goes to the store's home through the router from a tab with no history, e.g. a shared link", () => {
+    navigate.mockClear();
+    const length = vi.spyOn(History.prototype, 'length', 'get').mockReturnValue(1);
+    const { container } = render(<ProductGallery product={product} />);
+    fireEvent.click(
+      container.querySelector<HTMLButtonElement>('.product-gallery__bar-btn[aria-label="Back"]')!
+    );
+    // The engine's navigate keeps the shopper's language (`/en`) and the store's base path.
+    expect(navigate).toHaveBeenCalledWith('/');
+    length.mockRestore();
   });
 });

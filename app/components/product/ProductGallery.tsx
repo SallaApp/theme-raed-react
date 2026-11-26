@@ -8,6 +8,7 @@ import { Image } from '@salla.sa/twilight-theme-engine/common';
 import { isNativeApp } from '@salla.sa/twilight-theme-engine/native-app';
 import type { Product, ProductImage } from '@salla.sa/twilight-theme-engine/types';
 import { ArrowRightIcon } from '../icons';
+import { useGoBack } from '../../hooks/useGoBack';
 import { useHydrated } from '../../hooks/useHydrated';
 import { useMobileViewport } from '../../hooks/useMobileViewport';
 import { ProductMetadata } from './ProductMetadata';
@@ -77,6 +78,7 @@ export function ProductGallery({ product }: ProductGalleryProps) {
   const { t } = useTranslation();
   const wishlist = useWishlist();
   const { theme } = useTwilight();
+  const goBack = useGoBack();
   const sliderId = `details-slider-${product.id}`;
   const sliderRef = useRef<ComponentRef<typeof SallaSlider>>(null);
   const objectFit = sliderObjectFit(theme.settings.slider_background_size);
@@ -154,10 +156,7 @@ export function ProductGallery({ product }: ProductGalleryProps) {
         <button
           type="button"
           className="product-gallery__bar-btn"
-          onClick={() => {
-            if (window.history.length > 1) window.history.back();
-            else window.location.assign('/');
-          }}
+          onClick={goBack}
           aria-label={t('blocks.header.back', 'Back')}
         >
           <ArrowRightIcon aria-hidden="true" />
