@@ -73,8 +73,8 @@ vi.mock('@salla.sa/twilight-components-react/user-menu', () => ({
   SallaUserMenu: () => <salla-user-menu />,
 }));
 vi.mock('@salla.sa/twilight-components-react/cart-summary', () => ({
-  SallaCartSummary: ({ children }: { children?: React.ReactNode }) => (
-    <salla-cart-summary>{children}</salla-cart-summary>
+  SallaCartSummary: ({ children, className }: { children?: React.ReactNode; className?: string }) => (
+    <salla-cart-summary className={className}>{children}</salla-cart-summary>
   ),
 }));
 
@@ -98,6 +98,29 @@ afterEach(() => {
 });
 
 describe('Header', () => {
+  it('marks the cart empty (no count dot) at zero and clears it once the cart has items', () => {
+    let onUpdated: ((summary?: { count?: number }) => void) | undefined;
+    vi.stubGlobal('salla', {
+      storage: { get: (_k: string, fb: unknown) => fb },
+      event: {
+        on: (event: string, cb: (summary?: { count?: number }) => void) => {
+          if (event === 'cart::updated') onUpdated = cb;
+        },
+        off: vi.fn(),
+      },
+    });
+
+    const { container } = render(<Header />);
+    const cart = () => container.querySelector('salla-cart-summary')!;
+    expect(cart().classList.contains('header-action--cart-empty')).toBe(true);
+
+    act(() => onUpdated?.({ count: 2 }));
+    expect(cart().classList.contains('header-action--cart-empty')).toBe(false);
+
+    act(() => onUpdated?.({ count: 0 }));
+    expect(cart().classList.contains('header-action--cart-empty')).toBe(true);
+  });
+
   it('renders the shell: logo, actions, search modal, cart, and the hook slots', () => {
     const { container, getAllByLabelText } = render(<Header />);
     expect(container.querySelector('header.site-header')).toBeTruthy();

@@ -11,6 +11,7 @@ import { Image } from '@salla.sa/twilight-theme-engine/common';
 import { MapPinIcon, SearchIcon, ShoppingBagIcon } from '../icons';
 import { useAppSafeAreaTop } from '../../hooks/useAppSafeAreaTop';
 import { useNavHasContent } from '../../hooks/useNavHasContent';
+import { useCartCount } from '../../hooks/useCartCount';
 import { HOME_ROUTE_ID, PRODUCT_ROUTE_ID } from '../../lib/routeIds';
 import { HeaderMainMenu } from './HeaderMainMenu';
 import { HeaderNav } from './HeaderNav';
@@ -120,6 +121,7 @@ export function Header({ navOpen: navOpenProp, onNavOpenChange }: HeaderProps = 
   const isDefaultLayout = theme?.settings?.header_layout === 'default';
   const stickyEnabled = theme?.settings?.header_is_sticky !== false;
   const navHasContent = useNavHasContent();
+  const cartCount = useCartCount();
   const [navOpenState, setNavOpenState] = useState(false);
   const navOpen = navOpenProp ?? navOpenState;
   const setNavOpen = (open: boolean) => {
@@ -278,7 +280,9 @@ export function Header({ navOpen: navOpenProp, onNavOpenChange }: HeaderProps = 
               {store?.scope && (
                 <ScopeButton label={store.scope.name || t('blocks.header.branches', 'Branches')} />
               )}
-              <SallaCartSummary className="header-action">
+              <SallaCartSummary
+                className={`header-action${cartCount === 0 ? ' header-action--cart-empty' : ''}`}
+              >
                 <ShoppingBagIcon slot="icon" aria-hidden="true" />
               </SallaCartSummary>
               <SearchButton label={searchLabel} />
