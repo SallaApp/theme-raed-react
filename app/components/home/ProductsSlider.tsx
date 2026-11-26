@@ -17,6 +17,8 @@ export interface ProductsSliderProps {
     limit?: number | string;
     display_all_url?: string;
     position?: number;
+    /** Set by the engine on the page's first blocks: the first two cards' images load eagerly. */
+    priority?: boolean;
     [key: string]: unknown;
   };
   /**
@@ -133,9 +135,13 @@ export function ProductsSlider({ data, onResolve }: ProductsSliderProps) {
           prevLabel={t('blocks.home.reviews_prev', 'Previous')}
           nextLabel={t('blocks.home.reviews_next', 'Next')}
         >
-          {(items ?? []).map((item) => (
+          {(items ?? []).map((item, index) => (
             <div key={item.id} className="s-products-carousel__slide">
-              <ProductCard product={item} layout="vertical" />
+              <ProductCard
+                product={item}
+                layout="vertical"
+                imagePriority={!!data.priority && index < 2}
+              />
             </div>
           ))}
         </ScrollCarousel>
