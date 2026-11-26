@@ -32,7 +32,9 @@ body.product-single .mobile-page-title {
 }
 
 /* One title on mobile: where a page already renders its own heading in the
-   content, suppress it — the bar above carries the same text.
+   content, hide it visually — the bar above carries the same text. Visually
+   only: it stays the page's one <h1> for screen readers and search engines
+   (the bar's text is not a heading).
      · `#page-main-title` — `ProductListPage` (category / offers / search / tag /
        brand routes)
      · `.main-content > h1` on the account pages (orders / profile / wallet /
@@ -42,6 +44,6 @@ body.product-single .mobile-page-title {
 @media (max-width: 767px) {
   #page-main-title,
   body:has(.profile-header) .main-content > h1 {
-    @apply hidden;
+    @apply sr-only;
   }
 }
