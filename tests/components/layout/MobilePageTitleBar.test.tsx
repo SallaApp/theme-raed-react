@@ -37,6 +37,14 @@ describe('MobilePageTitleBar', () => {
     expect(container.querySelector('.mobile-page-title__text')?.textContent).toBe('Cart');
   });
 
+  // sundouqi.com, 2026-11-26: every inner page had two <h1>s, this bar's and the page's own.
+  it('names the page without a heading of its own: the page keeps the one <h1>', () => {
+    state.routeIds = ['/{-$locale}/cart'];
+    const { container } = render(<MobilePageTitleBar />);
+    expect(container.querySelector('h1, h2, h3, h4, h5, h6, [role="heading"]')).toBeNull();
+    expect(container.querySelector('p.mobile-page-title__text')?.textContent).toBe('Cart');
+  });
+
   it('renders nothing on the home page, decided from route match state (SSR-safe)', () => {
     state.routeIds = ['/{-$locale}/'];
     state.title = 'Home';

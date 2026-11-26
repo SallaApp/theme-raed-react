@@ -82,7 +82,9 @@ export function MobilePageTitleBar() {
       >
         <ArrowRightIcon aria-hidden="true" />
       </button>
-      <h1 className="mobile-page-title__text">{title}</h1>
+      {/* Not a heading: the page renders its own <h1> (visually hidden here on mobile), and a
+          second one made two on every page for search engines, which read past the CSS. */}
+      <p className="mobile-page-title__text">{title}</p>
     </div>
   );
 }

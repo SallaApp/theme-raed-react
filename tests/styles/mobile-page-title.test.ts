@@ -33,16 +33,29 @@ function decl(rule: Rule, prop: string): string | undefined {
   return value;
 }
 
+/**
+ * Tailwind's `sr-only`: out of sight, still in the page. The heading stays the page's one <h1>
+ * for screen readers and search engines (sundouqi.com, 2026-11-26: the bar's text was a second).
+ */
+function visuallyHidden(rule: Rule): boolean {
+  return (
+    decl(rule, 'position') === 'absolute' &&
+    decl(rule, 'width') === '1px' &&
+    decl(rule, 'overflow') === 'hidden' &&
+    decl(rule, 'display') !== 'none'
+  );
+}
+
 describe('account pages on phones', () => {
   // CustomerLayout's own `.main-content > h1` repeats the title bar's text.
   // `.profile-header` is rendered by that layout only; the engine sets no
   // `customer-*` body class on the /account/* routes to key off instead.
   const selector = 'body:has(.profile-header) .main-content > h1';
 
-  it("hides the page's own heading below md, where the title bar names the page", async () => {
+  it("hides the page's own heading from sight below md, where the title bar names the page", async () => {
     const [rule] = rulesFor(await compile(), selector);
     expect(rule).toBeDefined();
-    expect(decl(rule, 'display')).toBe('none');
+    expect(visuallyHidden(rule)).toBe(true);
     expect((rule.parent as AtRule).params).toBe('(max-width: 767px)');
   });
 
@@ -53,7 +66,7 @@ describe('account pages on phones', () => {
     (await compile()).walkRules((rule) => {
       if (
         rule.selectors.some((sel) => /\.main-content\s*>\s*h1/.test(sel)) &&
-        decl(rule, 'display') === 'none'
+        (visuallyHidden(rule) || decl(rule, 'display') === 'none')
       ) {
         hiding.push(rule);
       }
@@ -63,6 +76,15 @@ describe('account pages on phones', () => {
       expect(rule.parent?.type).toBe('atrule');
       expect((rule.parent as AtRule).params).toBe('(max-width: 767px)');
     }
+  });
+});
+
+describe('product listings on phones', () => {
+  it("hides the listing's own heading from sight below md, keeping it the page's one <h1>", async () => {
+    const [rule] = rulesFor(await compile(), '#page-main-title');
+    expect(rule).toBeDefined();
+    expect(visuallyHidden(rule)).toBe(true);
+    expect((rule.parent as AtRule).params).toBe('(max-width: 767px)');
   });
 });
 
