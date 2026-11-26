@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeAll, afterEach } from 'vitest';
 import { render, waitFor, fireEvent } from '@testing-library/react';
+import { renderToString } from 'react-dom/server';
 import type { Product } from '@salla.sa/twilight-theme-engine/types';
 import { AddToCartForm } from '../../../app/components/product/AddToCartForm';
 
@@ -230,6 +231,23 @@ describe('AddToCartForm sticky bar when sold out', () => {
   it('leaves an in-stock product as it was', () => {
     const { container } = render(<AddToCartForm product={makeProduct()} />);
     expect(bar(container).classList.contains('sticky-product-bar--sold-out')).toBe(false);
+  });
+});
+
+// On phones the bar is fixed off-screen until it has `is-visible`. It used to wait for
+// `<html class="hydrated">`, which the SDK's component runtime never sets, so it never showed.
+describe('AddToCartForm sticky bar reveal', () => {
+  it('renders the bar hidden on the server, so it can slide in', () => {
+    const html = renderToString(<AddToCartForm product={makeProduct()} />);
+    expect(html).toContain('sticky-product-bar');
+    expect(html).not.toContain('is-visible');
+  });
+
+  it('shows the bar once mounted in the browser', () => {
+    const { container } = render(<AddToCartForm product={makeProduct()} />);
+    expect(
+      container.querySelector('.sticky-product-bar')!.classList.contains('is-visible')
+    ).toBe(true);
   });
 });
 

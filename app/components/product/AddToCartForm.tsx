@@ -18,6 +18,7 @@ import { CurrencySymbol } from '@salla.sa/twilight-theme-engine/common';
 import type { Product } from '@salla.sa/twilight-theme-engine/types';
 import type { ReactNode } from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { useHydrated } from '../../hooks/useHydrated';
 import { usePriceBump } from '../../hooks/usePriceBump';
 import { ProductOptionsPanel, type PanelOption } from '../common/ProductOptionsPanel';
 
@@ -339,9 +340,13 @@ function StickyProductBar({
   // Sold out with nothing to sign up for: on phones the sticky bar shows only the
   // out-of-stock label (`product.scss`). "Notify me" (`out-and-notify`) keeps its button.
   const soldOut = product.is_out_of_stock && product.status !== 'out-and-notify';
+  // On phones the bar is fixed and starts off-screen; it slides in once the page is live
+  // (`product.scss`). Not on `<html class="hydrated">`, which the Twig starter waited for:
+  // the SDK's component runtime never sets it, so the bar stayed hidden.
+  const visible = useHydrated();
   return (
     <section
-      className={`sticky-product-bar bg-white${soldOut ? ' sticky-product-bar--sold-out' : ''}`}
+      className={`sticky-product-bar bg-white${soldOut ? ' sticky-product-bar--sold-out' : ''}${visible ? ' is-visible' : ''}`}
     >
       {/* Live price on the start side, quantity stepper on the end side
           (replaces the standalone price section and the "Quantity" label). */}

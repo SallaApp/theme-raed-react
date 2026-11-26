@@ -455,9 +455,10 @@ salla-gifting {
         @apply w-auto m-0 flex-1 delay-1000;
       }
 
-      .hydrated & {
+      /* Slides in once the page is live (`StickyProductBar` sets `is-visible`). */
+      &.is-visible {
         &,
-        &__quantity,
+        .sticky-product-bar__quantity,
         salla-add-product-button {
           @apply translate-y-0 opacity-100;
         }
