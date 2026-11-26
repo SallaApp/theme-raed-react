@@ -93,12 +93,13 @@ function HeaderIntro({ isHomePage }: { isHomePage: boolean }) {
  * Rebuilt storefront header — swapped in via `<TwilightProvider layout={ThemeLayout}>`.
  *
  * Two layouts, chosen by the `header_layout` theme setting:
- *  - **lite** (default): centered logo, a menu button that opens the slide-in
- *    drawer, action icons, then a store-name / description / social row.
- *  - **default**: a `lg+` top bar ({@link HeaderTopnav}) with the footer menu +
- *    language / branch / currency switchers, then a row of logo · horizontal
- *    mega-menu (`HeaderMainMenu`) · action icons. Below `lg` it collapses to the
- *    same mobile bar as lite (burger + drawer + icons).
+ *  - **default** (used unless the setting is `lite`): a `lg+` top bar
+ *    ({@link HeaderTopnav}) with the footer menu + language / branch / currency
+ *    switchers, then a row of logo · horizontal mega-menu (`HeaderMainMenu`) ·
+ *    action icons. Below `lg` it collapses to the same mobile bar as lite
+ *    (burger + drawer + icons).
+ *  - **lite**: centered logo, a menu button that opens the slide-in drawer,
+ *    action icons, then a store-name / description / social row.
  *
  * The menu opens a slide-in drawer at every breakpoint ({@link HeaderNav}); the
  * search icon opens the Salla search modal through the `search::open` event
@@ -118,7 +119,7 @@ interface HeaderProps {
 export function Header({ navOpen: navOpenProp, onNavOpenChange }: HeaderProps = {}) {
   const { store, theme } = useTwilight();
   const { t } = useTranslation();
-  const isDefaultLayout = theme?.settings?.header_layout === 'default';
+  const isDefaultLayout = theme?.settings?.header_layout !== 'lite';
   const stickyEnabled = theme?.settings?.header_is_sticky !== false;
   const navHasContent = useNavHasContent();
   const [navOpenState, setNavOpenState] = useState(false);
