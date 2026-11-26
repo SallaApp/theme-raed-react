@@ -66,6 +66,41 @@ describe('account pages on phones', () => {
   });
 });
 
+describe('static pages on phones', () => {
+  // PageSingle's card `<h1>` repeats the title bar's `<h1>`. Hidden with
+  // `display: none`, it leaves the screen reader the bar's one.
+  const selector = '.content--single-page > h1';
+
+  it("hides the page's own title below md, where the title bar names the page", async () => {
+    const [rule] = rulesFor(await compile(), selector);
+    expect(rule).toBeDefined();
+    expect(decl(rule, 'display')).toBe('none');
+    expect((rule.parent as AtRule).params).toBe('(max-width: 767px)');
+  });
+
+  it('keeps the title from md up, where the title bar is hidden instead', async () => {
+    const root = await compile();
+    const hiding: Rule[] = [];
+    root.walkRules((rule) => {
+      if (
+        rule.selectors.some((sel) => sel.includes('.content--single-page')) &&
+        decl(rule, 'display') === 'none'
+      ) {
+        hiding.push(rule);
+      }
+    });
+    expect(hiding.length).toBeGreaterThan(0);
+    for (const rule of hiding) {
+      expect((rule.parent as AtRule).params).toBe('(max-width: 767px)');
+    }
+
+    const barHidden = rulesFor(root, '.mobile-page-title').filter(
+      (rule) => decl(rule, 'display') === 'none'
+    );
+    expect(barHidden.map((rule) => (rule.parent as AtRule).params)).toEqual(['(min-width: 768px)']);
+  });
+});
+
 describe('breadcrumbs on phones', () => {
   async function compileFile(file: string): Promise<Root> {
     const { css } = sass.compile(`${themeRoot}app/styles/04-components/${file}`);

@@ -95,6 +95,16 @@ describe('PageSingle', () => {
       expect(comments?.getAttribute('data-item-id')).toBe('42');
     });
 
+    it("puts the title where the phone rule finds it, and not a heading of the page's content", () => {
+      // `mobile-page-title.scss` hides `.content--single-page > h1` on phones, where
+      // the title bar shows the same title.
+      const { container } = render(
+        <PageSingle page={makePage({ content: '<h1>Our story</h1><p>Since 1990</p>' })} />
+      );
+      const hidden = container.querySelectorAll('.content--single-page > h1');
+      expect(Array.from(hidden, (h1) => h1.textContent)).toEqual(['About Us']);
+    });
+
     it('omits the content block when the page has no content', () => {
       const { container } = render(<PageSingle page={makePage({ content: undefined })} />);
       expect(container.querySelector('.content-entry')).toBeNull();
