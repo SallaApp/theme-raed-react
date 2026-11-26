@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react';
 
 // Matches the theme's `md:` Tailwind breakpoint — the same cutoff any
-// `md:hidden` / `hidden md:block` pair switches visibility on.
-export const MOBILE_QUERY = '(max-width: 767px)';
+// `md:hidden` / `hidden md:block` pair switches visibility on. Written as the
+// exact opposite of `md:`'s `(min-width: 768px)`: `(max-width: 767px)` leaves
+// widths such as 767.5px (browser zoom, display scaling) where neither matches.
+export const MOBILE_QUERY = 'not all and (min-width: 768px)';
 
 /**
  * Whether the viewport is at or below `md`. `false` on the server and through
