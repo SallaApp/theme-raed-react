@@ -296,3 +296,37 @@ describe('AddToCartForm note and file tabs', () => {
     expect(new FormData(form).get('notes')).toBe('Gift wrap');
   });
 });
+
+const bundleHost = (container: HTMLElement) =>
+  container.querySelector('salla-multiple-bundle-product');
+
+describe('AddToCartForm custom bundle picker', () => {
+  // The product API this theme reads sends the group data as `bundle.sections` and never
+  // sends `has_bundle_products`, so the picker must follow the sections (SP-25037).
+  const groupProduct = (bundle?: { sections?: unknown[] }) =>
+    ({ ...makeProduct({ type: 'group_products' }), bundle }) as Product;
+
+  it('renders the picker for a custom group whose payload carries bundle sections', () => {
+    const { container } = render(
+      <AddToCartForm
+        product={groupProduct({
+          sections: [{ id: 566238346, name: 'اختر محصول او اكثر', products: [{ id: 1871087340 }] }],
+        })}
+      />
+    );
+
+    expect(bundleHost(container)).toBeTruthy();
+  });
+
+  it('renders nothing when the section list is empty', () => {
+    const { container } = render(<AddToCartForm product={groupProduct({ sections: [] })} />);
+
+    expect(bundleHost(container)).toBeNull();
+  });
+
+  it('renders nothing for a product with no bundle at all', () => {
+    const { container } = render(<AddToCartForm product={makeProduct()} />);
+
+    expect(bundleHost(container)).toBeNull();
+  });
+});
