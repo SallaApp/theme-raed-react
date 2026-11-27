@@ -468,6 +468,12 @@ export function AddToCartForm({
 
   const hasPreorder = Boolean(product.has_preorder_campaign && product.preorder);
 
+  // `has_bundle_products` is a Twig-presenter field: the product API this theme reads
+  // (ProductTransformerV2) never sends it, so gate on the group data itself instead.
+  const hasBundleSections = Boolean(
+    (product as { bundle?: { sections?: unknown[] } }).bundle?.sections?.length
+  );
+
   return (
     <form
       ref={formRef}
@@ -494,7 +500,7 @@ export function AddToCartForm({
         </ProductOptionsPanel>
       )}
 
-      {product.has_bundle_products && (
+      {hasBundleSections && (
         <SallaMultipleBundleProduct bundleSections={JSON.stringify(product)} />
       )}
 
